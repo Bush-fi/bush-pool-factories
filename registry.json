@@ -1,0 +1,69 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-09-19",
+  "factories": [
+    {
+      "address": "0x0000000000000000000000000000000000000000",
+      "name": "WeightedPoolFactory",
+      "poolType": "WEIGHTED",
+      "hookType": "NONE",
+      "sourcePackage": "pool-weighted",
+      "mathRepo": "https://github.com/bush-protocol/bush-factories/tree/main/maths",
+      "status": "setup"
+    },
+    {
+      "address": "0x0000000000000000000000000000000000000000",
+      "name": "WeightedPool8020Factory",
+      "poolType": "WEIGHTED_8020",
+      "hookType": "NONE",
+      "sourcePackage": "pool-weighted",
+      "mathRepo": "https://github.com/bush-protocol/bush-factories/tree/main/maths",
+      "status": "setup"
+    },
+    {
+      "address": "0x0000000000000000000000000000000000000000",
+      "name": "LBPoolFactory",
+      "poolType": "WEIGHTED_LBP",
+      "hookType": "NONE",
+      "sourcePackage": "pool-weighted/lbp",
+      "mathRepo": "https://github.com/bush-protocol/bush-factories/tree/main/maths",
+      "status": "setup"
+    },
+    {
+      "address": "0x0000000000000000000000000000000000000000",
+      "name": "FixedPriceLBPoolFactory",
+      "poolType": "WEIGHTED_LBP_FIXED_PRICE",
+      "hookType": "NONE",
+      "sourcePackage": "pool-weighted/lbp",
+      "mathRepo": "https://github.com/bush-protocol/bush-factories/tree/main/maths",
+      "status": "setup"
+    },
+    {
+      "address": "0x0000000000000000000000000000000000000000",
+      "name": "StablePoolFactory",
+      "poolType": "STABLE",
+      "hookType": "NONE",
+      "sourcePackage": "pool-stable",
+      "mathRepo": "https://github.com/bush-protocol/bush-factories/tree/main/maths",
+      "status": "setup"
+    },
+    {
+      "address": "0x0000000000000000000000000000000000000000",
+      "name": "StableSurgePoolFactory",
+      "poolType": "STABLE",
+      "hookType": "STABLE_SURGE",
+      "sourcePackage": "pool-hooks",
+      "mathRepo": "https://github.com/bush-protocol/bush-factories/tree/main/maths",
+      "status": "setup"
+    },
+    {
+      "address": "0x0000000000000000000000000000000000000000",
+      "name": "CowPoolFactory",
+      "poolType": "COW",
+      "hookType": "NONE",
+      "sourcePackage": "pool-cow",
+      "mathRepo": "https://github.com/bush-protocol/bush-factories/tree/main/maths",
+      "status": "setup"
+    }
+  ]
+}

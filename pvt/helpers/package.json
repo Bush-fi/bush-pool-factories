@@ -1,0 +1,23 @@
+{
+  "name": "@bush.fi/v3-helpers",
+  "description": "Internal helpers",
+  "private": true,
+  "version": "1.0.0",
+  "license": "GPL-3.0-only",
+  "dependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.0.5",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
+    "@types/lodash": "^4.14.186",
+    "@types/node": "^20.11.0",
+    "decimal.js": "^10.4.2",
+    "ethereumjs-util": "^7.1.5",
+    "ethers": "^6.13.5",
+    "hardhat": "^2.22.17",
+    "lodash.frompairs": "^4.0.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.3"
+  },
+  "devDependencies": {
+    "commander": "^13.1.0"
+  }
+}

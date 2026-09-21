@@ -1,0 +1,21 @@
+{
+  "name": "@bush.fi/v3-common",
+  "description": "Common configuration",
+  "private": true,
+  "version": "1.0.0",
+  "license": "GPL-3.0-only",
+  "dependencies": {
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
+    "hardhat": "^2.22.17",
+    "hardhat-ignore-warnings": "^0.2.11",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.3.3"
+  },
+  "devDependencies": {
+    "@bush.fi/v3-helpers": "1.0.0",
+    "@types/chai": "^4.3.3",
+    "@types/mocha": "^10.0.0",
+    "chai": "^4.3.7",
+    "ethers": "^6.13.5"
+  }
+}

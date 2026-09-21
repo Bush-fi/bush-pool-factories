@@ -1,0 +1,132 @@
+use alloy_primitives::U256;
+use bush_maths::common::types::{BasePoolState, PoolState, SwapInput, SwapKind};
+use bush_maths::hooks::stable_surge::StableSurgeHookState;
+use bush_maths::hooks::types::HookState;
+use bush_maths::pools::stable::{StableMutable, StableState};
+use bush_maths::vault::Vault;
+
+/// Helper function to create the common pool state for these tests
+fn create_test_pool_state() -> StableState {
+    let base_pool_state = BasePoolState {
+        pool_address: "0x132F4bAa39330d9062fC52d81dF72F601DF8C01f".to_string(),
+        pool_type: "STABLE".to_string(),
+        tokens: vec![
+            "0x7b79995e5f793a07bc00c21412e50ecae098e7f9".to_string(),
+            "0xb19382073c7a0addbb56ac6af1808fa49e377b75".to_string(),
+        ],
+        scaling_factors: vec![U256::ONE, U256::ONE],
+        token_rates: vec![
+            U256::from(1000000000000000000u64),
+            U256::from(1000000000000000000u64),
+        ],
+        balances_live_scaled_18: vec![
+            U256::from(10000000000000000u64),
+            U256::from(10000000000000000000u64),
+        ],
+        swap_fee: U256::from(10000000000000000u64),
+        aggregate_swap_fee: U256::from(10000000000000000u64),
+        total_supply: U256::from(9079062661965173292u64),
+        supports_unbalanced_liquidity: true,
+        hook_type: Some("StableSurge".to_string()),
+    };
+
+    let stable_mutable = StableMutable {
+        amp: U256::from(1000000u64),
+    };
+
+    StableState {
+        base: base_pool_state,
+        mutable: stable_mutable,
+    }
+}
+
+/// Helper function to create the common hook state for these tests
+fn create_test_hook_state() -> StableSurgeHookState {
+    StableSurgeHookState {
+        hook_type: "StableSurge".to_string(),
+        amp: U256::from(1000000u64),
+        surge_threshold_percentage: U256::from(300000000000000000u64),
+        max_surge_fee_percentage: U256::from(950000000000000000u64),
+    }
+}
+
+#[test]
+fn test_stable_surge_ts1_below_threshold_static_fee_case1() {
+    // Replicating: < surgeThresholdPercentage, should use staticSwapFee
+    // https://www.tdly.co/shared/simulation/e50584b3-d8ed-4633-b261-47401482c7b7
+
+    let pool_state = create_test_pool_state();
+    let hook_state = create_test_hook_state();
+    let vault = Vault::new();
+
+    let swap_input = SwapInput {
+        swap_kind: SwapKind::GivenIn,
+        amount_raw: U256::from(1000000000000000u64),
+        token_in: "0x7b79995e5f793a07bc00c21412e50ecae098e7f9".to_string(),
+        token_out: "0xb19382073c7a0addbb56ac6af1808fa49e377b75".to_string(),
+    };
+
+    let output_amount = vault
+        .swap(
+            &swap_input,
+            &PoolState::from(pool_state),
+            Some(&HookState::StableSurge(hook_state)),
+        )
+        .expect("Swap failed");
+
+    assert_eq!(output_amount, U256::from(78522716365403684u64));
+}
+
+#[test]
+fn test_stable_surge_ts1_below_threshold_static_fee_case2() {
+    // Replicating: < surgeThresholdPercentage, should use staticSwapFee
+    // https://www.tdly.co/shared/simulation/1220e0ec-1d3d-4f2a-8eb0-850fed8d15ed
+
+    let pool_state = create_test_pool_state();
+    let hook_state = create_test_hook_state();
+    let vault = Vault::new();
+
+    let swap_input = SwapInput {
+        swap_kind: SwapKind::GivenIn,
+        amount_raw: U256::from(10000000000000000u64),
+        token_in: "0x7b79995e5f793a07bc00c21412e50ecae098e7f9".to_string(),
+        token_out: "0xb19382073c7a0addbb56ac6af1808fa49e377b75".to_string(),
+    };
+
+    let output_amount = vault
+        .swap(
+            &swap_input,
+            &PoolState::from(pool_state),
+            Some(&HookState::StableSurge(hook_state)),
+        )
+        .expect("Swap failed");
+
+    assert_eq!(output_amount, U256::from(452983383563178802u64));
+}
+
+#[test]
+fn test_stable_surge_ts1_above_threshold_surge_fee() {
+    // Replicating: > surgeThresholdPercentage, should use surge fee
+    // https://www.tdly.co/shared/simulation/ce2a1146-68d4-49fc-b9d2-1fbc22086ea5
+
+    let pool_state = create_test_pool_state();
+    let hook_state = create_test_hook_state();
+    let vault = Vault::new();
+
+    let swap_input = SwapInput {
+        swap_kind: SwapKind::GivenIn,
+        amount_raw: U256::from(8000000000000000000u64),
+        token_in: "0xb19382073c7a0addbb56ac6af1808fa49e377b75".to_string(),
+        token_out: "0x7b79995e5f793a07bc00c21412e50ecae098e7f9".to_string(),
+    };
+
+    let output_amount = vault
+        .swap(
+            &swap_input,
+            &PoolState::from(pool_state),
+            Some(&HookState::StableSurge(hook_state)),
+        )
+        .expect("Swap failed");
+
+    assert_eq!(output_amount, U256::from(3252130027531260u64));
+}

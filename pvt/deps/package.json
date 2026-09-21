@@ -1,0 +1,24 @@
+{
+  "name": "@bush.fi/v3-deps",
+  "version": "1.0.0",
+  "description": "Compiles the published @bush.fi/v3-* packages once so the Hardhat tests can use their artifacts and typechain types",
+  "license": "GPL-3.0-only",
+  "private": true,
+  "scripts": {
+    "generate-imports": "node scripts/generate-imports.js",
+    "build": "npm run compile",
+    "compile": "npm run generate-imports && hardhat compile",
+    "clean": "hardhat clean"
+  },
+  "dependencies": {
+    "@bush.fi/v3-interfaces": "^1.0.2",
+    "@bush.fi/v3-pool-cow": "^0.1.2",
+    "@bush.fi/v3-pool-hooks": "^0.1.2",
+    "@bush.fi/v3-pool-stable": "^1.0.2",
+    "@bush.fi/v3-pool-utils": "^1.0.2",
+    "@bush.fi/v3-pool-weighted": "^1.1.1",
+    "@bush.fi/v3-solidity-utils": "^1.0.1",
+    "@bush.fi/v3-vault": "^1.0.2",
+    "@openzeppelin/contracts": "~5.4.0"
+  }
+}

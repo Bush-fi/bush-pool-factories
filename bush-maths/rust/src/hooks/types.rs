@@ -1,0 +1,103 @@
+//! Hook types and state definitions
+
+use super::stable_surge::StableSurgeHookState;
+use crate::common::types::{HookStateBase, SwapKind};
+use alloy_primitives::U256;
+use serde::{Deserialize, Serialize};
+
+/// Hook state - can be any specific hook type
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum HookState {
+    /// Stable surge hook state
+    StableSurge(StableSurgeHookState),
+    /// State for a hook implemented outside this crate (e.g. a proposed hook in a factory package's
+    /// `math-implementations`): the hook parses whatever it needs from the JSON value.
+    Custom(CustomHookState),
+}
+
+/// Opaque state for hooks implemented outside this crate.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CustomHookState {
+    pub hook_type: String,
+    pub data: serde_json::Value,
+}
+
+impl HookState {
+    /// Get the hook type
+    pub fn hook_type(&self) -> &str {
+        match self {
+            HookState::StableSurge(state) => state.hook_type(),
+            HookState::Custom(state) => &state.hook_type,
+        }
+    }
+}
+
+impl HookStateBase for HookState {
+    fn hook_type(&self) -> &str {
+        self.hook_type()
+    }
+}
+
+/// Parameters for after swap hook
+#[derive(Debug, Clone)]
+pub struct AfterSwapParams {
+    pub kind: SwapKind,
+    pub token_in: String,  // IERC20 address
+    pub token_out: String, // IERC20 address
+    pub amount_in_scaled_18: U256,
+    pub amount_out_scaled_18: U256,
+    pub token_in_balance_scaled_18: U256,
+    pub token_out_balance_scaled_18: U256,
+    pub amount_calculated_scaled_18: U256,
+    pub amount_calculated_raw: U256,
+}
+
+/// Result of dynamic swap fee computation
+#[derive(Debug, Clone)]
+pub struct DynamicSwapFeeResult {
+    pub success: bool,
+    pub dynamic_swap_fee: U256,
+}
+
+/// Result of before swap hook
+#[derive(Debug, Clone)]
+pub struct BeforeSwapResult {
+    pub success: bool,
+    pub hook_adjusted_balances_scaled_18: Vec<U256>,
+}
+
+/// Result of after swap hook
+#[derive(Debug, Clone)]
+pub struct AfterSwapResult {
+    pub success: bool,
+    pub hook_adjusted_amount_calculated_raw: U256,
+}
+
+/// Result of before add liquidity hook
+#[derive(Debug, Clone)]
+pub struct BeforeAddLiquidityResult {
+    pub success: bool,
+    pub hook_adjusted_balances_scaled_18: Vec<U256>,
+}
+
+/// Result of after add liquidity hook
+#[derive(Debug, Clone)]
+pub struct AfterAddLiquidityResult {
+    pub success: bool,
+    pub hook_adjusted_amounts_in_raw: Vec<U256>,
+}
+
+/// Result of before remove liquidity hook
+#[derive(Debug, Clone)]
+pub struct BeforeRemoveLiquidityResult {
+    pub success: bool,
+    pub hook_adjusted_balances_scaled_18: Vec<U256>,
+}
+
+/// Result of after remove liquidity hook
+#[derive(Debug, Clone)]
+pub struct AfterRemoveLiquidityResult {
+    pub success: bool,
+    pub hook_adjusted_amounts_out_raw: Vec<U256>,
+}

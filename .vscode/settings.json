@@ -1,0 +1,19 @@
+{
+    "wake.compiler.solc.remappings": [
+        "@arbitrum/=node_modules/@arbitrum/",
+        "@bush.fi/=node_modules/@bush.fi/",
+        "@chainlink/=node_modules/@chainlink/",
+        "@eth-optimism/=node_modules/@chainlink/contracts/node_modules/@eth-optimism/",
+        "@offchainlabs/=node_modules/@offchainlabs/",
+        "@openzeppelin/=node_modules/@openzeppelin/",
+        "@scroll-tech/=node_modules/@scroll-tech/",
+        "@zksync/=node_modules/@zksync/",
+        "ds-test/=node_modules/ds-test/",
+        "eth-gas-reporter/=node_modules/eth-gas-reporter/",
+        "forge-std/=node_modules/forge-std/",
+        "hardhat/=node_modules/hardhat/",
+        "permit2/=node_modules/permit2/",
+        "solady/=node_modules/solady/",
+        "solmate/=node_modules/permit2/lib/solmate/"
+    ]
+}

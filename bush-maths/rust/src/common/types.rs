@@ -1,0 +1,194 @@
+//! Core types for the Balancer maths library
+
+use alloy_primitives::U256;
+use serde::{Deserialize, Serialize};
+
+/// Kind of swap operation
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum SwapKind {
+    /// Given amount in, calculate amount out
+    GivenIn = 0,
+    /// Given amount out, calculate amount in
+    GivenOut = 1,
+}
+
+/// Kind of add liquidity operation
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum AddLiquidityKind {
+    /// Add liquidity with specific amounts (unbalanced)
+    Unbalanced = 0,
+    /// Add liquidity with exact BPT output for single token
+    SingleTokenExactOut = 1,
+}
+
+/// Kind of remove liquidity operation
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum RemoveLiquidityKind {
+    /// Remove liquidity proportionally
+    Proportional = 0,
+    /// Remove liquidity with exact BPT input for single token
+    SingleTokenExactIn = 1,
+    /// Remove liquidity with exact token output for single token
+    SingleTokenExactOut = 2,
+}
+
+/// Input for swap operations
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SwapInput {
+    /// Amount to swap (raw, not scaled)
+    pub amount_raw: U256,
+    /// Kind of swap operation
+    pub swap_kind: SwapKind,
+    /// Token address to swap from
+    pub token_in: String,
+    /// Token address to swap to
+    pub token_out: String,
+}
+
+/// Input for add liquidity operations
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct AddLiquidityInput {
+    /// Pool address
+    pub pool: String,
+    /// Maximum amounts to add (raw, not scaled)
+    pub max_amounts_in_raw: Vec<U256>,
+    /// Minimum BPT amount to receive
+    pub min_bpt_amount_out_raw: U256,
+    /// Kind of add liquidity operation
+    pub kind: AddLiquidityKind,
+}
+
+/// Input for remove liquidity operations
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct RemoveLiquidityInput {
+    /// Pool address
+    pub pool: String,
+    /// Minimum amounts to receive (raw, not scaled)
+    pub min_amounts_out_raw: Vec<U256>,
+    /// Maximum BPT amount to burn
+    pub max_bpt_amount_in_raw: U256,
+    /// Kind of remove liquidity operation
+    pub kind: RemoveLiquidityKind,
+}
+
+/// Base pool state shared by all pool types
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BasePoolState {
+    /// Pool address
+    pub pool_address: String,
+    /// Pool type (e.g., "WEIGHTED", "STABLE", etc.)
+    pub pool_type: String,
+    /// Token addresses
+    pub tokens: Vec<String>,
+    /// Scaling factors for each token
+    pub scaling_factors: Vec<U256>,
+    /// Token rates (scaled 18)
+    pub token_rates: Vec<U256>,
+    /// Balances (scaled 18)
+    pub balances_live_scaled_18: Vec<U256>,
+    /// Swap fee (scaled 18)
+    pub swap_fee: U256,
+    /// Aggregate swap fee (scaled 18)
+    pub aggregate_swap_fee: U256,
+    /// Total supply (scaled 18)
+    pub total_supply: U256,
+    /// Whether pool supports unbalanced liquidity
+    pub supports_unbalanced_liquidity: bool,
+    /// Optional hook type
+    pub hook_type: Option<String>,
+}
+
+/// Pool state - can be any specific pool type
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum PoolState {
+    /// Base pool state
+    Base(BasePoolState),
+    /// Weighted pool state
+    Weighted(crate::pools::weighted::WeightedState),
+    /// Stable pool state
+    Stable(crate::pools::stable::stable_data::StableState),
+    /// Liquidity bootstrapping pool state
+    LiquidityBootstrapping(crate::pools::liquidity_bootstrapping::liquidity_bootstrapping_data::LiquidityBootstrappingState),
+    /// FixedPriceLBP pool state
+    FixedPriceLBP(crate::pools::fixed_price_lbp::fixed_price_lbp_data::FixedPriceLBPState),
+}
+
+/// Result of a swap operation
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SwapResult {
+    /// Amount out (raw, not scaled)
+    pub amount_out_raw: U256,
+    /// Fee amount (raw, not scaled)
+    pub fee_amount_raw: U256,
+}
+
+/// Result of an add liquidity operation
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct AddLiquidityResult {
+    /// BPT amount minted (raw, not scaled)
+    pub bpt_amount_out_raw: U256,
+    /// Amounts added (raw, not scaled)
+    pub amounts_in_raw: Vec<U256>,
+}
+
+/// Result of a remove liquidity operation
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct RemoveLiquidityResult {
+    /// BPT amount burned (raw, not scaled)
+    pub bpt_amount_in_raw: U256,
+    /// Amounts removed (raw, not scaled)
+    pub amounts_out_raw: Vec<U256>,
+}
+
+/// Swap parameters
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SwapParams {
+    /// Swap kind
+    pub swap_kind: SwapKind,
+    /// Token in index
+    pub token_in_index: usize,
+    /// Token out index
+    pub token_out_index: usize,
+    /// Amount (scaled 18)
+    pub amount_scaled_18: U256,
+    /// Balances (scaled 18)
+    pub balances_live_scaled_18: Vec<U256>,
+}
+
+/// Base hook state trait
+pub trait HookStateBase {
+    fn hook_type(&self) -> &str;
+}
+
+/// Rounding direction for mathematical operations
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum Rounding {
+    RoundDown = 0,
+    RoundUp = 1,
+}
+
+impl PoolState {
+    /// Get the base pool state
+    pub fn base(&self) -> &BasePoolState {
+        match self {
+            PoolState::Base(base) => base,
+            PoolState::Weighted(weighted) => weighted.base(),
+            PoolState::Stable(stable) => &stable.base,
+            PoolState::LiquidityBootstrapping(liquidity_bootstrapping) => {
+                &liquidity_bootstrapping.base
+            }
+            PoolState::FixedPriceLBP(fixed_price_lbp) => &fixed_price_lbp.base,
+        }
+    }
+
+    /// Get the pool type
+    pub fn pool_type(&self) -> &str {
+        &self.base().pool_type
+    }
+
+    /// Get the pool address
+    pub fn pool_address(&self) -> &str {
+        &self.base().pool_address
+    }
+}

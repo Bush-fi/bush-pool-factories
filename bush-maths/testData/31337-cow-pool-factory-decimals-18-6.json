@@ -1,0 +1,129 @@
+{
+    "swaps": [
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000",
+            "tokenIn": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+            "tokenOut": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+            "outputRaw": "1344681264491866000"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+            "tokenOut": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+            "outputRaw": "743449"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000",
+            "tokenIn": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+            "tokenOut": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+            "outputRaw": "13306986927491668000"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+            "tokenOut": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+            "outputRaw": "7493075"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000",
+            "tokenIn": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+            "tokenOut": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+            "outputRaw": "120472825057321608000"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+            "tokenOut": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+            "outputRaw": "81373795"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+            "tokenOut": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+            "outputRaw": "727396"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+            "tokenOut": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+            "outputRaw": "7218232"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+            "tokenOut": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+            "outputRaw": "67065128"
+        }
+    ],
+    "adds": [],
+    "removes": [
+        {
+            "kind": "Proportional",
+            "amountsOutRaw": [
+                "999999",
+                "999999999999999999"
+            ],
+            "bptInRaw": "999999999999979998"
+        },
+        {
+            "kind": "Proportional",
+            "amountsOutRaw": [
+                "9999999",
+                "9999999999999999999"
+            ],
+            "bptInRaw": "9999999999999799980"
+        },
+        {
+            "kind": "Proportional",
+            "amountsOutRaw": [
+                "100000000",
+                "100000000000000005999"
+            ],
+            "bptInRaw": "99999999999998005800"
+        }
+    ],
+    "pool": {
+        "chainId": "31337",
+        "blockNumber": "45",
+        "poolType": "COW",
+        "poolAddress": "0x42f77b8AF5CFe6d88c904A94538bde60E12f7b82",
+        "tokens": [
+            "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+            "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853"
+        ],
+        "scalingFactors": [
+            "1000000000000",
+            "1"
+        ],
+        "swapFee": "10000000000000000",
+        "totalSupply": "999999999999979998007",
+        "balancesLiveScaled18": [
+            "1000000000000000000000",
+            "1000000000000000000000"
+        ],
+        "tokenRates": [
+            "1000000000000000000",
+            "1000000000000000000"
+        ],
+        "aggregateSwapFee": "0",
+        "supportsUnbalancedLiquidity": false,
+        "weights": [
+            "576244364352896900",
+            "423755635647103100"
+        ],
+        "minTokenBalances": [
+            "1000000000000",
+            "1000000"
+        ],
+        "currentTimestamp": "1789915781"
+    }
+}

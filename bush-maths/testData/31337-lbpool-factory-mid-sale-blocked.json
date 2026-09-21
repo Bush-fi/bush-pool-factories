@@ -1,0 +1,96 @@
+{
+    "swaps": [
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x525C7063E7C20997BaaE9bDa922159152D0e8417",
+            "tokenOut": "0x457cCf29090fe5A24c19c1bc95F492168C0EaFdb",
+            "outputRaw": "1071395108599723000"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x525C7063E7C20997BaaE9bDa922159152D0e8417",
+            "tokenOut": "0x457cCf29090fe5A24c19c1bc95F492168C0EaFdb",
+            "outputRaw": "933298346177888890"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x525C7063E7C20997BaaE9bDa922159152D0e8417",
+            "tokenOut": "0x457cCf29090fe5A24c19c1bc95F492168C0EaFdb",
+            "outputRaw": "10615512548443343000"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x525C7063E7C20997BaaE9bDa922159152D0e8417",
+            "tokenOut": "0x457cCf29090fe5A24c19c1bc95F492168C0EaFdb",
+            "outputRaw": "9414545463716002022"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x525C7063E7C20997BaaE9bDa922159152D0e8417",
+            "tokenOut": "0x457cCf29090fe5A24c19c1bc95F492168C0EaFdb",
+            "outputRaw": "97211884682966905000"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x525C7063E7C20997BaaE9bDa922159152D0e8417",
+            "tokenOut": "0x457cCf29090fe5A24c19c1bc95F492168C0EaFdb",
+            "outputRaw": "103174073085677680810"
+        }
+    ],
+    "adds": [],
+    "removes": [],
+    "pool": {
+        "chainId": "31337",
+        "blockNumber": "140",
+        "poolType": "LIQUIDITY_BOOTSTRAPPING",
+        "poolAddress": "0x783f8c7De8772af6b9838918741c0b68d6eae0d2",
+        "tokens": [
+            "0x457cCf29090fe5A24c19c1bc95F492168C0EaFdb",
+            "0x525C7063E7C20997BaaE9bDa922159152D0e8417"
+        ],
+        "scalingFactors": [
+            "1",
+            "1"
+        ],
+        "swapFee": "10000000000000000",
+        "totalSupply": "999999999999979997426",
+        "balancesLiveScaled18": [
+            "1000000000000000000000",
+            "1000000000000000000000"
+        ],
+        "tokenRates": [
+            "1000000000000000000",
+            "1000000000000000000"
+        ],
+        "aggregateSwapFee": "0",
+        "supportsUnbalancedLiquidity": false,
+        "startWeights": [
+            "900000000000000000",
+            "100000000000000000"
+        ],
+        "endWeights": [
+            "300000000000000000",
+            "700000000000000000"
+        ],
+        "startTime": "1793580626",
+        "endTime": "1796172626",
+        "projectTokenIndex": 0,
+        "isProjectTokenSwapInBlocked": true,
+        "weights": [
+            "480000000000000000",
+            "520000000000000000"
+        ],
+        "minTokenBalances": [
+            "1000000",
+            "1000000"
+        ],
+        "isSwapEnabled": true,
+        "currentTimestamp": "1795395026"
+    }
+}

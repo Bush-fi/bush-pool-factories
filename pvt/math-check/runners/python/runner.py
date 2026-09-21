@@ -1,0 +1,143 @@
+"""Runs a factory package's Python maths implementation against one bush-maths test-data file, through the
+bush-maths Vault flow, and prints the outcomes as JSON.
+
+Usage: python3 runner.py <implementation-dir> <test-data-file.json>
+
+The implementation (`<factory>/math-implementations/python/math_check.py`) exports:
+    POOL_TYPE: str                              the poolType in the test data this implementation handles
+    create_pool(pool) -> PoolBase               the pool maths, built from the `pool` block of the test data
+    HOOK_TYPE: str | None; create_hook(pool) -> (HookBase, hook_state)   when the pool has a hook
+`pool` is the `pool` block as a BasePoolState (snake_case attributes, ints) with the pool-specific fields attached
+as snake_case attributes too, and the raw JSON under `pool.raw`.
+"""
+import importlib.util
+import json
+import os
+import re
+import sys
+from dataclasses import fields
+
+REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
+sys.path.insert(0, os.path.join(REPO, "bush-maths", "python"))
+
+from src.common.base_pool_state import BasePoolState  # noqa: E402
+from src.common.types import (  # noqa: E402
+    AddLiquidityInput,
+    AddLiquidityKind,
+    RemoveLiquidityInput,
+    RemoveLiquidityKind,
+    SwapInput,
+    SwapKind,
+)
+from src.vault.vault import Vault  # noqa: E402
+
+
+def to_ints(x):
+    if isinstance(x, list):
+        return [to_ints(v) for v in x]
+    if isinstance(x, dict):
+        return {k: to_ints(v) for k, v in x.items()}
+    if isinstance(x, str) and re.fullmatch(r"[0-9]+", x):
+        return int(x)
+    return x
+
+
+def snake(name):
+    return re.sub(r"(?<!^)(?=[A-Z])", "_", name).lower().replace("scaled18", "scaled18")
+
+
+def load(path):
+    sys.path.insert(0, os.path.dirname(path))
+    spec = importlib.util.spec_from_file_location("math_check_impl", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def build_state(pool, hook_type):
+    state = BasePoolState(
+        pool_address=pool["poolAddress"],
+        pool_type=pool["poolType"],
+        tokens=pool["tokens"],
+        scaling_factors=pool["scalingFactors"],
+        token_rates=pool["tokenRates"],
+        balances_live_scaled18=pool["balancesLiveScaled18"],
+        swap_fee=pool["swapFee"],
+        aggregate_swap_fee=pool.get("aggregateSwapFee", 0),
+        total_supply=pool["totalSupply"],
+        supports_unbalanced_liquidity=pool.get("supportsUnbalancedLiquidity", True),
+        hook_type=hook_type,
+    )
+    base = {f.name for f in fields(BasePoolState)}
+    for key, value in pool.items():
+        name = snake(key)
+        if name not in base:
+            setattr(state, name, value)
+    state.raw = pool
+    return state
+
+
+def main():
+    impl_dir, data_file = sys.argv[1:3]
+    impl = load(os.path.join(impl_dir, "math_check.py"))
+    with open(data_file) as f:
+        data = json.load(f)
+    pool = to_ints(data["pool"])
+    if impl.POOL_TYPE != pool["poolType"]:
+        raise SystemExit(f"implementation handles {impl.POOL_TYPE}, test data is {pool['poolType']}")
+
+    hook_state = None
+    hook_classes = {}
+    hook_type = None
+    if getattr(impl, "create_hook", None) and pool.get("hook"):
+        hook, hook_state = impl.create_hook(build_state(pool, None))
+        hook_type = impl.HOOK_TYPE
+        hook_classes[hook_type] = lambda: hook
+    state = build_state(pool, hook_type)
+    vault = Vault(custom_pool_classes={impl.POOL_TYPE: impl.create_pool}, custom_hook_classes=hook_classes)
+
+    outcomes = []
+
+    def run(kind, index, expected, f):
+        try:
+            outcomes.append({"kind": kind, "index": index, "expected": expected, "actual": f()})
+        except Exception as e:  # noqa: BLE001 - any failure is a reportable outcome
+            outcomes.append({"kind": kind, "index": index, "expected": expected, "error": f"{type(e).__name__}: {e}"})
+
+    for i, s in enumerate(data.get("swaps", [])):
+        run("swap", i, [s["outputRaw"]], lambda s=s: [str(vault.swap(
+            swap_input=SwapInput(amount_raw=int(s["amountRaw"]), token_in=s["tokenIn"], token_out=s["tokenOut"], swap_kind=SwapKind(s["swapKind"])),
+            pool_state=state, hook_state=hook_state))])
+
+    for i, a in enumerate(data.get("adds", [])):
+        def add(a=a):
+            r = vault.add_liquidity(
+                add_liquidity_input=AddLiquidityInput(
+                    pool=pool["poolAddress"],
+                    max_amounts_in_raw=[int(x) for x in a["inputAmountsRaw"]],
+                    min_bpt_amount_out_raw=int(a["bptOutRaw"]),
+                    kind=AddLiquidityKind.UNBALANCED if a["kind"] == "Unbalanced" else AddLiquidityKind.SINGLE_TOKEN_EXACT_OUT,
+                ),
+                pool_state=state, hook_state=hook_state)
+            return [str(r.bpt_amount_out_raw)] + [str(x) for x in r.amounts_in_raw]
+        run("add", i, [a["bptOutRaw"]] + list(a["inputAmountsRaw"]), add)
+
+    kinds = {"Proportional": RemoveLiquidityKind.PROPORTIONAL, "SingleTokenExactIn": RemoveLiquidityKind.SINGLE_TOKEN_EXACT_IN, "SingleTokenExactOut": RemoveLiquidityKind.SINGLE_TOKEN_EXACT_OUT}
+    for i, r in enumerate(data.get("removes", [])):
+        def remove(r=r):
+            res = vault.remove_liquidity(
+                remove_liquidity_input=RemoveLiquidityInput(
+                    pool=pool["poolAddress"],
+                    min_amounts_out_raw=[int(x) for x in r["amountsOutRaw"]],
+                    max_bpt_amount_in_raw=int(r["bptInRaw"]),
+                    kind=kinds[r["kind"]],
+                ),
+                pool_state=state, hook_state=hook_state)
+            return [str(res.bpt_amount_in_raw)] + [str(x) for x in res.amounts_out_raw]
+        run("remove", i, [r["bptInRaw"]] + list(r["amountsOutRaw"]), remove)
+
+    json.dump(outcomes, sys.stdout)
+
+
+if __name__ == "__main__":
+    main()

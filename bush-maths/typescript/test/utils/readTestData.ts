@@ -1,0 +1,301 @@
+import type { StableState } from '@/stable/data';
+import type { WeightedState } from '@/weighted/data';
+import type { LiquidityBootstrappingState } from '@/liquidityBootstrapping';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { FixedPriceLBPState } from '@/fixedPriceLBP';
+import { type HookState } from '../../src/hooks/types';
+import { mapHookState } from './mapHookState';
+
+type HookData = {
+    address: string;
+    type: string;
+    enableHookAdjustedAmounts: boolean;
+    shouldCallAfterSwap: boolean;
+    shouldCallBeforeSwap: boolean;
+    shouldCallAfterInitialize: boolean;
+    shouldCallBeforeInitialize: boolean;
+    shouldCallAfterAddLiquidity: boolean;
+    shouldCallBeforeAddLiquidity: boolean;
+    shouldCallAfterRemoveLiquidity: boolean;
+    shouldCallBeforeRemoveLiquidity: boolean;
+    shouldCallComputeDynamicSwapFee: boolean;
+    dynamicData?: Record<string, string>;
+};
+
+type PoolBase = {
+    chainId: number;
+    blockNumber: number;
+    poolAddress: string;
+    hookType?: string;
+    hook?: HookState;
+};
+
+type WeightedPool = PoolBase & WeightedState;
+
+type StablePool = PoolBase & StableState;
+
+
+
+
+
+type LiquidityBootstrappingPool = PoolBase & LiquidityBootstrappingState;
+
+
+type FixedPriceLBPPool = PoolBase & FixedPriceLBPState;
+
+type SupportedPools =
+    | WeightedPool
+    | StablePool
+    | LiquidityBootstrappingPool
+    | FixedPriceLBPPool;
+
+type PoolsMap = Map<string, SupportedPools>;
+
+type Swap = {
+    swapKind: number;
+    amountRaw: bigint;
+    outputRaw: bigint;
+    tokenIn: string;
+    tokenOut: string;
+    test: string;
+};
+
+type Add = {
+    kind: number;
+    inputAmountsRaw: bigint[];
+    bptOutRaw: bigint;
+    test: string;
+};
+
+type Remove = {
+    kind: number;
+    amountsOutRaw: bigint[];
+    bptInRaw: bigint;
+    test: string;
+};
+
+type TestData = {
+    swaps: Swap[];
+    adds: Add[];
+    pools: PoolsMap;
+    removes: Remove[];
+};
+
+// Reads all json test files and parses to relevant swap/pool bigint format
+export function readTestData(directoryPath: string): TestData {
+    const pools: PoolsMap = new Map<string, SupportedPools>();
+    const swaps: Swap[] = [];
+    const adds: Add[] = [];
+    const removes: Remove[] = [];
+    const testData: TestData = {
+        swaps,
+        adds,
+        pools,
+        removes,
+    };
+
+    // Resolve the directory path relative to the current file's directory
+    const absoluteDirectoryPath = path.resolve(__dirname, directoryPath);
+
+    // Read all files in the directory
+    const files = fs.readdirSync(absoluteDirectoryPath);
+
+    // Iterate over each file
+    for (const file of files) {
+        // Check if the file ends with .json
+        if (file.endsWith('.json')) {
+            // Read the file content
+            const fileContent = fs.readFileSync(
+                path.join(absoluteDirectoryPath, file),
+                'utf-8',
+            );
+
+            // Parse the JSON content
+            try {
+                const jsonData = JSON.parse(fileContent);
+                if (jsonData.swaps)
+                    swaps.push(
+                        ...jsonData.swaps.map((swap) => ({
+                            ...swap,
+                            swapKind: Number(swap.swapKind),
+                            amountRaw: BigInt(swap.amountRaw),
+                            outputRaw: BigInt(swap.outputRaw),
+                            test: file,
+                        })),
+                    );
+                if (jsonData.adds)
+                    adds.push(
+                        ...jsonData.adds.map((add) => ({
+                            ...add,
+                            kind: add.kind === 'Unbalanced' ? 0 : 1,
+                            inputAmountsRaw: add.inputAmountsRaw.map((a) =>
+                                BigInt(a),
+                            ),
+                            bptOutRaw: BigInt(add.bptOutRaw),
+                            test: file,
+                        })),
+                    );
+                if (jsonData.removes)
+                    removes.push(
+                        ...jsonData.removes.map((remove) => ({
+                            ...remove,
+                            kind: mapRemoveKind(remove.kind),
+                            amountsOutRaw: remove.amountsOutRaw.map((a) =>
+                                BigInt(a),
+                            ),
+                            bptInRaw: BigInt(remove.bptInRaw),
+                            test: file,
+                        })),
+                    );
+
+                pools.set(file, mapPool(jsonData.pool));
+            } catch (error) {
+                console.error(`Error parsing JSON file ${file}:`, error);
+            }
+        }
+    }
+
+    return testData;
+}
+
+type TransformBigintToString<T> = {
+    [K in keyof T]: T[K] extends bigint
+        ? string
+        : T[K] extends bigint[]
+          ? string[]
+          : T[K];
+};
+
+function mapPool(
+    pool: TransformBigintToString<SupportedPools> & { hook?: HookData },
+): SupportedPools {
+    if (
+        pool.poolType === 'WEIGHTED' ||
+        pool.poolType === 'WEIGHTED_8020' ||
+        pool.poolType === 'COW'
+    ) {
+        const weightedPool = {
+            ...pool,
+            scalingFactors: pool.scalingFactors.map((sf) => BigInt(sf)),
+            swapFee: BigInt(pool.swapFee),
+            balancesLiveScaled18: pool.balancesLiveScaled18.map((b) =>
+                BigInt(b),
+            ),
+            tokenRates: pool.tokenRates.map((r) => BigInt(r)),
+            totalSupply: BigInt(pool.totalSupply),
+            weights: (
+                pool as TransformBigintToString<WeightedPool>
+            ).weights.map((w) => BigInt(w)),
+            minTokenBalances: (
+                pool as TransformBigintToString<WeightedPool>
+            ).minTokenBalances?.map((m) => BigInt(m)),
+            aggregateSwapFee: BigInt(pool.aggregateSwapFee ?? '0'),
+            supportsUnbalancedLiquidity:
+                pool.supportsUnbalancedLiquidity === undefined
+                    ? true
+                    : pool.supportsUnbalancedLiquidity,
+        };
+
+        // Map hook data to HookState if present
+        if (pool.hook) {
+            const hookState = mapHookState(pool.hook as HookData, {
+                tokens: pool.tokens,
+            });
+            return {
+                ...weightedPool,
+                hookType: hookState.hookType,
+                hook: hookState,
+            };
+        }
+
+        return weightedPool;
+    }
+    if (pool.poolType === 'STABLE') {
+        const stablePool = {
+            ...pool,
+            scalingFactors: pool.scalingFactors.map((sf) => BigInt(sf)),
+            swapFee: BigInt(pool.swapFee),
+            balancesLiveScaled18: pool.balancesLiveScaled18.map((b) =>
+                BigInt(b),
+            ),
+            tokenRates: pool.tokenRates.map((r) => BigInt(r)),
+            totalSupply: BigInt(pool.totalSupply),
+            amp: BigInt((pool as TransformBigintToString<StablePool>).amp),
+            aggregateSwapFee: BigInt(pool.aggregateSwapFee ?? '0'),
+            supportsUnbalancedLiquidity:
+                pool.supportsUnbalancedLiquidity === undefined
+                    ? true
+                    : pool.supportsUnbalancedLiquidity,
+        };
+
+        // Map hook data to HookState if present
+        if (pool.hook) {
+            const hookState = mapHookState(pool.hook as HookData, {
+                tokens: pool.tokens,
+                amp: stablePool.amp,
+            });
+            return {
+                ...stablePool,
+                hookType: hookState.hookType,
+                hook: hookState,
+            };
+        }
+
+        return stablePool;
+    }
+    if (pool.poolType === 'LIQUIDITY_BOOTSTRAPPING') {
+        return {
+            ...pool,
+            scalingFactors: pool.scalingFactors.map((sf) => BigInt(sf)),
+            swapFee: BigInt(pool.swapFee),
+            balancesLiveScaled18: pool.balancesLiveScaled18.map((b) =>
+                BigInt(b),
+            ),
+            startTime: BigInt(pool.startTime),
+            endTime: BigInt(pool.endTime),
+            tokenRates: pool.tokenRates.map((r) => BigInt(r)),
+            totalSupply: BigInt(pool.totalSupply),
+            weights: (
+                pool as TransformBigintToString<LiquidityBootstrappingPool>
+            ).weights.map((w) => BigInt(w)),
+            minTokenBalances: (
+                pool as TransformBigintToString<LiquidityBootstrappingPool>
+            ).minTokenBalances?.map((m) => BigInt(m)),
+            startWeights: pool.startWeights.map((w) => BigInt(w)),
+            endWeights: pool.endWeights.map((w) => BigInt(w)),
+            aggregateSwapFee: BigInt(pool.aggregateSwapFee ?? '0'),
+            // smart contracts allow for unbalanced liquidity. Due to low likelihood
+            // of this being within maths/SOR, we set it to false
+            supportsUnbalancedLiquidity: false,
+            currentTimestamp: BigInt(pool.currentTimestamp ?? Date.now()),
+        };
+    }
+    if (pool.poolType === 'FIXED_PRICE_LBP') {
+        return {
+            ...pool,
+            scalingFactors: pool.scalingFactors.map((sf) => BigInt(sf)),
+            swapFee: BigInt(pool.swapFee),
+            balancesLiveScaled18: pool.balancesLiveScaled18.map((b) =>
+                BigInt(b),
+            ),
+            tokenRates: pool.tokenRates.map((r) => BigInt(r)),
+            totalSupply: BigInt(pool.totalSupply),
+            aggregateSwapFee: BigInt(pool.aggregateSwapFee ?? '0'),
+            supportsUnbalancedLiquidity: false,
+            projectTokenRate: BigInt(pool.projectTokenRate),
+            startTime: BigInt(pool.startTime),
+            endTime: BigInt(pool.endTime),
+            currentTimestamp: BigInt(pool.currentTimestamp),
+        };
+    }
+    console.log(pool);
+    throw new Error('mapPool: Unsupported Pool Type');
+}
+
+function mapRemoveKind(kind: string): number {
+    if (kind === 'Proportional') return 0;
+    else if (kind === 'SingleTokenExactIn') return 1;
+    else if (kind === 'SingleTokenExactOut') return 2;
+    else throw new Error(`Unsupported RemoveKind: ${kind}`);
+}

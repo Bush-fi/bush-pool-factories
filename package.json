@@ -1,0 +1,54 @@
+{
+  "name": "@bush.fi/bush-factories",
+  "version": "1.0.0",
+  "description": "Registry of approved Bush Protocol pool factories",
+  "license": "GPL-3.0-only",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "pkg/*",
+    "pvt/*",
+    "bush-maths/typescript"
+  ],
+  "scripts": {
+    "build": "npm run compile",
+    "compile": "npm run compile --workspaces --if-present",
+    "test:forge": "npm run test:forge --workspaces --if-present",
+    "test:hardhat": "npm run test:hardhat --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present",
+    "maths:generate": "npm run generate -w pvt/math-check",
+    "maths:test": "npm run test:bush-maths -w pvt/math-check",
+    "maths:check": "npm run check -w pvt/math-check",
+    "maths:all": "npm run all -w pvt/math-check"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.6",
+    "@nomicfoundation/hardhat-ethers": "^3.0.5",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.5",
+    "@openzeppelin/contracts": "~5.4.0",
+    "@typechain/ethers-v6": "^0.5.1",
+    "@typechain/hardhat": "^9.1.0",
+    "@types/chai": "^4.3.3",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^20.11.0",
+    "chai": "^4.3.7",
+    "ds-test": "github:dapphub/ds-test#e282159d5170298eb2455a6c05280ab5a73a4ef0",
+    "ethers": "^6.13.5",
+    "forge-std": "github:foundry-rs/forge-std#v1.9.7",
+    "hardhat": "^2.22.17",
+    "hardhat-contract-sizer": "^2.10.0",
+    "hardhat-gas-reporter": "^1.0.9",
+    "hardhat-ignore-warnings": "^0.2.11",
+    "permit2": "github:Uniswap/permit2#cc56ad0f3439c502c246fc5cfcc3db92bb8b7219",
+    "prettier": "^2.8.8",
+    "prettier-plugin-solidity": "^1.1.3",
+    "ts-node": "^10.9.1",
+    "typechain": "^8.3.2",
+    "typescript": "^5.3.3"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+}

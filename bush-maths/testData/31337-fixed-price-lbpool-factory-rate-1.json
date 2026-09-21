@@ -1,0 +1,60 @@
+{
+    "swaps": [
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000000000000000000",
+            "tokenIn": "0xCD8a1C3ba11CF5ECfa6267617243239504a98d90",
+            "tokenOut": "0xb7278A61aa25c888815aFC32Ad3cC52fF24fE575",
+            "outputRaw": "1010101011"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000000000000000000",
+            "tokenIn": "0xCD8a1C3ba11CF5ECfa6267617243239504a98d90",
+            "tokenOut": "0xb7278A61aa25c888815aFC32Ad3cC52fF24fE575",
+            "outputRaw": "10101010102"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000000000006000000",
+            "tokenIn": "0xCD8a1C3ba11CF5ECfa6267617243239504a98d90",
+            "tokenOut": "0xb7278A61aa25c888815aFC32Ad3cC52fF24fE575",
+            "outputRaw": "101010101011"
+        }
+    ],
+    "adds": [],
+    "removes": [],
+    "pool": {
+        "chainId": "31337",
+        "blockNumber": "64",
+        "poolType": "FIXED_PRICE_LBP",
+        "poolAddress": "0x8Ab706AE95b835E6c5990fE8D6d4cFdD73e793b1",
+        "tokens": [
+            "0xb7278A61aa25c888815aFC32Ad3cC52fF24fE575",
+            "0xCD8a1C3ba11CF5ECfa6267617243239504a98d90"
+        ],
+        "scalingFactors": [
+            "1",
+            "1000000000000"
+        ],
+        "swapFee": "10000000000000000",
+        "totalSupply": "1000000000000000000000000",
+        "balancesLiveScaled18": [
+            "1000000000000000000000000",
+            "0"
+        ],
+        "tokenRates": [
+            "1000000000000000000",
+            "1000000000000000000"
+        ],
+        "aggregateSwapFee": "0",
+        "supportsUnbalancedLiquidity": false,
+        "startTime": "1789922990",
+        "endTime": "1792514990",
+        "projectTokenIndex": 0,
+        "reserveTokenIndex": 1,
+        "projectTokenRate": "1000000000000000000",
+        "isSwapEnabled": true,
+        "currentTimestamp": "1790786990"
+    }
+}

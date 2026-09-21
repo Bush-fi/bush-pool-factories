@@ -1,0 +1,1449 @@
+{
+    "swaps": [
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "99898043"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "1001020628875335218"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "998804333"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "10011973330780565980"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "9970281236"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "100298676237456587815"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "998980"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "1001020628875335218"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "9988043"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "10011973330780565980"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "99702812"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "100298676237456587815"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "998980431717478841"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "1001020628875335218"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "9988043330915209775"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "10011973330780565980"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "99702812366379818759"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "100298676237456593845"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "998980431717478841"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "1001020628875335218"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "9988043330915209775"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "10011973330780565980"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "99702812366379818759"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "100298676237456593845"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "998980431717478841"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "100102063"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "9988043330915209775"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "1001197334"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "99702812366379812789"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "10029867624"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "998980"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "100102063"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "9988043"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "1001197334"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "99702812"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "10029867624"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "998980431717478841"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "100102063"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "9988043330915209775"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "1001197334"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "99702812366379812789"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "10029867624"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "998980431717478841"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "100102063"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "9988043330915209775"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "1001197334"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "99702812366379812789"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "10029867624"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "998980431717478841"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "1001021"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "9988043330915209775"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "10011974"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "99702812366379812789"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "100298677"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "99898043"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "1001021"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "998804333"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "10011974"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "9970281236"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "100298677"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "998980431717478841"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "1001021"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "9988043330915209775"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "10011974"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "99702812366379812789"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "100298677"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "998980431717478841"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "1001021"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "9988043330915209775"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "10011974"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "99702812366379812789"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "100298677"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "998980431717478841"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "1001020628875335218"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "9988043330915209775"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "10011973330780565980"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "99702812366379818759"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "100298676237456593845"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "99898043"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "1001020628875335218"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "998804333"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "10011973330780565980"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "9970281236"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "100298676237456587815"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "998980"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "1001020628875335218"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "9988043"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "10011973330780565980"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "99702812"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "100298676237456587815"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "998980431717478841"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "1001020628875335218"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "9988043330915209775"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "10011973330780565980"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "99702812366379818759"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "100298676237456593845"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "998980431717478841"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "1001020628875335218"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "9988043330915209775"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "10011973330780565980"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "99702812366379818759"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "100298676237456593845"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "99898043"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "1001020628875335218"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "998804333"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "10011973330780565980"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "9970281236"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "outputRaw": "100298676237456587815"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "998980"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "1001020628875335218"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "9988043"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "10011973330780565980"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "99702812"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "outputRaw": "100298676237456587815"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "998980431717478841"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000000000000000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "1001020628875335218"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "9988043330915209775"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000000000000000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "10011973330780565980"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "99702812366379818759"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000000000006000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "outputRaw": "100298676237456593845"
+        }
+    ],
+    "adds": [
+        {
+            "kind": "Unbalanced",
+            "inputAmountsRaw": [
+                "1127073940588161000",
+                "50273572",
+                "1027447",
+                "1481050967471674000",
+                "1468377898214385000"
+            ],
+            "bptOutRaw": "5605966754255441263"
+        },
+        {
+            "kind": "SingleToken",
+            "inputAmountsRaw": [
+                "5004199708344172154",
+                "0",
+                "0",
+                "0",
+                "0"
+            ],
+            "bptOutRaw": "5000000000000000000"
+        },
+        {
+            "kind": "SingleToken",
+            "inputAmountsRaw": [
+                "0",
+                "500419971",
+                "0",
+                "0",
+                "0"
+            ],
+            "bptOutRaw": "5000000000000000000"
+        },
+        {
+            "kind": "SingleToken",
+            "inputAmountsRaw": [
+                "0",
+                "0",
+                "5004200",
+                "0",
+                "0"
+            ],
+            "bptOutRaw": "5000000000000000000"
+        },
+        {
+            "kind": "SingleToken",
+            "inputAmountsRaw": [
+                "0",
+                "0",
+                "0",
+                "5004199708344172154",
+                "0"
+            ],
+            "bptOutRaw": "5000000000000000000"
+        },
+        {
+            "kind": "SingleToken",
+            "inputAmountsRaw": [
+                "0",
+                "0",
+                "0",
+                "0",
+                "5004199708344172154"
+            ],
+            "bptOutRaw": "5000000000000000000"
+        },
+        {
+            "kind": "Unbalanced",
+            "inputAmountsRaw": [
+                "7811035029590130000",
+                "1112838860",
+                "12207431",
+                "9257969520986080000",
+                "14948229456786066000"
+            ],
+            "bptOutRaw": "55347688404254926027"
+        },
+        {
+            "kind": "SingleToken",
+            "inputAmountsRaw": [
+                "50059123455890228518",
+                "0",
+                "0",
+                "0",
+                "0"
+            ],
+            "bptOutRaw": "50000000000000000000"
+        },
+        {
+            "kind": "SingleToken",
+            "inputAmountsRaw": [
+                "0",
+                "5005912346",
+                "0",
+                "0",
+                "0"
+            ],
+            "bptOutRaw": "50000000000000000000"
+        },
+        {
+            "kind": "SingleToken",
+            "inputAmountsRaw": [
+                "0",
+                "0",
+                "50059124",
+                "0",
+                "0"
+            ],
+            "bptOutRaw": "50000000000000000000"
+        },
+        {
+            "kind": "SingleToken",
+            "inputAmountsRaw": [
+                "0",
+                "0",
+                "0",
+                "50059123455890228518",
+                "0"
+            ],
+            "bptOutRaw": "50000000000000000000"
+        },
+        {
+            "kind": "SingleToken",
+            "inputAmountsRaw": [
+                "0",
+                "0",
+                "0",
+                "0",
+                "50059123455890228518"
+            ],
+            "bptOutRaw": "50000000000000000000"
+        },
+        {
+            "kind": "Unbalanced",
+            "inputAmountsRaw": [
+                "95527112716808915000",
+                "9887883174",
+                "63893358",
+                "90374476509168744000",
+                "74752389639616015000"
+            ],
+            "bptOutRaw": "423387436619324284296"
+        },
+        {
+            "kind": "SingleToken",
+            "inputAmountsRaw": [
+                "501997709735445727995",
+                "0",
+                "0",
+                "0",
+                "0"
+            ],
+            "bptOutRaw": "500000000000000030000"
+        },
+        {
+            "kind": "SingleToken",
+            "inputAmountsRaw": [
+                "0",
+                "50199770974",
+                "0",
+                "0",
+                "0"
+            ],
+            "bptOutRaw": "500000000000000030000"
+        },
+        {
+            "kind": "SingleToken",
+            "inputAmountsRaw": [
+                "0",
+                "0",
+                "501997710",
+                "0",
+                "0"
+            ],
+            "bptOutRaw": "500000000000000030000"
+        },
+        {
+            "kind": "SingleToken",
+            "inputAmountsRaw": [
+                "0",
+                "0",
+                "0",
+                "501997709735445727995",
+                "0"
+            ],
+            "bptOutRaw": "500000000000000030000"
+        },
+        {
+            "kind": "SingleToken",
+            "inputAmountsRaw": [
+                "0",
+                "0",
+                "0",
+                "0",
+                "501997709735445727995"
+            ],
+            "bptOutRaw": "500000000000000030000"
+        }
+    ],
+    "removes": [
+        {
+            "kind": "Proportional",
+            "amountsOutRaw": [
+                "1000000000000000000",
+                "100000000",
+                "1000000",
+                "1000000000000000000",
+                "1000000000000000000"
+            ],
+            "bptInRaw": "5000000000000000000"
+        },
+        {
+            "kind": "SingleTokenExactIn",
+            "amountsOutRaw": [
+                "4995803542275763196",
+                "0",
+                "0",
+                "0",
+                "0"
+            ],
+            "bptInRaw": "5000000000000000000"
+        },
+        {
+            "kind": "SingleTokenExactOut",
+            "amountsOutRaw": [
+                "1000000000000000000",
+                "0",
+                "0",
+                "0",
+                "0"
+            ],
+            "bptInRaw": "1000808659655822721"
+        },
+        {
+            "kind": "SingleTokenExactIn",
+            "amountsOutRaw": [
+                "0",
+                "499580354",
+                "0",
+                "0",
+                "0"
+            ],
+            "bptInRaw": "5000000000000000000"
+        },
+        {
+            "kind": "SingleTokenExactOut",
+            "amountsOutRaw": [
+                "0",
+                "100000000",
+                "0",
+                "0",
+                "0"
+            ],
+            "bptInRaw": "1000808659655822721"
+        },
+        {
+            "kind": "SingleTokenExactIn",
+            "amountsOutRaw": [
+                "0",
+                "0",
+                "4995803",
+                "0",
+                "0"
+            ],
+            "bptInRaw": "5000000000000000000"
+        },
+        {
+            "kind": "SingleTokenExactOut",
+            "amountsOutRaw": [
+                "0",
+                "0",
+                "1000000",
+                "0",
+                "0"
+            ],
+            "bptInRaw": "1000808659655822721"
+        },
+        {
+            "kind": "SingleTokenExactIn",
+            "amountsOutRaw": [
+                "0",
+                "0",
+                "0",
+                "4995803542275763196",
+                "0"
+            ],
+            "bptInRaw": "5000000000000000000"
+        },
+        {
+            "kind": "SingleTokenExactOut",
+            "amountsOutRaw": [
+                "0",
+                "0",
+                "0",
+                "1000000000000000000",
+                "0"
+            ],
+            "bptInRaw": "1000808659655822721"
+        },
+        {
+            "kind": "SingleTokenExactIn",
+            "amountsOutRaw": [
+                "0",
+                "0",
+                "0",
+                "0",
+                "4995803542275763196"
+            ],
+            "bptInRaw": "5000000000000000000"
+        },
+        {
+            "kind": "SingleTokenExactOut",
+            "amountsOutRaw": [
+                "0",
+                "0",
+                "0",
+                "0",
+                "1000000000000000000"
+            ],
+            "bptInRaw": "1000808659655822721"
+        },
+        {
+            "kind": "Proportional",
+            "amountsOutRaw": [
+                "10000000000000000000",
+                "1000000000",
+                "10000000",
+                "10000000000000000000",
+                "10000000000000000000"
+            ],
+            "bptInRaw": "50000000000000000000"
+        },
+        {
+            "kind": "SingleTokenExactIn",
+            "amountsOutRaw": [
+                "49939807200582930089",
+                "0",
+                "0",
+                "0",
+                "0"
+            ],
+            "bptInRaw": "50000000000000000000"
+        },
+        {
+            "kind": "SingleTokenExactOut",
+            "amountsOutRaw": [
+                "10000000000000000000",
+                "0",
+                "0",
+                "0",
+                "0"
+            ],
+            "bptInRaw": "10008798189302360965"
+        },
+        {
+            "kind": "SingleTokenExactIn",
+            "amountsOutRaw": [
+                "0",
+                "4993980720",
+                "0",
+                "0",
+                "0"
+            ],
+            "bptInRaw": "50000000000000000000"
+        },
+        {
+            "kind": "SingleTokenExactOut",
+            "amountsOutRaw": [
+                "0",
+                "1000000000",
+                "0",
+                "0",
+                "0"
+            ],
+            "bptInRaw": "10008798189302360965"
+        },
+        {
+            "kind": "SingleTokenExactIn",
+            "amountsOutRaw": [
+                "0",
+                "0",
+                "49939807",
+                "0",
+                "0"
+            ],
+            "bptInRaw": "50000000000000000000"
+        },
+        {
+            "kind": "SingleTokenExactOut",
+            "amountsOutRaw": [
+                "0",
+                "0",
+                "10000000",
+                "0",
+                "0"
+            ],
+            "bptInRaw": "10008798189302360965"
+        },
+        {
+            "kind": "SingleTokenExactIn",
+            "amountsOutRaw": [
+                "0",
+                "0",
+                "0",
+                "49939807200582930089",
+                "0"
+            ],
+            "bptInRaw": "50000000000000000000"
+        },
+        {
+            "kind": "SingleTokenExactOut",
+            "amountsOutRaw": [
+                "0",
+                "0",
+                "0",
+                "10000000000000000000",
+                "0"
+            ],
+            "bptInRaw": "10008798189302360965"
+        },
+        {
+            "kind": "SingleTokenExactIn",
+            "amountsOutRaw": [
+                "0",
+                "0",
+                "0",
+                "0",
+                "49939807200582930089"
+            ],
+            "bptInRaw": "50000000000000000000"
+        },
+        {
+            "kind": "SingleTokenExactOut",
+            "amountsOutRaw": [
+                "0",
+                "0",
+                "0",
+                "0",
+                "10000000000000000000"
+            ],
+            "bptInRaw": "10008798189302360965"
+        },
+        {
+            "kind": "Proportional",
+            "amountsOutRaw": [
+                "100000000000000006000",
+                "10000000000",
+                "100000000",
+                "100000000000000006000",
+                "100000000000000006000"
+            ],
+            "bptInRaw": "500000000000000030000"
+        },
+        {
+            "kind": "SingleTokenExactIn",
+            "amountsOutRaw": [
+                "496477544989912758979",
+                "0",
+                "0",
+                "0",
+                "0"
+            ],
+            "bptInRaw": "500000000000000030000"
+        },
+        {
+            "kind": "SingleTokenExactOut",
+            "amountsOutRaw": [
+                "100000000000000006000",
+                "0",
+                "0",
+                "0",
+                "0"
+            ],
+            "bptInRaw": "100163905645892411151"
+        },
+        {
+            "kind": "SingleTokenExactIn",
+            "amountsOutRaw": [
+                "0",
+                "49647754498",
+                "0",
+                "0",
+                "0"
+            ],
+            "bptInRaw": "500000000000000030000"
+        },
+        {
+            "kind": "SingleTokenExactOut",
+            "amountsOutRaw": [
+                "0",
+                "10000000000",
+                "0",
+                "0",
+                "0"
+            ],
+            "bptInRaw": "100163905645892405136"
+        },
+        {
+            "kind": "SingleTokenExactIn",
+            "amountsOutRaw": [
+                "0",
+                "0",
+                "496477544",
+                "0",
+                "0"
+            ],
+            "bptInRaw": "500000000000000030000"
+        },
+        {
+            "kind": "SingleTokenExactOut",
+            "amountsOutRaw": [
+                "0",
+                "0",
+                "100000000",
+                "0",
+                "0"
+            ],
+            "bptInRaw": "100163905645892405136"
+        },
+        {
+            "kind": "SingleTokenExactIn",
+            "amountsOutRaw": [
+                "0",
+                "0",
+                "0",
+                "496477544989912758979",
+                "0"
+            ],
+            "bptInRaw": "500000000000000030000"
+        },
+        {
+            "kind": "SingleTokenExactOut",
+            "amountsOutRaw": [
+                "0",
+                "0",
+                "0",
+                "100000000000000006000",
+                "0"
+            ],
+            "bptInRaw": "100163905645892411151"
+        },
+        {
+            "kind": "SingleTokenExactIn",
+            "amountsOutRaw": [
+                "0",
+                "0",
+                "0",
+                "0",
+                "496477544989912758979"
+            ],
+            "bptInRaw": "500000000000000030000"
+        },
+        {
+            "kind": "SingleTokenExactOut",
+            "amountsOutRaw": [
+                "0",
+                "0",
+                "0",
+                "0",
+                "100000000000000006000"
+            ],
+            "bptInRaw": "100163905645892411151"
+        }
+    ],
+    "pool": {
+        "chainId": "31337",
+        "blockNumber": "210",
+        "poolType": "STABLE",
+        "poolAddress": "0xB2a22377309Ea262A1667cBcd6964e81480D6022",
+        "tokens": [
+            "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "0x1780bCf4103D3F501463AD3414c7f4b654bb7aFd",
+            "0x5133BBdfCCa3Eb4F739D599ee4eC45cBCD0E16c5",
+            "0x71089Ba41e478702e1904692385Be3972B2cBf9e",
+            "0x821f3361D454cc98b7555221A06Be563a7E2E0A6"
+        ],
+        "scalingFactors": [
+            "1",
+            "10000000000",
+            "1000000000000",
+            "1",
+            "1"
+        ],
+        "swapFee": "1000000000000000",
+        "totalSupply": "5000000000000000000000",
+        "balancesLiveScaled18": [
+            "1000000000000000000000",
+            "1000000000000000000000",
+            "1000000000000000000000",
+            "1000000000000000000000",
+            "1000000000000000000000"
+        ],
+        "tokenRates": [
+            "1000000000000000000",
+            "1000000000000000000",
+            "1000000000000000000",
+            "1000000000000000000",
+            "1000000000000000000"
+        ],
+        "aggregateSwapFee": "0",
+        "supportsUnbalancedLiquidity": true,
+        "amp": "50000",
+        "currentTimestamp": "1795395096"
+    }
+}

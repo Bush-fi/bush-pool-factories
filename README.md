@@ -1,5 +1,5 @@
 <p align="center">
-  <img src=".github/BushTransparent.png" alt="Bush" width="160">
+  <img src=".github/bushLogo.png" alt="Bush" width="420">
 </p>
 
 <h1 align="center">bush-pool-factories</h1>

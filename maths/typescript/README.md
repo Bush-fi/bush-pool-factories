@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Bush-fi/bush-pool-factories/main/.github/BushTransparent.png" alt="Bush" width="120">
+  <img src="https://raw.githubusercontent.com/Bush-fi/bush-pool-factories/main/.github/bushLogo.png" alt="Bush" width="360">
 </p>
 
 <h1 align="center">@bush.fi/maths</h1>

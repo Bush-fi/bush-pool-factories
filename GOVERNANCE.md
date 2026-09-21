@@ -15,7 +15,7 @@ entries are maintained.
 (The step-by-step guide to producing all of this is [CONTRIBUTING.md](./CONTRIBUTING.md).)
 
 - Contracts and tests are copied verbatim from an auditable source (or accompanied by an audit
-  report for net-new code).
+  report for net-new code), with an `SPDX-License-Identifier` header on every file.
 - The pool type is implemented in at least one of the maths packages under `maths/` (TypeScript, Python or
   Rust), the factory has an adapter in `maths/check/adapters/`, and `npm run maths:check` passes for every
   language it is implemented in: every swap, add and remove queried from a pool deployed through the factory

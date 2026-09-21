@@ -76,6 +76,10 @@ rounding choice must favour the Vault: amounts the user receives round down, amo
 Look at `contracts/_template/ConstantSumPool.sol` for the shape, and at `contracts/weighted/WeightedPool.sol` /
 `contracts/stable/StablePool.sol` for real ones.
 
+**Licensing.** Put an `SPDX-License-Identifier` header on every file; it is what governs that file. Code derived
+from the existing pools or inheriting the GPL `@bush.fi/v3-*` contracts is `GPL-3.0-or-later`; independent code
+may carry the license of your choice — say which in `docs/<factory>/README.md`.
+
 **The factory** extends `BasePoolFactory`. Its `create(...)` function encodes the pool's constructor arguments,
 calls `_create(args, salt)` (CREATE2), then `_registerPoolWithVault(...)` with the tokens, swap fee, role
 accounts, hook contract and liquidity settings. `ConstantSumPoolFactory.sol` is the minimal version.

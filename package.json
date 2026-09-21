@@ -2,7 +2,7 @@
   "name": "@bush.fi/bush-factories",
   "version": "1.0.0",
   "description": "Approved Bush Protocol pool factories: contracts, tests and exact off-chain maths",
-  "license": "GPL-3.0-only",
+  "license": "SEE LICENSE IN README.md",
   "private": true,
   "engines": {
     "node": ">=20"

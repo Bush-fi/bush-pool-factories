@@ -7,7 +7,6 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/@bush.fi/maths"><img src="https://img.shields.io/npm/v/@bush.fi/maths?label=%40bush.fi%2Fmaths&color=2fb02d" alt="@bush.fi/maths on npm"></a>
   <a href="./maths/typescript/LICENSE"><img src="https://img.shields.io/badge/maths-MIT-2fb02d" alt="maths license"></a>
-  <a href="#licensing"><img src="https://img.shields.io/badge/contracts-per--file%20SPDX-2fb02d" alt="contracts license"></a>
 </p>
 
 The approved Bush Protocol pool factories: their contracts and tests, exact off-chain maths for integrators

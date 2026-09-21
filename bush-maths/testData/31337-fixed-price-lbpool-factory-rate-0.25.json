@@ -28,7 +28,7 @@
         "chainId": "31337",
         "blockNumber": "83",
         "poolType": "FIXED_PRICE_LBP",
-        "poolAddress": "0x6b5FDaF23d8918293671434cE113B58926dC1d89",
+        "poolAddress": "0x1ba64a77693e88A3350bcBE5C758374cbD3E29BD",
         "tokens": [
             "0x21dF544947ba3E8b3c32561399E88B52Dc8b2823",
             "0x2E2Ed0Cfd3AD2f1d34481277b3204d807Ca2F8c2"
@@ -49,12 +49,12 @@
         ],
         "aggregateSwapFee": "0",
         "supportsUnbalancedLiquidity": false,
-        "startTime": "1790794199",
-        "endTime": "1793386199",
+        "startTime": "1790850615",
+        "endTime": "1793442615",
         "projectTokenIndex": 0,
         "reserveTokenIndex": 1,
         "projectTokenRate": "250000000000000000",
         "isSwapEnabled": true,
-        "currentTimestamp": "1791658199"
+        "currentTimestamp": "1791714615"
     }
 }

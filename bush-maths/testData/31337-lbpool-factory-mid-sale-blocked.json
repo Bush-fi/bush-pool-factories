@@ -49,7 +49,7 @@
         "chainId": "31337",
         "blockNumber": "140",
         "poolType": "LIQUIDITY_BOOTSTRAPPING",
-        "poolAddress": "0x783f8c7De8772af6b9838918741c0b68d6eae0d2",
+        "poolAddress": "0x504Da7Bedabf8a8fa0274f0d00076910fcc84c19",
         "tokens": [
             "0x457cCf29090fe5A24c19c1bc95F492168C0EaFdb",
             "0x525C7063E7C20997BaaE9bDa922159152D0e8417"
@@ -78,8 +78,8 @@
             "300000000000000000",
             "700000000000000000"
         ],
-        "startTime": "1793580626",
-        "endTime": "1796172626",
+        "startTime": "1793637042",
+        "endTime": "1796229042",
         "projectTokenIndex": 0,
         "isProjectTokenSwapInBlocked": true,
         "weights": [
@@ -91,6 +91,6 @@
             "1000000"
         ],
         "isSwapEnabled": true,
-        "currentTimestamp": "1795395026"
+        "currentTimestamp": "1795451442"
     }
 }

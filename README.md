@@ -1,4 +1,8 @@
-# bush-factories
+<p align="center">
+  <img src=".github/BushTransparent.png" alt="Bush" width="160">
+</p>
+
+<h1 align="center">bush-pool-factories</h1>
 
 The approved Bush Protocol pool factories: their contracts and tests, exact off-chain maths for integrators
 (TypeScript, Python, Rust), and the tooling that proves the maths matches the deployed pools. Deployed addresses

@@ -10,7 +10,7 @@ import { SingletonAuthentication } from "@bush.fi/v3-vault/contracts/SingletonAu
 import { BasePoolFactory } from "@bush.fi/v3-pool-utils/contracts/BasePoolFactory.sol";
 import { StableMath } from "@bush.fi/v3-solidity-utils/contracts/math/StableMath.sol";
 import { Version } from "@bush.fi/v3-solidity-utils/contracts/helpers/Version.sol";
-import { StablePool } from "@bush.fi/v3-pool-stable/contracts/StablePool.sol";
+import { StablePool } from "../stable/StablePool.sol";
 
 import { StableSurgeHook } from "./StableSurgeHook.sol";
 

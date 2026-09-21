@@ -8,7 +8,7 @@ import "@bush.fi/v3-interfaces/contracts/pool-weighted/ILBPCommon.sol";
 
 import { BaseLBPFactory } from "./BaseLBPFactory.sol";
 import { LBPValidation } from "./LBPValidation.sol";
-import { LBPoolLib } from "../lib/LBPoolLib.sol";
+import { LBPoolLib } from "./lib/LBPoolLib.sol";
 import { LBPool } from "./LBPool.sol";
 
 /**

@@ -9,7 +9,7 @@ import "@bush.fi/v3-interfaces/contracts/vault/VaultTypes.sol";
 import { ScalingHelpers } from "@bush.fi/v3-solidity-utils/contracts/helpers/ScalingHelpers.sol";
 import { StablePool } from "@bush.fi/v3-pool-stable/contracts/StablePool.sol";
 
-import { StableSurgeMedianMath } from "./utils/StableSurgeMedianMath.sol";
+import { StableSurgeMedianMath } from "./StableSurgeMedianMath.sol";
 import { SurgeHookCommon } from "./SurgeHookCommon.sol";
 
 /**

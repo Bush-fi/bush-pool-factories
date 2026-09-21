@@ -7,7 +7,7 @@ import { IVault } from "@bush.fi/v3-interfaces/contracts/vault/IVault.sol";
 
 import { FixedPoint } from "@bush.fi/v3-solidity-utils/contracts/math/FixedPoint.sol";
 
-import { WeightedPool } from "../WeightedPool.sol";
+import { WeightedPool } from "../weighted/WeightedPool.sol";
 
 contract WeightedPoolMock is WeightedPool {
     // Local storage of weights, so that they can be changed for tests.

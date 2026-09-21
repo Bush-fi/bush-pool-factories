@@ -8,7 +8,7 @@ import "@bush.fi/v3-interfaces/contracts/pool-weighted/ILBPCommon.sol";
 
 import { FixedPoint } from "@bush.fi/v3-solidity-utils/contracts/math/FixedPoint.sol";
 
-import { GradualValueChange } from "../lib/GradualValueChange.sol";
+import { GradualValueChange } from "./lib/GradualValueChange.sol";
 
 /**
  * @notice Shared validation library for LBP parameters.

@@ -5,7 +5,7 @@ pragma solidity ^0.8.24;
 import { IVault } from "@bush.fi/v3-interfaces/contracts/vault/IVault.sol";
 import { PoolSwapParams } from "@bush.fi/v3-interfaces/contracts/vault/VaultTypes.sol";
 
-import { StableSurgeHook } from "./../StableSurgeHook.sol";
+import { StableSurgeHook } from "../stable-surge/StableSurgeHook.sol";
 
 contract StableSurgeHookMock is StableSurgeHook {
     constructor(

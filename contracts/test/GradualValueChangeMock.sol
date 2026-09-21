@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.24;
 
-import "../lib/GradualValueChange.sol";
+import "../lbp/lib/GradualValueChange.sol";
 
 contract GradualValueChangeMock {
     function getInterpolatedValue(

@@ -14,9 +14,9 @@ import { MinTokenBalanceLib } from "@bush.fi/v3-vault/contracts/lib/MinTokenBala
 import { FixedPoint } from "@bush.fi/v3-solidity-utils/contracts/math/FixedPoint.sol";
 import { PoolInfo } from "@bush.fi/v3-pool-utils/contracts/PoolInfo.sol";
 
-import { GradualValueChange } from "../lib/GradualValueChange.sol";
-import { WeightedPool } from "../WeightedPool.sol";
-import { LBPoolLib } from "../lib/LBPoolLib.sol";
+import { GradualValueChange } from "./lib/GradualValueChange.sol";
+import { WeightedPool } from "../weighted/WeightedPool.sol";
+import { LBPoolLib } from "./lib/LBPoolLib.sol";
 import { LBPCommon } from "./LBPCommon.sol";
 
 /**

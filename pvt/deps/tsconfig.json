@@ -1,4 +1,0 @@
-{
-  "extends": "../../tsconfig.json",
-  "include": ["./hardhat.config.ts", "./Permit2Deployer.ts", "./typechain-types/**/*.ts"]
-}

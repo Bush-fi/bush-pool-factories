@@ -1,4 +1,0 @@
-{
-  "extends": "../../tsconfig.json",
-  "include": ["./src/**/*.ts", "./hardhat.config.ts", "../../pkg/*/math-check/*.ts"]
-}

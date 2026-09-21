@@ -13,55 +13,20 @@
     "declaration": true,
     "sourceMap": true,
     "baseUrl": ".",
-    // The Hardhat tests import the compiled `typechain-types/` of the @bush.fi/v3-* packages. The npm packages
-    // don't ship them, so those imports are pointed at the shared build in pvt/deps.
-    // Hardhat picks these up at runtime through `tsconfig-paths`.
+    // Resolved at runtime by `tsconfig-paths` (loaded from hardhat-base-config.ts and the maths:check script).
     "paths": {
-      "@bush.fi/v3-interfaces/typechain-types": ["pvt/deps/typechain-types"],
-      "@bush.fi/v3-interfaces/typechain-types/*": [
-        "pvt/deps/typechain-types/@bush.fi/v3-interfaces/*",
-        "pvt/deps/typechain-types/*"
-      ],
-      "@bush.fi/v3-solidity-utils/typechain-types": ["pvt/deps/typechain-types"],
-      "@bush.fi/v3-solidity-utils/typechain-types/*": [
-        "pvt/deps/typechain-types/@bush.fi/v3-solidity-utils/*",
-        "pvt/deps/typechain-types/*"
-      ],
-      "@bush.fi/v3-vault/typechain-types": ["pvt/deps/typechain-types"],
-      "@bush.fi/v3-vault/typechain-types/*": ["pvt/deps/typechain-types/@bush.fi/v3-vault/*", "pvt/deps/typechain-types/*"],
-      "@bush.fi/v3-pool-utils/typechain-types": ["pvt/deps/typechain-types"],
-      "@bush.fi/v3-pool-utils/typechain-types/*": [
-        "pvt/deps/typechain-types/@bush.fi/v3-pool-utils/*",
-        "pvt/deps/typechain-types/*"
-      ],
-      "@bush.fi/v3-pool-weighted/typechain-types": ["pvt/deps/typechain-types"],
-      "@bush.fi/v3-pool-weighted/typechain-types/*": [
-        "pvt/deps/typechain-types/@bush.fi/v3-pool-weighted/*",
-        "pvt/deps/typechain-types/*"
-      ],
-      "@bush.fi/v3-pool-stable/typechain-types": ["pvt/deps/typechain-types"],
-      "@bush.fi/v3-pool-stable/typechain-types/*": [
-        "pvt/deps/typechain-types/@bush.fi/v3-pool-stable/*",
-        "pvt/deps/typechain-types/*"
-      ],
-      "@bush.fi/v3-pool-hooks/typechain-types": ["pvt/deps/typechain-types"],
-      "@bush.fi/v3-pool-hooks/typechain-types/*": [
-        "pvt/deps/typechain-types/@bush.fi/v3-pool-hooks/*",
-        "pvt/deps/typechain-types/*"
-      ],
-      "@bush.fi/v3-pool-cow/typechain-types": ["pvt/deps/typechain-types"],
-      "@bush.fi/v3-pool-cow/typechain-types/*": [
-        "pvt/deps/typechain-types/@bush.fi/v3-pool-cow/*",
-        "pvt/deps/typechain-types/*"
-      ],
-      // Test utilities that the npm packages don't ship.
-      "@bush.fi/v3-vault/test/Permit2Deployer": ["pvt/deps/Permit2Deployer"],
-      "@bush.fi/v3-benchmarks/src/*": ["pvt/helpers/src/benchmark/*"],
-      // The bush-maths TypeScript sources (used by pvt/math-check and pkg/*/math-implementations).
-      "@bush.fi/maths": ["bush-maths/typescript/src/index.ts"],
-      "@bush.fi/maths/*": ["bush-maths/typescript/src/*"],
-      "@/*": ["bush-maths/typescript/src/*"]
+      // Hardhat test helpers.
+      "@helpers/*": ["test/helpers/*"],
+      // Typechain output of `npm run compile`: this repo's contracts under `@typechain/contracts/...`, the
+      // @bush.fi/v3-* packages under `@typechain/@bush.fi/v3-<pkg>/...`.
+      "@typechain": ["typechain-types/index.ts"],
+      "@typechain/*": ["typechain-types/*"],
+      // The off-chain maths (TypeScript), used by maths/check.
+      "@bush.fi/maths": ["maths/typescript/src/index.ts"],
+      "@bush.fi/maths/*": ["maths/typescript/src/*"],
+      "@/*": ["maths/typescript/src/*"]
     }
   },
-  "exclude": ["node_modules", "**/artifacts", "**/forge-artifacts", "**/typechain-types"]
+  "include": ["hardhat.config.ts", "hardhat-base-config.ts", "scripts/**/*.ts", "test/hardhat/**/*.ts", "test/helpers/**/*.ts", "maths/check/**/*.ts", "typechain-types/**/*.ts"],
+  "exclude": ["node_modules", "artifacts", "forge-artifacts"]
 }

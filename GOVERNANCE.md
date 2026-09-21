@@ -14,8 +14,10 @@ entries are maintained.
 
 (The step-by-step guide to producing all of this is [CONTRIBUTING.md](./CONTRIBUTING.md).)
 
-- Contracts and tests are copied verbatim from an auditable source (or accompanied by an audit
-  report for net-new code), with an `SPDX-License-Identifier` header on every file.
+- Contracts have a test suite that exercises every pool operation the factory deploys, and every file
+  carries an `SPDX-License-Identifier` header. An audit is not required: the maths check below is the
+  review's proof that the contracts do what they claim. A linked audit covering the contracts as
+  submitted is a bonus, not a gate.
 - The pool type is implemented in at least one of the maths packages under `maths/` (TypeScript, Python or
   Rust), the factory has an adapter in `maths/check/adapters/`, and `npm run maths:check` passes for every
   language it is implemented in: every swap, add and remove queried from a pool deployed through the factory
@@ -27,7 +29,8 @@ entries are maintained.
 
 ## What fails review
 
-- Contracts that diverge from the audited source without a linked audit covering the diff.
+- Contracts whose behavior is not covered by tests, or that were changed from an upstream source without
+  tests covering the change.
 - Maths that disagree with the deployed pool.
 - Missing or inaccurate parameter documentation (wrong ranges, undocumented validation rules).
 - Factories for pool types that duplicate an existing entry without a meaningful behavioral

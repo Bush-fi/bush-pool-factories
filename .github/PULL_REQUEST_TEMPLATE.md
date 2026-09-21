@@ -13,7 +13,7 @@ proves the maths against the contracts. Everything must be green locally first
       `maths/check/adapters/`; regenerated `maths/testData/` files included
 - [ ] Docs in `docs/<factory>/` and a row in the root `README.md` table
 - [ ] All green: `npm run test:forge`, `npm run test:hardhat`, `npm run maths:all`
-- [ ] Audit linked, if this adds new contract code or a new maths model
+- [ ] Audit linked, if one exists (optional; a bonus, not a requirement)
 - [ ] Every new file has an `SPDX-License-Identifier` header (see Licensing in the root README)
 
 ## Test output

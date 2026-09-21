@@ -49,5 +49,5 @@
     "ts-node": "^10.9.1",
     "typechain": "^8.3.2",
     "typescript": "^5.3.3"
-  },
+  }
 }

@@ -21,18 +21,18 @@ quotes, and replay those quotes through your maths (`npm run maths:check`). The 
 contracts/<family>/                          the factory, the pool, and anything they need
 test/foundry/<family>/                       Foundry tests (and test/hardhat/<family>/ for Hardhat ones)
 maths/check/adapters/<name>-pool-factory.ts  ~50 lines: how to create your pool, and which numbers the maths needs
-maths/typescript/src/<pool>/                 your pool's maths, one directory per language …
+maths/typescript/src/<pool>/                 your pool's maths, in at least one language …
 maths/python/src/pools/<pool>/
 maths/rust/src/pools/<pool>/
-maths/check/runners/ts/pools.ts              … registered by pool type in each language's check registry
+maths/check/runners/ts/pools.ts              … registered by pool type in that language's check registry
 maths/check/runners/python/pools.py
-maths/check/rust/src/main.rs
+maths/rust/src/pools/mod.rs
 docs/<name>-pool-factory/PARAMETERS.md       every creation parameter, its range and default
 docs/<name>-pool-factory/GAS_CHARACTERISTICS.md
 docs/<name>-pool-factory/README.md
 ```
 
-plus one entry in [`registry.json`](./registry.json). `<family>` groups pools that share code (`weighted` holds
+plus a row in the table in the root README. `<family>` groups pools that share code (`weighted` holds
 both WeightedPoolFactory and WeightedPool8020Factory; `lbp` both LBP factories); a new pool type usually gets a
 new family. There is a single Hardhat + Foundry project at the root, so there is no per-factory configuration.
 
@@ -132,7 +132,8 @@ Variants are just the inputs a pool is created with. Examples from the existing 
 
 ## Step 5 — the maths
 
-Three implementations of the same pool class, one per language, written straight into the maths packages:
+The same pool class in at least one language, written straight into the maths package (the others can follow in
+later PRs; `maths:check` reports each language separately):
 
 | | Pool class goes in | Registered for `maths:check` in |
 | --- | --- | --- |
@@ -162,22 +163,25 @@ The rules that make it match to the wei:
 
 The template's `ConstantSum` pool (`maths/typescript/src/constantSum/`, `maths/python/src/pools/constant_sum/`,
 `maths/rust/src/pools/constant_sum/`) is a full worked example in ~80 lines per language. Once the check passes,
-also export the pool from the package (`maths/typescript/src/index.ts`), add it to the `Vault`'s pool-type map in
-each language, and teach the test readers its state fields so the maths' own suites cover your test data.
+also export the pool from the package (`maths/typescript/src/index.ts`) and add it to the `Vault`'s pool-type map
+in each language, so the maths' own suites cover your test data. The test readers are generic: in TypeScript and
+Python every field of the `pool` block reaches your pool class as a bigint / int under its JSON name (snake_case
+in Python); in Rust, add a `PoolState` variant, a `from_json(pool: &PoolJson, base)` on your state struct and an
+arm in `pools::state_from_json` — that one function feeds both `maths:check` and the test suite.
 
 ## Step 6 — run the check
 
 ```
 npm run compile                                       # once, so your artifacts exist
 FACTORIES=<name>-pool-factory npm run maths:generate  # local chain → maths/testData/31337-<name>-*.json
-npm run maths:check -- <name>-pool-factory            # your maths vs. the deployed pool, all three languages
+npm run maths:check -- <name>-pool-factory            # your maths vs. the deployed pool, per language (LANGS=typescript to limit)
 ```
 
 You get a table per variant and language — `swaps 12/12  adds 9/9  removes 15/15` — and
 `maths/check/out/report.md` listing any operation that differs (expected vs. got). Iterate until every number
 matches. Commit the generated test-data files with your PR: reviewers run `maths:check` without a chain.
 
-## Step 7 — docs and registry
+## Step 7 — docs
 
 In `docs/<name>-pool-factory/`:
 
@@ -188,9 +192,8 @@ In `docs/<name>-pool-factory/`:
 - `README.md`: what the pool is, when to use it, and the integration example (the maths `Vault`).
 
 And a row in the table at the top of the root `README.md`.
-- `registry.json`: add an entry with `address` left as `0x0…0`; it is filled in on deployment.
 
 ## Step 8 — open the PR
 
-Use the checklist in [`.github/PULL_REQUEST_TEMPLATE.md`](./.github/PULL_REQUEST_TEMPLATE.md) and pick a review
-tier from [`GOVERNANCE.md`](./GOVERNANCE.md).
+Use the checklist in [`.github/PULL_REQUEST_TEMPLATE.md`](./.github/PULL_REQUEST_TEMPLATE.md); the review criteria
+are in [`GOVERNANCE.md`](./GOVERNANCE.md).

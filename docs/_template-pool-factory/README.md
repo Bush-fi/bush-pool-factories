@@ -5,7 +5,7 @@ A minimal, **complete and working** factory: a two-token constant-sum pool with 
 them is exercised by the repo's tooling (compile, Forge tests, `maths:generate`, `maths:check` in three
 languages).
 
-This is an example, not an approved factory: it is not in `registry.json`, and its generated test data goes to
+This is an example, not an approved factory: it is not in the table in the root README, and its generated test data goes to
 `maths/check/out/` instead of `maths/testData/`. Anything whose name starts with `_` is treated this way.
 
 Read [CONTRIBUTING.md](../../CONTRIBUTING.md) for the full walkthrough. What each file is for:

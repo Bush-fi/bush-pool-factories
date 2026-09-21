@@ -1,7 +1,7 @@
 {
   "name": "@bush.fi/bush-factories",
   "version": "1.0.0",
-  "description": "Registry of approved Bush Protocol pool factories",
+  "description": "Approved Bush Protocol pool factories: contracts, tests and exact off-chain maths",
   "license": "GPL-3.0-only",
   "private": true,
   "engines": {

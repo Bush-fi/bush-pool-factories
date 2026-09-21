@@ -1,33 +1,20 @@
 ## Summary
 
-<!-- What factory/pool type does this PR add or change, and why? -->
+<!-- What factory / pool type does this PR add or change, and why? -->
 
-## Checklist
+## Before opening this PR
 
-See [CONTRIBUTING.md](../CONTRIBUTING.md) for the walkthrough.
+A factory PR includes the contracts, their tests, the maths in at least one language, and the adapter that
+proves the maths against the contracts. Everything must be green locally first
+(see [CONTRIBUTING.md](../CONTRIBUTING.md) for the walkthrough):
 
+- [ ] Contracts in `contracts/<family>/`, tests in `test/foundry/<family>/` (and `test/hardhat/<family>/` if any)
+- [ ] Maths in at least one of `maths/typescript`, `maths/python`, `maths/rust`; adapter in
+      `maths/check/adapters/`; regenerated `maths/testData/` files included
+- [ ] Docs in `docs/<factory>/` and a row in the root `README.md` table
+- [ ] All green: `npm run test:forge`, `npm run test:hardhat`, `npm run maths:all`
+- [ ] Audit linked, if this adds new contract code or a new maths model
 
-- [ ] Code follows the Bush factory interface (`IBasePoolFactory` / `BasePoolFactory`)
-- [ ] Contracts are copied verbatim from an auditable source, or a linked audit covers any new code
-- [ ] Tests are copied verbatim from the source repo (or added, for net-new code) and pass locally
-- [ ] Pool type implemented in `maths/typescript`, `maths/python` **and** `maths/rust`, and registered in
-      `maths/check`
-- [ ] `maths/check/adapters/<factory>.ts` adapter added; `npm run maths:check` passes and the regenerated
-      `maths/testData/` files are included
-- [ ] `docs/<factory>/PARAMETERS.md` documents every pool-creation parameter, its range, and its default
-- [ ] `docs/<factory>/GAS_CHARACTERISTICS.md` documents gas costs for creation, swap, add-liquidity, and
-      remove-liquidity
-- [ ] `docs/<factory>/README.md` explains the pool type and gives an integration example
-- [ ] `registry.json` entry added/updated (address left as `0x0…0` until deployed)
-- [ ] Security audit linked, if this introduces a new math model or Tier 3 change (see
-      [GOVERNANCE.md](../GOVERNANCE.md))
+## Test output
 
-## Review tier requested
-
-- [ ] Tier 1 — new deployment of an existing, already-listed pool type
-- [ ] Tier 2 — parameter or hook variant of an existing pool type
-- [ ] Tier 3 — new pool type / math model
-
-## Test plan
-
-<!-- How did you verify the contracts, tests, and math ports? -->
+<!-- Paste the summary lines from `npm run maths:all` (the ✅ per language/variant, and "every result matches"). -->

@@ -1,7 +1,8 @@
 # bush-factories
 
-A registry of approved Bush Protocol pool factories: their contracts and tests, exact off-chain maths for
-integrators (TypeScript, Python, Rust), and the tooling that proves the maths matches the deployed pools.
+The approved Bush Protocol pool factories: their contracts and tests, exact off-chain maths for integrators
+(TypeScript, Python, Rust), and the tooling that proves the maths matches the deployed pools. Deployed addresses
+live in the Bush deployment repo.
 
 > The off-chain maths in [maths/](./maths) is exact integer fixed-point and is verified bit-for-bit against
 > pools deployed through these factories on a local chain (see [maths/check](./maths/check)).
@@ -20,9 +21,6 @@ integrators (TypeScript, Python, Rust), and the tooling that proves the maths ma
 | StablePoolFactory | STABLE | — | [contracts/stable](./contracts/stable) | [stable-pool-factory](./docs/stable-pool-factory) |
 | StableSurgePoolFactory | STABLE | StableSurge | [contracts/stable-surge](./contracts/stable-surge) | [stable-surge-pool-factory](./docs/stable-surge-pool-factory) |
 | CowPoolFactory | COW | — | [contracts/cow](./contracts/cow) | [cow-pool-factory](./docs/cow-pool-factory) |
-
-The machine-readable version of this table, including on-chain addresses once deployed, lives in
-[registry.json](./registry.json).
 
 ## Layout
 

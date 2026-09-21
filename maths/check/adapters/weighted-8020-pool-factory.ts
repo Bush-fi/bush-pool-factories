@@ -1,7 +1,7 @@
 // Math-check adapter: creates a WeightedPool through the 80/20 factory and reports the fields the maths need.
-// See pvt/math-check/README.md.
+// See maths/check/README.md.
 
-import { FactoryAdapter } from '@bush.fi/v3-math-check/src/types';
+import { FactoryAdapter } from '../src/types';
 
 const adapter: FactoryAdapter = {
   variants: {

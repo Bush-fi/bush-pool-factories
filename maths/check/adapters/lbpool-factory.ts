@@ -1,9 +1,9 @@
 // Math-check adapter: creates an LBPool through its factory and reports the fields the maths need.
-// See pvt/math-check/README.md.
+// See maths/check/README.md.
 //
 // Only seeded LBPs (no reserve virtual balance) are generated: the maths libraries don't model seedless LBPs yet.
 
-import { FactoryAdapter } from '@bush.fi/v3-math-check/src/types';
+import { FactoryAdapter } from '../src/types';
 
 const ONE = 10n ** 18n;
 const HOUR = 3600;

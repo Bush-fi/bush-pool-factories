@@ -1,7 +1,7 @@
 // Math-check adapter: creates a WeightedPool through its factory and reports the fields the maths need.
-// See pvt/math-check/README.md.
+// See maths/check/README.md.
 
-import { FactoryAdapter } from '@bush.fi/v3-math-check/src/types';
+import { FactoryAdapter } from '../src/types';
 
 const ONE = 10n ** 18n;
 

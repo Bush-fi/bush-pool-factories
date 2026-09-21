@@ -1,11 +1,11 @@
 // Math-check adapter: creates a CowPool through its factory and reports the fields the maths need.
-// See pvt/math-check/README.md.
+// See maths/check/README.md.
 //
 // CowPool is a WeightedPool that only accepts swaps from its trusted CowRouter, so swaps are queried by simulating
 // `CowRouter.swapExactInAndDonateSurplus` / `swapExactOutAndDonateSurplus` (with no donation) instead of the
 // standard Router. The donation / protocol-fee arithmetic is covered by the `cow` module of the maths.
 
-import { FactoryAdapter } from '@bush.fi/v3-math-check/src/types';
+import { FactoryAdapter } from '../src/types';
 
 const ONE = 10n ** 18n;
 

@@ -25,14 +25,14 @@ trades that would otherwise be able to drain a StableSwap pool's flat region che
 
 ## Key Files
 - Contracts: `contracts/`
-- Maths: `math-implementations/` (exact fixed-point; checked against the deployed pool by `npm run maths:check`)
+- Maths: [`maths/`](../../maths) (exact fixed-point; checked against the deployed pool by `npm run maths:check`)
 - Tests: `test/`
 - Parameters: `docs/PARAMETERS.md`
 - Gas costs: `docs/GAS_CHARACTERISTICS.md`
 
 ## Integration (For Aggregators)
 
-Use the [bush-maths](../../bush-maths) package for your language; its `Vault` reproduces the on-chain result
+Use the [maths](../../maths) package for your language; its `Vault` reproduces the on-chain result
 (scaling, rates, fees, hooks) for this pool type:
 
 ```typescript
@@ -41,5 +41,5 @@ import { Vault, SwapKind } from '@bush.fi/maths';
 const amountOut = new Vault().swap({ amountRaw, tokenIn, tokenOut, swapKind: SwapKind.GivenIn }, poolState);
 ```
 
-`poolState` is the pool's state as read from the Vault (see `bush-maths/testData/*.json` for the exact shape).
+`poolState` is the pool's state as read from the Vault (see `maths/testData/*.json` for the exact shape).
 The maths is verified bit-for-bit against pools deployed through this factory (`npm run maths:check`).

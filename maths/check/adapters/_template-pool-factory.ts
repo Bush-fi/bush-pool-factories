@@ -1,11 +1,11 @@
-// TEMPLATE math-check adapter: tells pvt/math-check how to create this pool through its factory, and which
-// pool-specific values the off-chain maths needs. See pvt/math-check/README.md.
+// TEMPLATE math-check adapter: tells maths/check how to create this pool through its factory, and which
+// pool-specific values the off-chain maths needs. See maths/check/README.md.
 //
 // The generator (`npm run maths:generate`) calls `createPool` once per variant on a fresh local chain that already
 // has a Vault and Router, initializes the pool, queries swaps / adds / removes through the Router and writes the
-// results to a test-data file. `npm run maths:check` then replays that file through `math-implementations/`.
+// results to a test-data file. `npm run maths:check` then replays that file through the maths in maths/<lang>.
 
-import { FactoryAdapter } from '@bush.fi/v3-math-check/src/types';
+import { FactoryAdapter } from '../src/types';
 
 const adapter: FactoryAdapter = {
   // One test-data file is generated per variant. Cover whatever changes a code path in the maths: token decimals
@@ -35,8 +35,8 @@ const adapter: FactoryAdapter = {
 
     return {
       pool,
-      // A name for this pool type. Your math-implementations declare the same string, and once accepted it becomes
-      // a poolType the bush-maths Vault knows.
+      // A name for this pool type. The maths/check registries build the pool from this string; for an approved
+      // factory it is also a poolType the maths' Vault knows.
       poolType: 'CONSTANT_SUM',
       // Pool-specific fields for the test-data file. Read them back from the chain, never echo the create() args:
       // this is what an integrator would read, and what your maths gets as input.

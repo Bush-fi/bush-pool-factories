@@ -1,13 +1,13 @@
-// Contract between the generator and the per-factory adapters (`pkg/<factory>/math-check/pool.ts`).
+// Contract between the generator and the per-factory adapters (`maths/check/adapters/<factory>.ts`).
 //
 // The generator deploys a Vault + Router, asks the adapter to create a pool through its factory, initializes it,
-// queries swaps / adds / removes through the Router, and writes everything to `bush-maths/testData/` in the format the
-// `bush-maths/{typescript,python,rust}` test suites consume. The adapter only has to know two things: how to create the
+// queries swaps / adds / removes through the Router, and writes everything to `maths/testData/` in the format the
+// `maths/{typescript,python,rust}` test suites consume. The adapter only has to know two things: how to create the
 // pool, and which pool-specific fields the maths need.
 
 import type { Contract } from 'ethers';
 
-/** Pool type strings understood by the maths libraries (see bush-maths/typescript/src/vault/vault.ts). */
+/** Pool type strings understood by the maths libraries (see maths/typescript/src/vault/vault.ts). */
 export type PoolType = 'WEIGHTED' | 'WEIGHTED_8020' | 'COW' | 'STABLE' | 'LIQUIDITY_BOOTSTRAPPING' | 'FIXED_PRICE_LBP';
 
 /** Hook type strings understood by the maths libraries' test readers. */
@@ -91,7 +91,7 @@ export interface PoolSetup {
   querySwap?(kind: 'EXACT_IN' | 'EXACT_OUT', tokenIn: string, tokenOut: string, amount: bigint): Promise<bigint | undefined>;
 }
 
-/** Default export of `pkg/<factory>/math-check/pool.ts`. */
+/** Default export of `maths/check/adapters/<factory>.ts`. */
 export interface FactoryAdapter {
   /**
    * Named variants (token counts, decimals, pool parameters); one test-data file is generated per variant. The

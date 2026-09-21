@@ -14,7 +14,7 @@ use bush_maths::PoolBase;
 use serde::Serialize;
 use serde_json::Value;
 
-/// The `pool` block of a test-data file (see bush-maths/testData). Numbers are decimal strings.
+/// The `pool` block of a test-data file (see maths/testData). Numbers are decimal strings.
 pub struct PoolJson(pub Value);
 
 impl PoolJson {

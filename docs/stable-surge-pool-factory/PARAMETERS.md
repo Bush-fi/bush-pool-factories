@@ -59,7 +59,7 @@ surgeFee = staticFee + (maxFee - staticFee) * (imbalance - threshold) / (1 - thr
 ```
 
 applied only when `isSurging` is true (imbalance increased by the operation **and** the
-new imbalance exceeds `threshold`). See `math-implementations/` for a full port, and
+new imbalance exceeds `threshold`). See `maths/*/hooks` for a full port, and
 `contracts/StableSurgeHook.sol` / `contracts/SurgeHookCommon.sol` for the source.
 
 ## Inherited StableMath invariants (same as `stable-pool-factory`)

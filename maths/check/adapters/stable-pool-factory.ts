@@ -1,7 +1,7 @@
 // Math-check adapter: creates a StablePool through its factory and reports the fields the maths need.
-// See pvt/math-check/README.md.
+// See maths/check/README.md.
 
-import { FactoryAdapter } from '@bush.fi/v3-math-check/src/types';
+import { FactoryAdapter } from '../src/types';
 
 const adapter: FactoryAdapter = {
   // `amplification` is the stable pool's "A" parameter, the one knob a StablePool has. It sets how flat the price

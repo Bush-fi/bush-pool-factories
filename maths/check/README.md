@@ -1,51 +1,50 @@
-# math-check
+# maths/check
 
-Checks that the off-chain maths for a pool type reproduces, bit for bit, what the pool contract deployed through
-its factory actually returns.
+Checks that the off-chain maths in [maths/](..) reproduces, bit for bit, what a pool contract deployed through its
+factory actually returns.
 
 ```
-npm run maths:generate     # deploy every factory on a local chain, query the pools, write bush-maths/testData/
-npm run maths:check        # run every pkg/*/math-implementations against that data (TypeScript, Python, Rust)
-npm run maths:test         # run bush-maths' own test suites against the same data
+npm run maths:generate     # deploy every factory on a local chain, query the pools, write maths/testData/
+npm run maths:check        # run maths/{typescript,python,rust} against that data through the Vault flow
+npm run maths:test         # run the three maths packages' own test suites (they read the same data)
 npm run maths:all          # all of the above
 ```
 
-Add `-- <factory>` to `maths:check` (or `FACTORIES=a,b`) to check one factory; `LANGS=typescript,python` to
-limit the languages.
+Add `-- <factory>` to `maths:check` (or `FACTORIES=a,b` to either) to limit it to one factory;
+`LANGS=typescript,python` to limit the languages. Run `npm run compile` first: the generator deploys from the
+Hardhat artifacts.
 
 ## How it works
 
-1. **Generate.** For each factory package with a `math-check/pool.ts` adapter, and each *variant* the adapter
+1. **Generate** ([src/run.ts](src/run.ts)). For each adapter in [adapters/](adapters) and each *variant* it
    declares, the generator deploys a Vault, Router and tokens on a local Hardhat chain, asks the adapter to
    create a pool through the real factory, initializes it through the Router, then queries a spread of swaps
    (every token pair, both kinds, several sizes), adds and removes through the Router — the same calls an
-   integrator makes. The results and the pool state go into
-   `bush-maths/testData/31337-<factory>-<variant>.json`, in the format bush-maths test suites already read.
-   Operations the pool rejects (max swap ratio, LBP sale restrictions, …) are simply not recorded.
-2. **Check.** For each language, the contributor's implementation is plugged into the bush-maths `Vault` — the
-   part of the maths that is the same for every pool (token scaling, rates, swap fees, hook calls) — and run
-   against every recorded operation. Every result has to match exactly. (BPT amounts in add/remove may differ by
-   one unit: the Router's query reads live balances rounded down, the Vault rounds them up inside the
-   operation; bush-maths' own suites allow the same.)
-3. **bush-maths.** Its TypeScript, Python and Rust suites read the same files, so `maths:test` shows that the
-   accepted maths agrees with the contracts too — and therefore with a contribution that passes `maths:check`.
-   For a source-level comparison, `pvt/math-check/diff-bush-maths.sh <factory>` diffs each file against its
-   bush-maths counterpart, ignoring imports.
+   integrator makes. The results and the pool state go into `maths/testData/31337-<factory>-<variant>.json`, in
+   the format the maths test suites read. Operations the pool rejects (max swap ratio, LBP sale restrictions, …)
+   are simply not recorded.
+2. **Check** ([src/check.ts](src/check.ts)). For each language, a small runner looks the pool type (and hook
+   type) up in a registry, plugs the maths into the `Vault` — the part that is the same for every pool (token
+   scaling, rates, swap fees, hook calls) — and runs every recorded operation. Every result has to match
+   exactly. (BPT amounts in add/remove may differ by one unit: the Router's query reads live balances rounded
+   down, the Vault rounds them up inside the operation; the maths' own suites allow the same.)
+
+   | Language | Runner | Registry |
+   | --- | --- | --- |
+   | TypeScript | [runners/ts/runner.ts](runners/ts/runner.ts) | [runners/ts/pools.ts](runners/ts/pools.ts) |
+   | Python | [runners/python/runner.py](runners/python/runner.py) | [runners/python/pools.py](runners/python/pools.py) |
+   | Rust | [rust/src/lib.rs](rust/src/lib.rs) | [rust/src/main.rs](rust/src/main.rs) |
+
+3. **Test** — the TypeScript, Python and Rust suites read the same files, so `maths:test` shows the packages
+   agree with the contracts through their own public API too.
 
 Test data files are committed, so reviewers can run `maths:check` and `maths:test` without a chain.
 
-## Adding a pool type: what a contributor ships
+## Adding a pool type
 
-```
-pkg/<name>-pool-factory/
-├─ math-check/pool.ts                        how to create the pool, and the fields the maths need
-└─ math-implementations/
-   ├─ typescript/index.ts  (+ your modules)  poolType, createPool(pool) [, hookType, createHook(pool)]
-   ├─ python/math_check.py (+ your modules)  POOL_TYPE, create_pool(pool) [, HOOK_TYPE, create_hook(pool)]
-   └─ rust/                                  a crate with src/bin/math_check.rs calling math_check_support::run
-```
+The full walkthrough is [CONTRIBUTING.md](../../CONTRIBUTING.md). The parts that concern this directory:
 
-### `math-check/pool.ts`
+### `adapters/<factory>.ts`
 
 Default-exports a `FactoryAdapter` (see [src/types.ts](src/types.ts)):
 
@@ -55,44 +54,20 @@ Default-exports a `FactoryAdapter` (see [src/types.ts](src/types.ts)):
   `{ pool, poolType, poolData }` where `poolData()` reads back the pool-specific fields the maths need
   (`weights`, `amp`, the LBP schedule…). Read them from the chain, not from the create() arguments. Optional:
   `hook` (contract, type, `dynamicData()`), `initialAmounts`, `queryTimestamp` (e.g. mid-sale), and
-  `querySwap` for pools that only accept swaps from their own router (see cow-pool-factory).
+  `querySwap` for pools that only accept swaps from their own router (see `cow-pool-factory.ts`).
 
-The seven existing adapters are the reference; each is ~50 lines.
+The existing adapters are the reference; each is ~50 lines. Adapters whose name starts with `_` are examples
+(the template): they are skipped unless asked for by name, and their test data goes to `out/testData/` instead
+of `maths/testData/`.
 
-### `math-implementations`
+### The registries
 
-Exact integer fixed-point only (`bigint` / `int` / `U256`): the maths must produce the same wei as the
-contract, so it has to use the same fixed-point primitives and rounding directions as the Solidity. bush-maths
-provides those (`MathSol` / `maths.py` / `common::maths`, `LogExpMath`, `BasePoolMath`) and the `PoolBase`
-interface your pool class implements (`onSwap`, `computeInvariant`, `computeBalance`, the invariant-ratio
-limits and max-swap helpers). Reuse an existing library port from bush-maths when the contract does the same
-(LBPool reuses WeightedMath on-chain, so `lbpool-factory` reuses bush-maths' WeightedMath port); port what is
-new.
-
-- **TypeScript** – `index.ts` exports `poolType`, `createPool(pool)` and, for a hooked pool, `hookType` and
-  `createHook(pool)` returning `{ hook, hookState }`. `pool` is the `pool` block of the test-data file with
-  numeric strings converted to `bigint`. Import bush-maths as `@bush.fi/maths` / `@bush.fi/maths/<module>`.
-- **Python** – `math_check.py` exports `POOL_TYPE`, `create_pool(pool)` and optionally `HOOK_TYPE`,
-  `create_hook(pool)` returning `(hook, hook_state)`. `pool` is a `BasePoolState` with the pool-specific
-  fields attached as snake_case attributes (`pool.weights`, `pool.min_token_balances`, …) and the raw JSON
-  under `pool.raw`. bush-maths is importable as `src.…` (`bush-maths/python` is put on `sys.path`).
-- **Rust** – a crate depending on `bush-maths` (path dependency) with an optional `math-check` feature that
-  enables a `math_check` binary: `math_check_support::run(make_pool, make_hook)`. `PoolJson` gives typed
-  access to the `pool` block (`pool.u("amp")`, `pool.arr("weights")`, `pool.base_state(hook_type)`). Copy the
-  `[features]` / `[[bin]]` stanza from any existing crate.
-
-If the pool comes with a hook, the hook is part of the contribution: the check runs the full fee/hook flow.
-
-### Then
-
-```
-npm run compile                       # once, builds the factory's artifacts
-npm run maths:check -- <factory>      # generate is run by maths:all; or FACTORIES=<factory> npm run maths:generate
-```
-
-and commit the generated `bush-maths/testData/31337-<factory>-*.json` files with the PR. When the
-contribution is accepted, the pool type is merged into `bush-maths` proper (its `Vault` learns the new
-`poolType`, the suites cover the new files) — that is the version integrators consume.
+The maths itself goes into the packages (`maths/typescript/src/<pool>/`, `maths/python/src/pools/<pool>/`,
+`maths/rust/src/pools/<pool>/`). Each registry then maps the adapter's `poolType` to a constructor that builds
+the pool from the `pool` block of a test-data file (numeric strings already converted to `bigint` / `int` /
+`U256`; in Rust, `PoolJson` gives typed access: `pool.u("amp")`, `pool.arr("weights")`,
+`pool.base_state(hook_type)`). A pool with a hook also registers the hook under the `type` the adapter reports,
+returning the hook maths and the state the Vault hands it on every call — see `STABLE_SURGE`.
 
 ## Regenerating
 

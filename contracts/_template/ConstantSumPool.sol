@@ -33,7 +33,7 @@ import { PoolInfo } from "@bush.fi/v3-pool-utils/contracts/PoolInfo.sol";
  *
  * Rounding rule of thumb: every rounding decision must favour the Vault (round amounts the user receives down,
  * amounts the user pays up, invariants as the `rounding` argument says). The off-chain maths in
- * `math-implementations/` must reproduce these exact choices to match the contract to the wei.
+ * The off-chain maths (maths/<lang>) must reproduce these exact choices to match the contract to the wei.
  */
 contract ConstantSumPool is IBasePool, BushPoolToken, PoolInfo, Version {
     using FixedPoint for uint256;

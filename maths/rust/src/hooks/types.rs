@@ -11,8 +11,7 @@ use serde::{Deserialize, Serialize};
 pub enum HookState {
     /// Stable surge hook state
     StableSurge(StableSurgeHookState),
-    /// State for a hook implemented outside this crate (e.g. a proposed hook in a factory package's
-    /// `math-implementations`): the hook parses whatever it needs from the JSON value.
+    /// State for a hook implemented outside this crate: the hook parses whatever it needs from the JSON value.
     Custom(CustomHookState),
 }
 

@@ -1,7 +1,7 @@
 // Math-check adapter: creates a StablePool + StableSurgeHook through the surge factory and reports the fields the
-// maths need. See pvt/math-check/README.md.
+// maths need. See maths/check/README.md.
 
-import { FactoryAdapter } from '@bush.fi/v3-math-check/src/types';
+import { FactoryAdapter } from '../src/types';
 
 const adapter: FactoryAdapter = {
   // `amplification` is the stable pool's "A" parameter, the StablePool's curve parameter (see stable-pool-factory). It sets how flat the price

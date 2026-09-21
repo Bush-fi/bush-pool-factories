@@ -1,11 +1,11 @@
 // Entry point: `npm run generate` (hardhat run src/run.ts).
 //
-// For every factory package with a `math-check/pool.ts` adapter, and every variant it declares: deploy a Vault and
+// For every adapter in maths/check/adapters/, and every variant it declares: deploy a Vault and
 // Router, create the pool through its factory, initialize it, query swaps / adds / removes through the Router and
 // write a test-data file to maths/testData/. The maths test suites (`npm run check`) then replay that data.
 //
 // Environment:
-//   FACTORIES=weighted-pool-factory,...   subset of factory packages (default: all with an adapter)
+//   FACTORIES=weighted-pool-factory,...   subset of factories (default: every approved factory)
 //   SEED=1                                PRNG seed for pool parameters and amounts (default 1)
 //   SIZES=0.001,0.01,0.1                  operation sizes as a fraction of pool balance / supply
 

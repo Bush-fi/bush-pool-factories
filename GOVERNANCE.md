@@ -26,13 +26,13 @@ entries are maintained.
 
 - Contracts and tests are copied verbatim from an auditable source (or accompanied by an audit
   report for net-new code).
-- The pool type is supported by the TypeScript, Python **and** Rust packages under `bush-maths/`, the
-  factory ships a `math-check/pool.ts` adapter, and `npm run maths:check` passes: every swap, add
-  and remove queried from a pool deployed through the factory matches the maths exactly.
-- `docs/PARAMETERS.md` documents every pool-creation parameter, its valid range, and its default.
-- `docs/GAS_CHARACTERISTICS.md` documents gas costs for pool creation, swap, add-liquidity, and
-  remove-liquidity, sourced from the test suite (e.g. `test/gas/*` benchmarks and snapshots).
-- A `README.md` explains the pool type and gives an integration example.
+- The pool type is implemented in the TypeScript, Python **and** Rust packages under `maths/`, the factory
+  has an adapter in `maths/check/adapters/`, and `npm run maths:check` passes: every swap, add and remove
+  queried from a pool deployed through the factory matches the maths exactly.
+- `docs/<factory>/PARAMETERS.md` documents every pool-creation parameter, its valid range, and its default.
+- `docs/<factory>/GAS_CHARACTERISTICS.md` documents gas costs for pool creation, swap, add-liquidity, and
+  remove-liquidity, sourced from the test suite (e.g. `test/hardhat/gas/` benchmarks and snapshots).
+- `docs/<factory>/README.md` explains the pool type and gives an integration example.
 
 ## What fails review
 

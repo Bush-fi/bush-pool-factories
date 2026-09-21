@@ -56,6 +56,6 @@ generate a snapshot.
 ## Recommendation
 
 If accurate gas numbers are required for integration or fee-estimation purposes, run
-the Foundry/Hardhat tests in `test/` (copied from `pkg/pool-cow/test/`) against a local
+the Foundry/Hardhat tests in `test/foundry/cow/` and `test/hardhat/cow/` (copied from the upstream `pool-cow` package) against a local
 fork with `forge test --gas-report` or an equivalent Hardhat gas reporter, since no
 pre-computed snapshot exists for this pool type.

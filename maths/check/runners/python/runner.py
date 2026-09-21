@@ -1,24 +1,17 @@
-"""Runs a factory package's Python maths implementation against one bush-maths test-data file, through the
-bush-maths Vault flow, and prints the outcomes as JSON.
+"""Runs the Python maths (maths/python) against one test-data file, through the Vault flow, and prints the
+outcomes as JSON. The pool and hook classes are looked up by type in ./pools.py.
 
-Usage: python3 runner.py <implementation-dir> <test-data-file.json>
-
-The implementation (`<factory>/math-implementations/python/math_check.py`) exports:
-    POOL_TYPE: str                              the poolType in the test data this implementation handles
-    create_pool(pool) -> PoolBase               the pool maths, built from the `pool` block of the test data
-    HOOK_TYPE: str | None; create_hook(pool) -> (HookBase, hook_state)   when the pool has a hook
-`pool` is the `pool` block as a BasePoolState (snake_case attributes, ints) with the pool-specific fields attached
-as snake_case attributes too, and the raw JSON under `pool.raw`.
+Usage: python3 runner.py <test-data-file.json>
 """
-import importlib.util
 import json
 import os
 import re
 import sys
 from dataclasses import fields
 
-REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-sys.path.insert(0, os.path.join(REPO, "bush-maths", "python"))
+MATHS = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+sys.path.insert(0, os.path.join(MATHS, "python"))
+sys.path.insert(0, os.path.dirname(__file__))
 
 from src.common.base_pool_state import BasePoolState  # noqa: E402
 from src.common.types import (  # noqa: E402
@@ -30,6 +23,8 @@ from src.common.types import (  # noqa: E402
     SwapKind,
 )
 from src.vault.vault import Vault  # noqa: E402
+
+from pools import HOOKS, POOLS  # noqa: E402
 
 
 def to_ints(x):
@@ -44,14 +39,6 @@ def to_ints(x):
 
 def snake(name):
     return re.sub(r"(?<!^)(?=[A-Z])", "_", name).lower().replace("scaled18", "scaled18")
-
-
-def load(path):
-    sys.path.insert(0, os.path.dirname(path))
-    spec = importlib.util.spec_from_file_location("math_check_impl", path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
 
 
 def build_state(pool, hook_type):
@@ -78,23 +65,26 @@ def build_state(pool, hook_type):
 
 
 def main():
-    impl_dir, data_file = sys.argv[1:3]
-    impl = load(os.path.join(impl_dir, "math_check.py"))
+    data_file = sys.argv[1]
     with open(data_file) as f:
         data = json.load(f)
     pool = to_ints(data["pool"])
-    if impl.POOL_TYPE != pool["poolType"]:
-        raise SystemExit(f"implementation handles {impl.POOL_TYPE}, test data is {pool['poolType']}")
+    create_pool = POOLS.get(pool["poolType"])
+    if create_pool is None:
+        raise SystemExit(f"no Python maths registered for poolType {pool['poolType']} (runners/python/pools.py)")
 
     hook_state = None
     hook_classes = {}
     hook_type = None
-    if getattr(impl, "create_hook", None) and pool.get("hook"):
-        hook, hook_state = impl.create_hook(build_state(pool, None))
-        hook_type = impl.HOOK_TYPE
+    if pool.get("hook"):
+        create_hook = HOOKS.get(pool["hook"]["type"])
+        if create_hook is None:
+            raise SystemExit(f"no Python maths registered for hook type {pool['hook']['type']} (runners/python/pools.py)")
+        hook, hook_state = create_hook(build_state(pool, None))
+        hook_type = hook_state.hook_type
         hook_classes[hook_type] = lambda: hook
     state = build_state(pool, hook_type)
-    vault = Vault(custom_pool_classes={impl.POOL_TYPE: impl.create_pool}, custom_hook_classes=hook_classes)
+    vault = Vault(custom_pool_classes={pool["poolType"]: create_pool}, custom_hook_classes=hook_classes)
 
     outcomes = []
 

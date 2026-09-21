@@ -45,11 +45,13 @@ export async function deployedAt(contract: string, address: string): Promise<Con
 
 // Several of this repo's contracts have the same name as a contract in the npm packages (WeightedPool, StablePool, ...),
 // so a bare name is ambiguous within the single artifacts tree. The prefix decides which subtree is searched:
-// `Name` -> artifacts/contracts/, `v3-<pkg>/Name` -> artifacts/@bush.fi/v3-<pkg>/.
+// `Name` -> artifacts/contracts/, `v3-<pkg>/Name` -> artifacts/@bush.fi/v3-<pkg>/, any other `<dir>/Name` ->
+// artifacts/<dir>/ (e.g. `permit2/IPermit2`).
 export function getArtifact(contract: string): Artifact {
   const segments = contract.split('/');
   const name = segments[segments.length - 1];
-  const root = path.resolve('artifacts', segments.length === 1 ? 'contracts' : path.join('@bush.fi', segments[0]));
+  const subtree = segments.length === 1 ? 'contracts' : segments[0].startsWith('v3-') ? path.join('@bush.fi', segments[0]) : segments[0];
+  const root = path.resolve('artifacts', subtree);
 
   const matches = findArtifacts(root, `${name}.json`);
   if (matches.length === 0) throw new Error(`No artifact for ${contract} under ${root}; did you run 'npm run compile'?`);

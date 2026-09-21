@@ -1,5 +1,7 @@
 //! Pool implementations for the Bush pool types
 
+/// Example pool for contributors (the template factory's ConstantSumPool); not a Bush pool type.
+pub mod constant_sum;
 pub mod fixed_price_lbp;
 pub mod liquidity_bootstrapping;
 pub mod stable;

@@ -20,4 +20,4 @@ maths/rust/target/
 maths/python/**/__pycache__/
 maths/python/.pytest_cache/
 maths/check/out/
-maths/check/rust-support/target/
+maths/check/rust/target/

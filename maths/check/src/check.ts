@@ -1,11 +1,11 @@
 // Entry point: `npm run check` / `npm run check -- <factory>` (ts-node).
 //
-// For each factory package that has a `math-implementations/` directory, runs its TypeScript, Python and Rust
-// implementations through the bush-maths Vault flow against that factory's generated test data
-// (bush-maths/testData/31337-<factory>-*.json) and reports, per language and operation, how many results match
-// the deployed contracts exactly.
+// For each factory with an adapter, runs the TypeScript, Python and Rust maths (maths/<lang>) through the Vault flow
+// against that factory's generated test data (maths/testData/31337-<factory>-*.json) and reports, per language and
+// operation, how many results match the deployed contracts exactly. Each language looks the pool up by type in its
+// registry: runners/ts/pools.ts, runners/python/pools.py, rust/src/main.rs.
 //
-//   FACTORIES=weighted-pool-factory,...   subset (default: all with math-implementations)
+//   FACTORIES=weighted-pool-factory,...   subset (default: every approved factory)
 //   LANGS=typescript,python,rust          subset of languages
 
 import { execFileSync, spawnSync } from 'child_process';
@@ -35,36 +35,34 @@ function verdict(o: Outcome): Verdict {
     const abs = d < 0n ? -d : d;
     if (abs === 0n) continue;
     // The Router's query reads live balances rounded down, while the Vault rounds them up inside add/remove
-    // liquidity, so BPT amounts can legitimately differ by one unit (bush-maths' own suites allow the same).
+    // liquidity, so BPT amounts can legitimately differ by one unit (the maths' own suites allow the same).
     if (abs === 1n && o.kind !== 'swap') worst = worst === 'exact' ? 'one-wei' : worst;
     else return 'mismatch';
   }
   return worst;
 }
 
-const IMPL_DIR: Record<Lang, string> = {
-  typescript: 'math-implementations/typescript',
-  python: 'math-implementations/python',
-  rust: 'math-implementations/rust',
-};
-
 function which(cmd: string): boolean {
   return spawnSync('which', [cmd]).status === 0;
 }
 
-function runImpl(lang: Lang, factoryDir: string, dataFile: string): Outcome[] {
-  const impl = path.join(factoryDir, IMPL_DIR[lang]);
+const RUST = path.join(ROOT, 'rust');
+let rustBuilt = false;
+
+function runMaths(lang: Lang, dataFile: string): Outcome[] {
   let cmd: [string, string[]];
   if (lang === 'typescript') {
-    cmd = ['npx', ['ts-node', '--transpile-only', '-r', 'tsconfig-paths/register', '-P', path.join(ROOT, 'tsconfig.json'), path.join(ROOT, 'runners/ts/runner.ts'), impl, dataFile]];
+    cmd = ['npx', ['ts-node', '--transpile-only', '-r', 'tsconfig-paths/register', '-P', path.join(REPO, 'tsconfig.json'), path.join(ROOT, 'runners/ts/runner.ts'), dataFile]];
   } else if (lang === 'python') {
-    cmd = ['python3', [path.join(ROOT, 'runners/python/runner.py'), impl, dataFile]];
+    cmd = ['python3', [path.join(ROOT, 'runners/python/runner.py'), dataFile]];
   } else {
-    const manifest = path.join(impl, 'Cargo.toml');
-    execFileSync('cargo', ['build', '--release', '--quiet', '--features', 'math-check', '--bin', 'math_check', '--manifest-path', manifest], { stdio: ['ignore', 'ignore', 'inherit'] });
-    cmd = [path.join(impl, 'target/release/math_check'), [dataFile]];
+    if (!rustBuilt) {
+      execFileSync('cargo', ['build', '--release', '--quiet', '--manifest-path', path.join(RUST, 'Cargo.toml')], { stdio: ['ignore', 'ignore', 'inherit'] });
+      rustBuilt = true;
+    }
+    cmd = [path.join(RUST, 'target/release/math_check'), [dataFile]];
   }
-  const r = spawnSync(cmd[0], cmd[1], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, cwd: REPO, env: { ...process.env, TS_NODE_PROJECT: path.join(ROOT, 'tsconfig.json') } });
+  const r = spawnSync(cmd[0], cmd[1], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, cwd: REPO, env: { ...process.env, TS_NODE_PROJECT: path.join(REPO, 'tsconfig.json') } });
   if (r.status !== 0) throw new Error(`${lang} runner failed:\n${r.stderr}`);
   return JSON.parse(r.stdout);
 }
@@ -79,8 +77,8 @@ interface Row {
 
 function main() {
   const wanted = process.env.FACTORIES?.split(',') ?? (process.argv[2] ? [process.argv[2]] : undefined);
-  const factories = discoverFactories(wanted !== undefined).filter((f) => fs.existsSync(path.join(f.dir, 'math-implementations')) && (!wanted || wanted.includes(f.name)));
-  if (factories.length === 0) throw new Error('no factory with math-implementations/ matched');
+  const factories = discoverFactories(wanted !== undefined).filter((f) => !wanted || wanted.includes(f.name));
+  if (factories.length === 0) throw new Error('no factory adapter matched');
   const langs = ((process.env.LANGS?.split(',') as Lang[] | undefined) ?? LANGS).filter((l) => {
     const ok = l === 'typescript' || (l === 'python' ? which('python3') : which('cargo'));
     if (!ok) console.log(`⚠️  ${l}: toolchain not found, skipped`);
@@ -99,15 +97,10 @@ function main() {
     }
     console.log(`\n${factory.name}`);
     for (const lang of langs) {
-      if (!fs.existsSync(path.join(factory.dir, IMPL_DIR[lang]))) {
-        console.log(`  ${lang.padEnd(10)} — no implementation`);
-        failed = true;
-        continue;
-      }
       for (const file of files) {
         const row: Row = { factory: factory.name, file, lang, counts: { swap: zero(), add: zero(), remove: zero() }, problems: [] };
         try {
-          for (const o of runImpl(lang, factory.dir, path.join(dataDir, file))) {
+          for (const o of runMaths(lang, path.join(dataDir, file))) {
             const v = verdict(o);
             row.counts[o.kind][v]++;
             if (v === 'mismatch' || v === 'error') row.problems.push({ ...o, verdict: v });

@@ -5,7 +5,6 @@ import { ethers, network } from 'hardhat';
 import { Contract } from 'ethers';
 import fs from 'fs';
 import path from 'path';
-import { Artifacts } from 'hardhat/internal/artifacts';
 
 import * as VaultDeployer from '@helpers/models/vault/VaultDeployer';
 import TypesConverter from '@helpers/models/types/TypesConverter';
@@ -18,21 +17,10 @@ import { actionId } from '@helpers/models/misc/actions';
 import { deployPermit2 } from '@helpers/Permit2Deployer';
 
 import { PoolContext, PoolSetup, Rng, Token } from './types';
-import { REPO } from './paths';
+import { getArtifact } from '@helpers/contract';
 
 const ROUTER_VERSION = 'router v1';
 
-const depsArtifacts = new Artifacts(path.join(REPO, 'pvt/deps/artifacts'));
-
-function artifactsFor(factoryDir: string, contract: string) {
-  if (contract.includes('/')) return { artifacts: depsArtifacts, name: contract.split('/').pop()! };
-  // A factory package may compile both its own copy of a contract and the npm one; prefer its own.
-  const artifacts = new Artifacts(path.join(factoryDir, 'artifacts'));
-  const local = fs.existsSync(path.join(factoryDir, 'artifacts', 'contracts', `${contract}.sol`, `${contract}.json`))
-    ? `contracts/${contract}.sol:${contract}`
-    : undefined;
-  return { artifacts, name: local ?? contract };
-}
 
 export interface Chain {
   vault: Contract;
@@ -44,17 +32,18 @@ export interface Chain {
 export async function deployChain(): Promise<Chain> {
   const [admin] = await ethers.getSigners();
   const vault = await TypesConverter.toIVaultMock(await VaultDeployer.deployMock());
-  const weth = await deployFrom(depsArtifacts, 'WETHTestToken', []);
+  const weth = await deployFrom('v3-solidity-utils/WETHTestToken', []);
   // deployPermit2 installs the canonical bytecode and returns a provider-bound contract; re-attach it to the signer.
   const permit2Address = await (await deployPermit2()).getAddress();
-  const permit2 = (await ethers.getContractAt(depsArtifacts.readArtifactSync('IPermit2').abi, permit2Address, admin)) as unknown as Contract;
-  const router = await deployFrom(depsArtifacts, 'Router', [await vault.getAddress(), await weth.getAddress(), permit2Address, ROUTER_VERSION]);
+  const permit2 = (await ethers.getContractAt(getArtifact('permit2/IPermit2').abi, permit2Address, admin)) as unknown as Contract;
+  const router = await deployFrom('v3-vault/Router', [await vault.getAddress(), await weth.getAddress(), permit2Address, ROUTER_VERSION]);
   return { vault: vault as unknown as Contract, router, permit2, admin: admin.address };
 }
 
-async function deployFrom(artifacts: Artifacts, name: string, args: unknown[]): Promise<Contract> {
+// `contract` follows the @helpers/contract convention: `Name` for this repo's contracts, `v3-<pkg>/Name` for npm ones.
+async function deployFrom(contract: string, args: unknown[]): Promise<Contract> {
   const [admin] = await ethers.getSigners();
-  const factory = await ethers.getContractFactoryFromArtifact(artifacts.readArtifactSync(name), admin);
+  const factory = await ethers.getContractFactoryFromArtifact(getArtifact(contract), admin);
   const instance = await factory.deploy(...args);
   await instance.waitForDeployment();
   return instance as unknown as Contract;
@@ -68,20 +57,16 @@ export async function mineTo(timestamp: number): Promise<void> {
   if (timestamp > (await blockTimestamp())) await network.provider.send('evm_mine', [timestamp]);
 }
 
-export async function makeContext(chain: Chain, factoryDir: string, rng: Rng, variant: Record<string, unknown>): Promise<PoolContext> {
-  const deploy = async (contract: string, args: unknown[] = []) => {
-    const { artifacts, name } = artifactsFor(factoryDir, contract);
-    return deployFrom(artifacts, name, args);
-  };
+export async function makeContext(chain: Chain, rng: Rng, variant: Record<string, unknown>): Promise<PoolContext> {
+  const deploy = (contract: string, args: unknown[] = []) => deployFrom(contract, args);
   const attach = async (contract: string, address: string): Promise<Contract> => {
-    const { artifacts, name } = artifactsFor(factoryDir, contract);
     const [admin] = await ethers.getSigners();
-    return (await ethers.getContractAt(artifacts.readArtifactSync(name).abi, address, admin)) as unknown as Contract;
+    return (await ethers.getContractAt(getArtifact(contract).abi, address, admin)) as unknown as Contract;
   };
   const createTokens = async (decimals: number[]): Promise<Token[]> => {
     const tokens: Token[] = [];
     for (const [i, d] of decimals.entries()) {
-      const token = await deployFrom(depsArtifacts, 'ERC20TestToken', [`Token ${i}`, `TK${i}`, d]);
+      const token = await deployFrom('v3-solidity-utils/ERC20TestToken', [`Token ${i}`, `TK${i}`, d]);
       tokens.push({ address: await token.getAddress(), decimals: d });
     }
     return tokens.sort((a, b) => (a.address.toLowerCase() < b.address.toLowerCase() ? -1 : 1));
@@ -100,7 +85,7 @@ export async function makeContext(chain: Chain, factoryDir: string, rng: Rng, va
     now: blockTimestamp,
     grantPermission: async (instance, method) => {
       const [admin] = await ethers.getSigners();
-      const authorizer = await ethers.getContractAt(depsArtifacts.readArtifactSync('BasicAuthorizerMock').abi, await chain.vault.getAuthorizer(), admin);
+      const authorizer = await ethers.getContractAt(getArtifact('v3-vault/BasicAuthorizerMock').abi, await chain.vault.getAuthorizer(), admin);
       await authorizer.grantRole(await actionId(instance, method), admin.address);
     },
     rng,
@@ -119,7 +104,7 @@ export async function initializePool(chain: Chain, setup: PoolSetup): Promise<vo
   const amounts = setup.initialAmounts ?? (await Promise.all(tokens.map(async (t) => 1000n * 10n ** BigInt(await decimalsOf(t)))));
 
   for (const [i, t] of tokens.entries()) {
-    const token = await ethers.getContractAt(depsArtifacts.readArtifactSync('ERC20TestToken').abi, t, admin);
+    const token = await ethers.getContractAt(getArtifact('v3-solidity-utils/ERC20TestToken').abi, t, admin);
     await token.mint(admin.address, amounts[i]);
     await token.approve(await chain.permit2.getAddress(), MAX_UINT256);
     await chain.permit2.approve(t, await chain.router.getAddress(), MAX_UINT160, MAX_UINT48);

@@ -1,18 +1,12 @@
-/* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/no-explicit-any */
-// Runs a factory package's TypeScript maths implementation against one bush-maths test-data file, through the
-// bush-maths Vault flow, and prints the outcomes as JSON.
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Runs the TypeScript maths (maths/typescript) against one test-data file, through the Vault flow, and prints
+// the outcomes as JSON. The pool and hook classes are looked up by type in ./pools.ts.
 //
-// Usage: ts-node -r tsconfig-paths/register runner.ts <implementation-dir> <test-data-file.json>
-//
-// The implementation (`<factory>/math-implementations/typescript/index.ts`) exports:
-//   poolType: string                                   the poolType in the test data this implementation handles
-//   createPool(pool: PoolData): PoolBase               the pool maths, built from the `pool` block of the test data
-//   hookType?: string; createHook?(pool): { hook: HookBase; hookState: unknown }   when the pool has a hook
-// PoolData is the `pool` block with every numeric string converted to bigint.
+// Usage: ts-node -r tsconfig-paths/register runner.ts <test-data-file.json>
 
 import fs from 'fs';
-import path from 'path';
 import { AddKind, RemoveKind, SwapKind, Vault } from '@bush.fi/maths';
+import { hooks, pools } from './pools';
 
 interface Outcome {
   kind: 'swap' | 'add' | 'remove';
@@ -31,34 +25,36 @@ function toBigints(x: any): any {
 }
 
 function main() {
-  const [implDir, dataFile] = process.argv.slice(2);
-  const impl = require(path.resolve(implDir));
+  const [dataFile] = process.argv.slice(2);
   const data = JSON.parse(fs.readFileSync(dataFile, 'utf8'));
   const pool = toBigints(data.pool);
-  if (impl.poolType !== data.pool.poolType) {
-    throw new Error(`implementation handles poolType ${impl.poolType}, test data is ${data.pool.poolType}`);
-  }
+  const createPool = pools[pool.poolType];
+  if (!createPool) throw new Error(`no TypeScript maths registered for poolType ${pool.poolType} (runners/ts/pools.ts)`);
 
-  // Plug the implementation into the Vault under its pool type (and hook type, if any).
+  // Plug the maths into the Vault under its pool type (and hook type, if any).
   class PoolWrapper {
     constructor(state: unknown) {
-      return impl.createPool(state) as any;
+      return createPool(state) as any;
     }
   }
-  let hookState: unknown;
+  let hookType: string | undefined;
+  let hookState: any;
   let hookClasses: Record<string, any> = {};
-  if (impl.createHook && pool.hook) {
-    const made = impl.createHook(pool);
+  if (pool.hook) {
+    const createHook = hooks[pool.hook.type];
+    if (!createHook) throw new Error(`no TypeScript maths registered for hook type ${pool.hook.type} (runners/ts/pools.ts)`);
+    const made = createHook(pool);
     hookState = made.hookState;
+    hookType = hookState.hookType;
     class HookWrapper {
       constructor() {
         return made.hook as any;
       }
     }
-    hookClasses = { [impl.hookType]: HookWrapper };
+    hookClasses = { [hookType as string]: HookWrapper };
   }
-  const vault = new Vault({ customPoolClasses: { [impl.poolType]: PoolWrapper as any }, customHookClasses: hookClasses });
-  const poolState = { ...pool, hookType: impl.createHook && pool.hook ? impl.hookType : undefined };
+  const vault = new Vault({ customPoolClasses: { [pool.poolType]: PoolWrapper as any }, customHookClasses: hookClasses });
+  const poolState = { ...pool, hookType };
 
   const outcomes: Outcome[] = [];
   const run = (kind: Outcome['kind'], index: number, expected: string[], f: () => string[]) => {

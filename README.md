@@ -4,6 +4,12 @@
 
 <h1 align="center">bush-pool-factories</h1>
 
+<p align="center">
+  <a href="https://www.npmjs.com/package/@bush.fi/maths"><img src="https://img.shields.io/npm/v/@bush.fi/maths?label=%40bush.fi%2Fmaths&color=2fb02d" alt="@bush.fi/maths on npm"></a>
+  <a href="./maths/typescript/LICENSE"><img src="https://img.shields.io/badge/maths-MIT-2fb02d" alt="maths license"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/contracts-GPL--3.0-2fb02d" alt="contracts license"></a>
+</p>
+
 The approved Bush Protocol pool factories: their contracts and tests, exact off-chain maths for integrators
 (TypeScript, Python, Rust), and the tooling that proves the maths matches the deployed pools. Deployed addresses
 live in the Bush deployment repo.

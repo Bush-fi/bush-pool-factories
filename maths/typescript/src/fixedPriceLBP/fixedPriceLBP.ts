@@ -1,6 +1,7 @@
 import { MathSol } from '../utils/math';
 import { toRawUndoRateRoundDown } from '../vault/utils';
 import {
+    MaxSingleTokenRemoveParams,
     MaxSwapParams,
     type PoolBase,
     Rounding,
@@ -72,7 +73,7 @@ export class FixedPriceLBP implements PoolBase {
         throw new Error('UnsupportedOperation');
     }
 
-    getMaxSingleTokenRemoveAmount(): bigint {
+    getMaxSingleTokenRemoveAmount(_p: MaxSingleTokenRemoveParams): bigint {
         throw new Error('UnsupportedOperation');
     }
 
@@ -119,7 +120,7 @@ export class FixedPriceLBP implements PoolBase {
         return projectTokenValue + balancesLiveScaled18[this.reserveTokenIndex];
     }
 
-    computeBalance(): bigint {
+    computeBalance(_balances: bigint[], _tokenInIndex: number, _invariantRatio: bigint): bigint {
         throw new Error('UnsupportedOperation');
     }
 }

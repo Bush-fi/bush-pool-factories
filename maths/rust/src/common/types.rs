@@ -112,6 +112,8 @@ pub enum PoolState {
     LiquidityBootstrapping(crate::pools::liquidity_bootstrapping::liquidity_bootstrapping_data::LiquidityBootstrappingState),
     /// FixedPriceLBP pool state
     FixedPriceLBP(crate::pools::fixed_price_lbp::fixed_price_lbp_data::FixedPriceLBPState),
+    /// ReClamm pool state
+    ReClamm(crate::pools::reclamm::reclamm_data::ReClammState),
 }
 
 /// Result of a swap operation
@@ -179,6 +181,7 @@ impl PoolState {
                 &liquidity_bootstrapping.base
             }
             PoolState::FixedPriceLBP(fixed_price_lbp) => &fixed_price_lbp.base,
+            PoolState::ReClamm(reclamm) => &reclamm.base,
         }
     }
 

@@ -9,6 +9,7 @@ from src.hooks.stable_surge.types import StableSurgeHookState
 from src.pools.constant_sum.constant_sum import ConstantSum
 from src.pools.fixed_price_lbp.fixed_price_lbp import FixedPriceLBP
 from src.pools.liquidity_bootstrapping.liquidity_bootstrapping import LiquidityBootstrapping
+from src.pools.reclamm.reclamm import ReClamm
 from src.pools.stable.stable import Stable
 from src.pools.weighted.weighted import Weighted
 
@@ -20,6 +21,7 @@ POOLS = {
     "STABLE": Stable,
     "LIQUIDITY_BOOTSTRAPPING": LiquidityBootstrapping,
     "FIXED_PRICE_LBP": FixedPriceLBP,
+    "RECLAMM": ReClamm,
     # Template example.
     "CONSTANT_SUM": ConstantSum,
 }

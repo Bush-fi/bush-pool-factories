@@ -5,5 +5,6 @@ export * from './weighted';
 export * from './stable';
 export * from './liquidityBootstrapping';
 export * from './fixedPriceLBP';
+export * from './reClamm';
 export * from './hooks';
 export * from './cow';

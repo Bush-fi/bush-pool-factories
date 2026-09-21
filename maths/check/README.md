@@ -33,7 +33,7 @@ Hardhat artifacts.
    | --- | --- | --- |
    | TypeScript | [runners/ts/runner.ts](runners/ts/runner.ts) | [runners/ts/pools.ts](runners/ts/pools.ts) |
    | Python | [runners/python/runner.py](runners/python/runner.py) | [runners/python/pools.py](runners/python/pools.py) |
-   | Rust | [rust/src/lib.rs](rust/src/lib.rs) | [rust/src/main.rs](rust/src/main.rs) |
+   | Rust | [rust/src/lib.rs](rust/src/lib.rs) | `bush_maths::pools::state_from_json` (library); [rust/src/main.rs](rust/src/main.rs) only for pools outside it, e.g. the template |
 
 3. **Test** — the TypeScript, Python and Rust suites read the same files, so `maths:test` shows the packages
    agree with the contracts through their own public API too.

@@ -1,26 +1,13 @@
 from test.utils.map_hook_state import map_hook_state
 
+from src.common.base_pool_state import pool_state_from_json
 from src.common.types import PoolState
 from src.hooks.types import HookState
-from src.pools.fixed_price_lbp.fixed_price_lbp_data import map_fixed_price_lbp_state
-from src.pools.liquidity_bootstrapping.liquidity_bootstrapping_data import (
-    map_liquidity_bootstrapping_state,
-)
-from src.pools.stable.stable_data import map_stable_state
-from src.pools.weighted.weighted_data import map_weighted_state
 
 
 def map_pool_state(pool_state: dict) -> PoolState:
-    if pool_state["poolType"] == "LIQUIDITY_BOOTSTRAPPING":
-        return map_liquidity_bootstrapping_state(pool_state)
-    elif pool_state["poolType"] == "STABLE":
-        return map_stable_state(pool_state)
-    elif pool_state["poolType"] in ("WEIGHTED", "WEIGHTED_8020", "COW"):
-        return map_weighted_state(pool_state)
-    elif pool_state["poolType"] == "FIXED_PRICE_LBP":
-        return map_fixed_price_lbp_state(pool_state)
-    else:
-        raise ValueError(f"Unsupported pool type: {pool_state['poolType']}")
+    """Generic: see `pool_state_from_json`. A new pool type needs no changes here."""
+    return pool_state_from_json(pool_state)
 
 
 def transform_strings_to_ints(pool_with_strings):

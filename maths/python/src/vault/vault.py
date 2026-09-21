@@ -16,6 +16,7 @@ from src.pools.fixed_price_lbp.fixed_price_lbp import FixedPriceLBP
 from src.pools.liquidity_bootstrapping.liquidity_bootstrapping import (
     LiquidityBootstrapping,
 )
+from src.pools.reclamm.reclamm import ReClamm
 from src.pools.stable.stable import Stable
 from src.pools.weighted.weighted import Weighted
 from src.vault.add_liquidity import add_liquidity
@@ -38,6 +39,7 @@ class Vault:
             "STABLE": Stable,
             "LIQUIDITY_BOOTSTRAPPING": LiquidityBootstrapping,
             "FIXED_PRICE_LBP": FixedPriceLBP,
+            "RECLAMM": ReClamm,
         }
         default_hook_classes: Dict[str, Type[HookBase]] = {
             "StableSurge": StableSurgeHook,
@@ -90,6 +92,10 @@ class Vault:
         return remove_liquidity(
             remove_liquidity_input, pool_state, pool_class, hook_class, hook_state
         )
+
+    def supports_pool_type(self, pool_type: str) -> bool:
+        """Whether this Vault has maths for `pool_type` (built in or passed as `custom_pool_classes`)."""
+        return pool_type in self.pool_classes
 
     def _get_pool(self, *, pool_state: PoolState) -> PoolBase:
         pool_class = self.pool_classes[pool_state.pool_type]

@@ -2,6 +2,7 @@
 
 pub mod constants;
 pub mod errors;
+pub mod json;
 pub mod log_exp_math;
 pub mod maths;
 pub mod oz_math;

@@ -10,6 +10,7 @@ import { Weighted } from '@bush.fi/maths/weighted';
 import { Stable } from '@bush.fi/maths/stable';
 import { LiquidityBootstrapping } from '@bush.fi/maths/liquidityBootstrapping';
 import { FixedPriceLBP } from '@bush.fi/maths/fixedPriceLBP';
+import { ReClamm } from '@bush.fi/maths/reClamm';
 import { HookStateStableSurge, StableSurgeHook } from '@bush.fi/maths/hooks/stableSurgeHook';
 import { ConstantSum } from '@bush.fi/maths/constantSum';
 
@@ -24,6 +25,7 @@ export const pools: Record<string, (pool: any) => PoolBase> = {
     STABLE: (pool) => new Stable(pool),
     LIQUIDITY_BOOTSTRAPPING: (pool) => new LiquidityBootstrapping(pool),
     FIXED_PRICE_LBP: (pool) => new FixedPriceLBP(pool),
+    RECLAMM: (pool) => new ReClamm(pool),
     // Template example.
     CONSTANT_SUM: (pool) => new ConstantSum(pool),
 };

@@ -3,7 +3,7 @@ use bush_maths::common::types::*;
 use bush_maths::vault::Vault;
 mod utils;
 use utils::read_test_data;
-use utils::{convert_to_pool_state, get_pool_address};
+use utils::get_pool_address;
 
 #[test]
 fn test_add_liquidity() {
@@ -19,7 +19,7 @@ fn test_add_liquidity() {
             .get(&add.test)
             .unwrap_or_else(|| panic!("No pool data found for test: {}", add.test));
 
-        let pool_state = convert_to_pool_state(pool);
+        let pool_state = pool.clone();
 
         // Convert kind to AddLiquidityKind
         let kind = match add.kind {

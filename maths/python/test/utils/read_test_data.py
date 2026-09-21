@@ -1,5 +1,8 @@
 import json
 import os
+import sys
+
+from src.vault.vault import Vault
 
 
 def read_test_data():
@@ -18,6 +21,10 @@ def read_test_data():
 
             with open(filepath) as json_file:
                 test = json.load(json_file)
+                # A pool type this package has no maths for yet (maths may land one language at a time).
+                if not Vault().supports_pool_type(test["pool"]["poolType"]):
+                    print(f"{filename}: pool type {test['pool']['poolType']} not implemented in Python, skipped", file=sys.stderr)
+                    continue
                 if "swaps" in test:
                     for swap in test["swaps"]:
                         test_data["swaps"].append(

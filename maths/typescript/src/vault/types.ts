@@ -2,6 +2,7 @@ import { StableState } from '@/stable';
 import { WeightedState } from '@/weighted';
 import { LiquidityBootstrappingState } from '@/liquidityBootstrapping';
 import { FixedPriceLBPState } from '@/fixedPriceLBP';
+import { ReClammState } from '@/reClamm';
 
 /**
  * State of a pool. Note - rates, fees, totalSupply use scaled 18.
@@ -25,7 +26,8 @@ export type PoolState =
     | WeightedState
     | StableState
     | LiquidityBootstrappingState
-    | FixedPriceLBPState;
+    | FixedPriceLBPState
+    | ReClammState;
 
 export enum SwapKind {
     GivenIn = 0,

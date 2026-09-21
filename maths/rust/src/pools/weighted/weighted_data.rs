@@ -56,3 +56,14 @@ impl From<WeightedState> for crate::common::types::PoolState {
         crate::common::types::PoolState::Weighted(state)
     }
 }
+
+impl WeightedState {
+    /// From the `pool` block of a test-data file (see `crate::common::json`).
+    pub fn from_json(pool: &crate::common::json::PoolJson, base: BasePoolState) -> Result<Self, String> {
+        Ok(WeightedState {
+            base,
+            weights: pool.arr("weights")?,
+            min_token_balances: pool.arr("minTokenBalances").ok(),
+        })
+    }
+}

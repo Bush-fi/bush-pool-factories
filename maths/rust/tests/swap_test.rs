@@ -1,7 +1,6 @@
 use bush_maths::common::types::*;
 use bush_maths::vault::Vault;
 mod utils;
-use utils::convert_to_pool_state;
 use utils::read_test_data;
 
 #[test]
@@ -17,7 +16,7 @@ fn test_swaps() {
             .get(&swap_test.test)
             .unwrap_or_else(|| panic!("Pool not found for test: {}", swap_test.test));
 
-        let pool_state = convert_to_pool_state(pool_data);
+        let pool_state = pool_data.clone();
 
         // Create SwapInput
         let swap_input = SwapInput {

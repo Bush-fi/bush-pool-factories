@@ -8,7 +8,7 @@
 import type { Contract } from 'ethers';
 
 /** Pool type strings understood by the maths libraries (see maths/typescript/src/vault/vault.ts). */
-export type PoolType = 'WEIGHTED' | 'WEIGHTED_8020' | 'COW' | 'STABLE' | 'LIQUIDITY_BOOTSTRAPPING' | 'FIXED_PRICE_LBP';
+export type PoolType = 'WEIGHTED' | 'WEIGHTED_8020' | 'COW' | 'STABLE' | 'LIQUIDITY_BOOTSTRAPPING' | 'FIXED_PRICE_LBP' | 'RECLAMM';
 
 /** Hook type strings understood by the maths libraries' test readers. */
 export type HookType = 'STABLE_SURGE';
@@ -82,6 +82,11 @@ export interface PoolSetup {
    * Raw amounts to initialize the pool with, per token in registration order. Defaults to 1000 whole tokens each.
    */
   initialAmounts?: bigint[];
+  /**
+   * Runs after the pool is initialized and before `queryTimestamp` is mined to. For state that only exists on an
+   * initialized pool: e.g. swapping to push a ReClamm pool out of its target range, or starting a price ratio update.
+   */
+  afterInitialize?(): Promise<void>;
   /** Timestamp to mine to after initialization and before querying (e.g. mid-sale for an LBP). */
   queryTimestamp?: number;
   /**

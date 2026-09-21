@@ -1,0 +1,153 @@
+{
+    "swaps": [
+        {
+            "swapKind": 0,
+            "amountRaw": "2131370849898476045",
+            "tokenIn": "0xD49a0e9A4CD5979aE36840f542D2d7f02C4817Be",
+            "tokenOut": "0xe1Fd27F4390DcBE165f4D60DBF821e4B9Bb02dEd",
+            "outputRaw": "2185981"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "313239",
+            "tokenIn": "0xD49a0e9A4CD5979aE36840f542D2d7f02C4817Be",
+            "tokenOut": "0xe1Fd27F4390DcBE165f4D60DBF821e4B9Bb02dEd",
+            "outputRaw": "305292956629357193"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "21313708498984760457",
+            "tokenIn": "0xD49a0e9A4CD5979aE36840f542D2d7f02C4817Be",
+            "tokenOut": "0xe1Fd27F4390DcBE165f4D60DBF821e4B9Bb02dEd",
+            "outputRaw": "21769475"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "3132395",
+            "tokenIn": "0xD49a0e9A4CD5979aE36840f542D2d7f02C4817Be",
+            "tokenOut": "0xe1Fd27F4390DcBE165f4D60DBF821e4B9Bb02dEd",
+            "outputRaw": "3054751044062726320"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "213137084989847617362",
+            "tokenIn": "0xD49a0e9A4CD5979aE36840f542D2d7f02C4817Be",
+            "tokenOut": "0xe1Fd27F4390DcBE165f4D60DBF821e4B9Bb02dEd",
+            "outputRaw": "209055260"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "31323953",
+            "tokenIn": "0xD49a0e9A4CD5979aE36840f542D2d7f02C4817Be",
+            "tokenOut": "0xe1Fd27F4390DcBE165f4D60DBF821e4B9Bb02dEd",
+            "outputRaw": "30730369987681090483"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "313239",
+            "tokenIn": "0xe1Fd27F4390DcBE165f4D60DBF821e4B9Bb02dEd",
+            "tokenOut": "0xD49a0e9A4CD5979aE36840f542D2d7f02C4817Be",
+            "outputRaw": "299178287688982218"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "2131370849898476045",
+            "tokenIn": "0xe1Fd27F4390DcBE165f4D60DBF821e4B9Bb02dEd",
+            "tokenOut": "0xD49a0e9A4CD5979aE36840f542D2d7f02C4817Be",
+            "outputRaw": "2232435"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "3132395",
+            "tokenIn": "0xe1Fd27F4390DcBE165f4D60DBF821e4B9Bb02dEd",
+            "tokenOut": "0xD49a0e9A4CD5979aE36840f542D2d7f02C4817Be",
+            "outputRaw": "2990027550305876005"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "21313708498984760457",
+            "tokenIn": "0xe1Fd27F4390DcBE165f4D60DBF821e4B9Bb02dEd",
+            "tokenOut": "0xD49a0e9A4CD5979aE36840f542D2d7f02C4817Be",
+            "outputRaw": "22418407"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "31323953",
+            "tokenIn": "0xe1Fd27F4390DcBE165f4D60DBF821e4B9Bb02dEd",
+            "tokenOut": "0xD49a0e9A4CD5979aE36840f542D2d7f02C4817Be",
+            "outputRaw": "29725400522634508550"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "213137084989847617362",
+            "tokenIn": "0xe1Fd27F4390DcBE165f4D60DBF821e4B9Bb02dEd",
+            "tokenOut": "0xD49a0e9A4CD5979aE36840f542D2d7f02C4817Be",
+            "outputRaw": "234045012"
+        }
+    ],
+    "adds": [],
+    "removes": [
+        {
+            "kind": "Proportional",
+            "amountsOutRaw": [
+                "2131370849898476045",
+                "313239"
+            ],
+            "bptInRaw": "23313708498984759723935"
+        },
+        {
+            "kind": "Proportional",
+            "amountsOutRaw": [
+                "21313708498984760457",
+                "3132395"
+            ],
+            "bptInRaw": "233137084989847597239359"
+        },
+        {
+            "kind": "Proportional",
+            "amountsOutRaw": [
+                "213137084989847617362",
+                "31323953"
+            ],
+            "bptInRaw": "2331370849898476112275846"
+        }
+    ],
+    "pool": {
+        "chainId": "31337",
+        "blockNumber": "182",
+        "poolType": "RECLAMM",
+        "poolAddress": "0xdC5F5376ff2D44E7Fa55e20B574C84fDB0479143",
+        "tokens": [
+            "0xD49a0e9A4CD5979aE36840f542D2d7f02C4817Be",
+            "0xe1Fd27F4390DcBE165f4D60DBF821e4B9Bb02dEd"
+        ],
+        "scalingFactors": [
+            "1",
+            "1000000000000"
+        ],
+        "swapFee": "10000000000000000",
+        "totalSupply": "23313708498984759723935959",
+        "balancesLiveScaled18": [
+            "2131370849898476045739",
+            "313239534000000000000"
+        ],
+        "tokenRates": [
+            "1000000000000000000",
+            "1000000000000000000"
+        ],
+        "aggregateSwapFee": "0",
+        "supportsUnbalancedLiquidity": false,
+        "lastVirtualBalances": [
+            "2414213562373095000000",
+            "4828427124746190000000"
+        ],
+        "dailyPriceShiftBase": "999995988736371732",
+        "lastTimestamp": "1795555509",
+        "centerednessMargin": "200000000000000000",
+        "startFourthRootPriceRatio": "1414213562373095048",
+        "endFourthRootPriceRatio": "1414213562373095048",
+        "priceRatioUpdateStartTime": "1795555507",
+        "priceRatioUpdateEndTime": "1795555507",
+        "currentTimestamp": "1795577109"
+    }
+}

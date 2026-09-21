@@ -44,6 +44,7 @@ async function main() {
 
       process.stdout.write(', initializing');
       await initializePool(chain, setup);
+      if (setup.afterInitialize) await setup.afterInitialize();
       if (setup.queryTimestamp) await mineTo(setup.queryTimestamp);
 
       process.stdout.write(', querying');

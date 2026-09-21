@@ -10,6 +10,7 @@ import { Weighted } from '../weighted';
 import { Stable } from '../stable';
 import { LiquidityBootstrapping } from '../liquidityBootstrapping';
 import { FixedPriceLBP } from '../fixedPriceLBP';
+import { ReClamm } from '../reClamm';
 
 import {
     isSameAddress,
@@ -62,6 +63,7 @@ export class Vault {
             STABLE: Stable,
             LIQUIDITY_BOOTSTRAPPING: LiquidityBootstrapping,
             FIXED_PRICE_LBP: FixedPriceLBP,
+            RECLAMM: ReClamm,
             // custom add liquidity types take precedence over base types
             ...customPoolClasses,
         };
@@ -98,6 +100,11 @@ export class Vault {
      * @param maxSwapParams
      * @returns Returned amount/scaling is respective to the tokenOut because that’s what we’re taking out of the pool and what limits the swap size.
      */
+    /** Whether this Vault has maths for `poolType` (built in or registered through `customPoolClasses`). */
+    supportsPoolType(poolType: string): boolean {
+        return poolType in this.poolClasses;
+    }
+
     getMaxSwapAmount(swapParams: MaxSwapParams, poolState: PoolState): bigint {
         const pool = this.getPool(poolState);
         return pool.getMaxSwapAmount(swapParams);

@@ -1,0 +1,153 @@
+{
+    "swaps": [
+        {
+            "swapKind": 0,
+            "amountRaw": "1000000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "1979311072238755415"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "2000000000000000000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "1010457"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "10000000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "19731322287433567847"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "20000000000000000000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "10136649"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "100000000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "191340130825579905273"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "200000000000000012000",
+            "tokenIn": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "tokenOut": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "outputRaw": "104690824"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "2000000000000000000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "989655"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "1000000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "2020912533080406277"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "20000000000000000000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "9865661"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "10000000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "20273297105125864203"
+        },
+        {
+            "swapKind": 0,
+            "amountRaw": "200000000000000012000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "95670065"
+        },
+        {
+            "swapKind": 1,
+            "amountRaw": "100000000",
+            "tokenIn": "0x821f3361D454cc98b7555221A06Be563a7E2E0A6",
+            "tokenOut": "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "outputRaw": "209381646614261329968"
+        }
+    ],
+    "adds": [],
+    "removes": [
+        {
+            "kind": "Proportional",
+            "amountsOutRaw": [
+                "999999",
+                "1999999999999999999"
+            ],
+            "bptInRaw": "23313708498984759723935"
+        },
+        {
+            "kind": "Proportional",
+            "amountsOutRaw": [
+                "9999999",
+                "19999999999999999999"
+            ],
+            "bptInRaw": "233137084989847597239359"
+        },
+        {
+            "kind": "Proportional",
+            "amountsOutRaw": [
+                "100000000",
+                "200000000000000011999"
+            ],
+            "bptInRaw": "2331370849898476112275846"
+        }
+    ],
+    "pool": {
+        "chainId": "31337",
+        "blockNumber": "204",
+        "poolType": "RECLAMM",
+        "poolAddress": "0x9844FBEb7e8448fC01345bc1cb5D842a6A118De8",
+        "tokens": [
+            "0x02df3a3F960393F5B349E40A599FEda91a7cc1A7",
+            "0x821f3361D454cc98b7555221A06Be563a7E2E0A6"
+        ],
+        "scalingFactors": [
+            "1000000000000",
+            "1"
+        ],
+        "swapFee": "10000000000000000",
+        "totalSupply": "23313708498984759723935959",
+        "balancesLiveScaled18": [
+            "1000000000000000000000",
+            "2000000000000000000000"
+        ],
+        "tokenRates": [
+            "1000000000000000000",
+            "1000000000000000000"
+        ],
+        "aggregateSwapFee": "0",
+        "supportsUnbalancedLiquidity": false,
+        "lastVirtualBalances": [
+            "2414213562373095000000",
+            "4828427124746190000000"
+        ],
+        "dailyPriceShiftBase": "999995988736371732",
+        "lastTimestamp": "1795577130",
+        "centerednessMargin": "200000000000000000",
+        "startFourthRootPriceRatio": "1414213562373095056",
+        "endFourthRootPriceRatio": "1681792830507429085",
+        "priceRatioUpdateStartTime": "1795577130",
+        "priceRatioUpdateEndTime": "1795749930",
+        "currentTimestamp": "1795663530"
+    }
+}

@@ -48,7 +48,7 @@ impl Vault {
     }
 
     /// Instantiate the maths for a pool from its state.
-    fn get_pool(pool_state: &PoolState) -> Result<Box<dyn PoolBase>, PoolError> {
+    pub fn get_pool(pool_state: &PoolState) -> Result<Box<dyn PoolBase>, PoolError> {
         Ok(match pool_state {
             // WeightedPool8020Factory and CowPoolFactory deploy WeightedPool too; both use WeightedState.
             PoolState::Weighted(weighted_state) => Box::new(
@@ -67,6 +67,9 @@ impl Vault {
                     fixed_price_lbp_state.clone(),
                 ))
             }
+            PoolState::ReClamm(reclamm_state) => Box::new(
+                crate::pools::reclamm::ReClammPool::from(reclamm_state.clone()),
+            ),
             PoolState::Base(base) => {
                 return Err(PoolError::UnsupportedPoolType(base.pool_type.clone()))
             }

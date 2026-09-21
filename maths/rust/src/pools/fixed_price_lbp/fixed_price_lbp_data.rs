@@ -32,3 +32,23 @@ impl From<FixedPriceLBPState> for crate::common::types::PoolState {
         crate::common::types::PoolState::FixedPriceLBP(state)
     }
 }
+
+impl FixedPriceLBPState {
+    /// From the `pool` block of a test-data file (see `crate::common::json`).
+    pub fn from_json(pool: &crate::common::json::PoolJson, base: BasePoolState) -> Result<Self, String> {
+        Ok(FixedPriceLBPState {
+            base,
+            mutable: FixedPriceLBPMutable {
+                is_swap_enabled: pool.b("isSwapEnabled")?,
+                current_timestamp: pool.u("currentTimestamp")?,
+            },
+            immutable: FixedPriceLBPImmutable {
+                project_token_index: pool.n("projectTokenIndex")?,
+                reserve_token_index: pool.n("reserveTokenIndex")?,
+                project_token_rate: pool.u("projectTokenRate")?,
+                start_time: pool.u("startTime")?,
+                end_time: pool.u("endTime")?,
+            },
+        })
+    }
+}

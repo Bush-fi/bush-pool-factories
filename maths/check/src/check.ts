@@ -63,8 +63,19 @@ function runMaths(lang: Lang, dataFile: string): Outcome[] {
     cmd = [path.join(RUST, 'target/release/math_check'), [dataFile]];
   }
   const r = spawnSync(cmd[0], cmd[1], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, cwd: REPO, env: { ...process.env, TS_NODE_PROJECT: path.join(REPO, 'tsconfig.json') } });
-  if (r.status !== 0) throw new Error(`${lang} runner failed:\n${r.stderr}`);
+  if (r.status !== 0) {
+    // Every runner reports a pool type its language has no maths for with this wording.
+    if (/no .* maths registered for poolType|Unsupported pool type/.test(r.stderr)) throw new NotImplemented(lang);
+    throw new Error(`${lang} runner failed:\n${r.stderr}`);
+  }
   return JSON.parse(r.stdout);
+}
+
+/** The pool type is not (yet) implemented in this language: reported, but not a failure — see CONTRIBUTING.md. */
+class NotImplemented extends Error {
+  constructor(lang: Lang) {
+    super(`${lang}: not implemented`);
+  }
 }
 
 interface Row {
@@ -106,6 +117,10 @@ function main() {
             if (v === 'mismatch' || v === 'error') row.problems.push({ ...o, verdict: v });
           }
         } catch (e: any) {
+          if (e instanceof NotImplemented) {
+            console.log(`  ⚠️  ${lang.padEnd(10)} ${file.replace(`31337-${factory.name}-`, '').replace('.json', '').padEnd(26)} not implemented in ${lang}`);
+            continue;
+          }
           console.log(`  ${lang.padEnd(10)} ${file}: ${e.message.split('\n').slice(0, 3).join(' | ')}`);
           failed = true;
           continue;

@@ -7,13 +7,12 @@ import json
 import os
 import re
 import sys
-from dataclasses import fields
 
 MATHS = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 sys.path.insert(0, os.path.join(MATHS, "python"))
 sys.path.insert(0, os.path.dirname(__file__))
 
-from src.common.base_pool_state import BasePoolState  # noqa: E402
+from src.common.base_pool_state import pool_state_from_json  # noqa: E402
 from src.common.types import (  # noqa: E402
     AddLiquidityInput,
     AddLiquidityKind,
@@ -37,33 +36,6 @@ def to_ints(x):
     return x
 
 
-def snake(name):
-    return re.sub(r"(?<!^)(?=[A-Z])", "_", name).lower().replace("scaled18", "scaled18")
-
-
-def build_state(pool, hook_type):
-    state = BasePoolState(
-        pool_address=pool["poolAddress"],
-        pool_type=pool["poolType"],
-        tokens=pool["tokens"],
-        scaling_factors=pool["scalingFactors"],
-        token_rates=pool["tokenRates"],
-        balances_live_scaled18=pool["balancesLiveScaled18"],
-        swap_fee=pool["swapFee"],
-        aggregate_swap_fee=pool.get("aggregateSwapFee", 0),
-        total_supply=pool["totalSupply"],
-        supports_unbalanced_liquidity=pool.get("supportsUnbalancedLiquidity", True),
-        hook_type=hook_type,
-    )
-    base = {f.name for f in fields(BasePoolState)}
-    for key, value in pool.items():
-        name = snake(key)
-        if name not in base:
-            setattr(state, name, value)
-    state.raw = pool
-    return state
-
-
 def main():
     data_file = sys.argv[1]
     with open(data_file) as f:
@@ -80,10 +52,10 @@ def main():
         create_hook = HOOKS.get(pool["hook"]["type"])
         if create_hook is None:
             raise SystemExit(f"no Python maths registered for hook type {pool['hook']['type']} (runners/python/pools.py)")
-        hook, hook_state = create_hook(build_state(pool, None))
+        hook, hook_state = create_hook(pool_state_from_json(pool))
         hook_type = hook_state.hook_type
         hook_classes[hook_type] = lambda: hook
-    state = build_state(pool, hook_type)
+    state = pool_state_from_json(pool, hook_type)
     vault = Vault(custom_pool_classes={pool["poolType"]: create_pool}, custom_hook_classes=hook_classes)
 
     outcomes = []

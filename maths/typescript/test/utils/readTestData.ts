@@ -4,8 +4,10 @@ import type { LiquidityBootstrappingState } from '@/liquidityBootstrapping';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { FixedPriceLBPState } from '@/fixedPriceLBP';
+import { ReClammState } from '@/reClamm';
 import { type HookState } from '../../src/hooks/types';
 import { mapHookState } from './mapHookState';
+import { Vault } from '@/vault/vault';
 
 type HookData = {
     address: string;
@@ -44,11 +46,14 @@ type LiquidityBootstrappingPool = PoolBase & LiquidityBootstrappingState;
 
 type FixedPriceLBPPool = PoolBase & FixedPriceLBPState;
 
+type ReClammPool = PoolBase & ReClammState;
+
 type SupportedPools =
     | WeightedPool
     | StablePool
     | LiquidityBootstrappingPool
-    | FixedPriceLBPPool;
+    | FixedPriceLBPPool
+    | ReClammPool;
 
 type PoolsMap = Map<string, SupportedPools>;
 
@@ -114,6 +119,11 @@ export function readTestData(directoryPath: string): TestData {
             // Parse the JSON content
             try {
                 const jsonData = JSON.parse(fileContent);
+                // A pool type this package has no maths for yet (maths may land one language at a time).
+                if (!new Vault().supportsPoolType(jsonData.pool.poolType)) {
+                    console.warn(`${file}: pool type ${jsonData.pool.poolType} not implemented in TypeScript, skipped`);
+                    continue;
+                }
                 if (jsonData.swaps)
                     swaps.push(
                         ...jsonData.swaps.map((swap) => ({
@@ -159,138 +169,40 @@ export function readTestData(directoryPath: string): TestData {
     return testData;
 }
 
-type TransformBigintToString<T> = {
-    [K in keyof T]: T[K] extends bigint
-        ? string
-        : T[K] extends bigint[]
-          ? string[]
-          : T[K];
-};
+/**
+ * The `pool` block of a test-data file → the pool state the Vault expects. Generic: every decimal string becomes a
+ * bigint (recursively, so hook data is covered too); addresses, booleans and JSON numbers (token indices) pass
+ * through; the hook block, if any, becomes the hook state. A new pool type therefore needs no changes here — the
+ * generator writes the fields its maths reads (`getReClammPoolDynamicData()`, `weights`, `amp`, …) and the pool
+ * class receives them under the same names.
+ */
+function mapPool(pool: Record<string, unknown>): SupportedPools {
+    const state = toBigints(pool) as Record<string, unknown>;
+    // The generator writes the pool's setting; older hand-made files may lack it.
+    state.supportsUnbalancedLiquidity = pool.supportsUnbalancedLiquidity ?? true;
+    // Time-dependent pools read the timestamp the queries were made at; files without one are timeless.
+    state.currentTimestamp = state.currentTimestamp ?? BigInt(Date.now());
 
-function mapPool(
-    pool: TransformBigintToString<SupportedPools> & { hook?: HookData },
-): SupportedPools {
-    if (
-        pool.poolType === 'WEIGHTED' ||
-        pool.poolType === 'WEIGHTED_8020' ||
-        pool.poolType === 'COW'
-    ) {
-        const weightedPool = {
-            ...pool,
-            scalingFactors: pool.scalingFactors.map((sf) => BigInt(sf)),
-            swapFee: BigInt(pool.swapFee),
-            balancesLiveScaled18: pool.balancesLiveScaled18.map((b) =>
-                BigInt(b),
-            ),
-            tokenRates: pool.tokenRates.map((r) => BigInt(r)),
-            totalSupply: BigInt(pool.totalSupply),
-            weights: (
-                pool as TransformBigintToString<WeightedPool>
-            ).weights.map((w) => BigInt(w)),
-            minTokenBalances: (
-                pool as TransformBigintToString<WeightedPool>
-            ).minTokenBalances?.map((m) => BigInt(m)),
-            aggregateSwapFee: BigInt(pool.aggregateSwapFee ?? '0'),
-            supportsUnbalancedLiquidity:
-                pool.supportsUnbalancedLiquidity === undefined
-                    ? true
-                    : pool.supportsUnbalancedLiquidity,
-        };
-
-        // Map hook data to HookState if present
-        if (pool.hook) {
-            const hookState = mapHookState(pool.hook as HookData, {
-                tokens: pool.tokens,
-            });
-            return {
-                ...weightedPool,
-                hookType: hookState.hookType,
-                hook: hookState,
-            };
-        }
-
-        return weightedPool;
+    if (pool.hook) {
+        const hookState = mapHookState(pool.hook as HookData, {
+            tokens: pool.tokens as string[],
+            amp: state.amp as bigint | undefined,
+        });
+        state.hookType = hookState.hookType;
+        state.hook = hookState;
     }
-    if (pool.poolType === 'STABLE') {
-        const stablePool = {
-            ...pool,
-            scalingFactors: pool.scalingFactors.map((sf) => BigInt(sf)),
-            swapFee: BigInt(pool.swapFee),
-            balancesLiveScaled18: pool.balancesLiveScaled18.map((b) =>
-                BigInt(b),
-            ),
-            tokenRates: pool.tokenRates.map((r) => BigInt(r)),
-            totalSupply: BigInt(pool.totalSupply),
-            amp: BigInt((pool as TransformBigintToString<StablePool>).amp),
-            aggregateSwapFee: BigInt(pool.aggregateSwapFee ?? '0'),
-            supportsUnbalancedLiquidity:
-                pool.supportsUnbalancedLiquidity === undefined
-                    ? true
-                    : pool.supportsUnbalancedLiquidity,
-        };
+    return state as unknown as SupportedPools;
+}
 
-        // Map hook data to HookState if present
-        if (pool.hook) {
-            const hookState = mapHookState(pool.hook as HookData, {
-                tokens: pool.tokens,
-                amp: stablePool.amp,
-            });
-            return {
-                ...stablePool,
-                hookType: hookState.hookType,
-                hook: hookState,
-            };
-        }
-
-        return stablePool;
-    }
-    if (pool.poolType === 'LIQUIDITY_BOOTSTRAPPING') {
-        return {
-            ...pool,
-            scalingFactors: pool.scalingFactors.map((sf) => BigInt(sf)),
-            swapFee: BigInt(pool.swapFee),
-            balancesLiveScaled18: pool.balancesLiveScaled18.map((b) =>
-                BigInt(b),
-            ),
-            startTime: BigInt(pool.startTime),
-            endTime: BigInt(pool.endTime),
-            tokenRates: pool.tokenRates.map((r) => BigInt(r)),
-            totalSupply: BigInt(pool.totalSupply),
-            weights: (
-                pool as TransformBigintToString<LiquidityBootstrappingPool>
-            ).weights.map((w) => BigInt(w)),
-            minTokenBalances: (
-                pool as TransformBigintToString<LiquidityBootstrappingPool>
-            ).minTokenBalances?.map((m) => BigInt(m)),
-            startWeights: pool.startWeights.map((w) => BigInt(w)),
-            endWeights: pool.endWeights.map((w) => BigInt(w)),
-            aggregateSwapFee: BigInt(pool.aggregateSwapFee ?? '0'),
-            // smart contracts allow for unbalanced liquidity. Due to low likelihood
-            // of this being within maths/SOR, we set it to false
-            supportsUnbalancedLiquidity: false,
-            currentTimestamp: BigInt(pool.currentTimestamp ?? Date.now()),
-        };
-    }
-    if (pool.poolType === 'FIXED_PRICE_LBP') {
-        return {
-            ...pool,
-            scalingFactors: pool.scalingFactors.map((sf) => BigInt(sf)),
-            swapFee: BigInt(pool.swapFee),
-            balancesLiveScaled18: pool.balancesLiveScaled18.map((b) =>
-                BigInt(b),
-            ),
-            tokenRates: pool.tokenRates.map((r) => BigInt(r)),
-            totalSupply: BigInt(pool.totalSupply),
-            aggregateSwapFee: BigInt(pool.aggregateSwapFee ?? '0'),
-            supportsUnbalancedLiquidity: false,
-            projectTokenRate: BigInt(pool.projectTokenRate),
-            startTime: BigInt(pool.startTime),
-            endTime: BigInt(pool.endTime),
-            currentTimestamp: BigInt(pool.currentTimestamp),
-        };
-    }
-    console.log(pool);
-    throw new Error('mapPool: Unsupported Pool Type');
+// Decimal strings → bigint, recursively. Matches what maths/check's runners do with the same data.
+function toBigints(x: unknown): unknown {
+    if (Array.isArray(x)) return x.map(toBigints);
+    if (x && typeof x === 'object')
+        return Object.fromEntries(
+            Object.entries(x).map(([k, v]) => [k, toBigints(v)]),
+        );
+    if (typeof x === 'string' && /^[0-9]+$/.test(x)) return BigInt(x);
+    return x;
 }
 
 function mapRemoveKind(kind: string): number {

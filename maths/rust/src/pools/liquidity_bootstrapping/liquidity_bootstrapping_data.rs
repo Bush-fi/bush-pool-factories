@@ -36,3 +36,25 @@ impl From<LiquidityBootstrappingState> for crate::common::types::PoolState {
         crate::common::types::PoolState::LiquidityBootstrapping(state)
     }
 }
+
+impl LiquidityBootstrappingState {
+    /// From the `pool` block of a test-data file (see `crate::common::json`).
+    pub fn from_json(pool: &crate::common::json::PoolJson, base: BasePoolState) -> Result<Self, String> {
+        Ok(LiquidityBootstrappingState {
+            base,
+            mutable: LiquidityBootstrappingMutable {
+                is_swap_enabled: pool.b("isSwapEnabled")?,
+                current_timestamp: pool.u("currentTimestamp")?,
+            },
+            immutable: LiquidityBootstrappingImmutable {
+                project_token_index: pool.n("projectTokenIndex")?,
+                is_project_token_swap_in_blocked: pool.b("isProjectTokenSwapInBlocked")?,
+                start_weights: pool.arr("startWeights")?,
+                end_weights: pool.arr("endWeights")?,
+                start_time: pool.u("startTime")?,
+                end_time: pool.u("endTime")?,
+                min_token_balances: pool.arr("minTokenBalances").ok(),
+            },
+        })
+    }
+}

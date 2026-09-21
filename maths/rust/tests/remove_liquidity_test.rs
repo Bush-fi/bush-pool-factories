@@ -2,7 +2,7 @@ use bush_maths::common::types::*;
 use bush_maths::vault::Vault;
 mod utils;
 use utils::read_test_data;
-use utils::{convert_to_pool_state, get_pool_address};
+use utils::get_pool_address;
 
 #[test]
 fn test_remove_liquidity() {
@@ -18,7 +18,7 @@ fn test_remove_liquidity() {
             .get(&remove_test.test)
             .unwrap_or_else(|| panic!("Pool not found for test: {}", remove_test.test));
 
-        let pool_state = convert_to_pool_state(pool_data);
+        let pool_state = pool_data.clone();
 
         // Create RemoveLiquidityInput
         let remove_liquidity_input = RemoveLiquidityInput {

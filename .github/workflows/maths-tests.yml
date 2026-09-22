@@ -1,0 +1,54 @@
+# Runs the maths/ test suites (TypeScript, Python, Rust) against testData/ on every push and PR
+# that touches them, so a commit can't land with maths that no longer matches the on-chain results.
+name: Maths tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'maths/**'
+      - 'testData/**'
+      - '.github/workflows/maths-tests.yml'
+  pull_request:
+    paths:
+      - 'maths/**'
+      - 'testData/**'
+      - '.github/workflows/maths-tests.yml'
+
+jobs:
+  typescript:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: maths/typescript
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+
+  python:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: maths/python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - run: pip install -e ".[dev]"
+      - run: python3 -m pytest -q
+
+  rust:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: maths/rust
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup show
+      - run: cargo test --quiet

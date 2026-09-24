@@ -1,8 +1,8 @@
 from typing import List
 
-from src.common.maths import Rounding
-from src.common.pool_base import PoolBase
-from src.common.swap_params import SwapParams
+from bush_maths.common.maths import Rounding
+from bush_maths.common.pool_base import PoolBase
+from bush_maths.common.swap_params import SwapParams
 
 
 class DefaultPool(PoolBase):

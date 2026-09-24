@@ -1,8 +1,8 @@
 from test.utils.map_hook_state import map_hook_state
 
-from src.common.base_pool_state import pool_state_from_json
-from src.common.types import PoolState
-from src.hooks.types import HookState
+from bush_maths.common.base_pool_state import pool_state_from_json
+from bush_maths.common.types import PoolState
+from bush_maths.hooks.types import HookState
 
 
 def map_pool_state(pool_state: dict) -> PoolState:

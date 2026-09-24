@@ -17,7 +17,7 @@ Read [CONTRIBUTING.md](../../CONTRIBUTING.md) for the full walkthrough. What eac
 | `test/foundry/_template/ConstantSumPool.t.sol` | Forge tests on top of `BaseVaultTest`: factory registration, invariant, a swap through the Vault, rounding. | Test your pool's behaviour and every revert. |
 | `maths/check/adapters/_template-pool-factory.ts` | How the maths tooling creates your pool (variants, `createPool`, `poolType`, `poolData`). | Your factory's `create()` call and the numbers your maths needs. |
 | `maths/typescript/src/constantSum/` | The maths, on the `PoolBase` interface. | Port your pool. |
-| `maths/python/src/pools/constant_sum/` | Same, in Python. | |
+| `maths/python/bush_maths/pools/constant_sum/` | Same, in Python. | |
 | `maths/rust/src/pools/constant_sum/` | Same, in Rust (declared in `pools/mod.rs`). | |
 | `CONSTANT_SUM` in `maths/check/runners/ts/pools.ts`, `runners/python/pools.py`, `rust/src/main.rs` | The registry entries that build the pool from a test-data file for `maths:check`. | Register your `poolType`. |
 | `docs/_template-pool-factory/PARAMETERS.md` | Creation parameters with ranges and defaults. | Yours. |

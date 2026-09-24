@@ -1,6 +1,6 @@
 {
   "name": "@bush.fi/maths",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Exact fixed-point reference maths for Bush Protocol pools: the amounts the on-chain Vault returns, computed off-chain.",
   "license": "MIT",
   "homepage": "https://github.com/Bush-fi/bush-pool-factories/tree/main/maths/typescript#readme",

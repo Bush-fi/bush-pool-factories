@@ -1,4 +1,4 @@
-from src.common.bigint import BigInt
+from bush_maths.common.bigint import BigInt
 
 
 def sqrt(a: int) -> int:

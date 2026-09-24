@@ -1,11 +1,11 @@
 from typing import List
 
-from src.common.maths import Rounding, mul_up_fixed
-from src.common.pool_base import PoolBase
-from src.common.swap_params import SwapParams
-from src.common.types import SwapKind
-from src.pools.stable.stable_data import StableMutable
-from src.pools.stable.stable_math import (
+from bush_maths.common.maths import Rounding, mul_up_fixed
+from bush_maths.common.pool_base import PoolBase
+from bush_maths.common.swap_params import SwapParams
+from bush_maths.common.types import SwapKind
+from bush_maths.pools.stable.stable_data import StableMutable
+from bush_maths.pools.stable.stable_math import (
     _MAX_INVARIANT_RATIO,
     _MIN_INVARIANT_RATIO,
     compute_balance,

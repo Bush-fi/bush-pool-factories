@@ -22,7 +22,7 @@ contracts/<family>/                          the factory, the pool, and anything
 test/foundry/<family>/                       Foundry tests (and test/hardhat/<family>/ for Hardhat ones)
 maths/check/adapters/<name>-pool-factory.ts  ~50 lines: how to create your pool, and which numbers the maths needs
 maths/typescript/src/<pool>/                 your pool's maths, in at least one language …
-maths/python/src/pools/<pool>/
+maths/python/bush_maths/pools/<pool>/
 maths/rust/src/pools/<pool>/
 maths/check/runners/ts/pools.ts              … registered by pool type in that language's check registry
 maths/check/runners/python/pools.py
@@ -142,7 +142,7 @@ later PRs; `maths:check` reports each language separately):
 | | Pool class goes in | Registered for `maths:check` in |
 | --- | --- | --- |
 | TypeScript | `maths/typescript/src/<pool>/` | `maths/check/runners/ts/pools.ts` — `pools[poolType] = (pool) => new MyPool(pool)` |
-| Python | `maths/python/src/pools/<pool>/` | `maths/check/runners/python/pools.py` — `POOLS[pool_type] = MyPool` |
+| Python | `maths/python/bush_maths/pools/<pool>/` | `maths/check/runners/python/pools.py` — `POOLS[pool_type] = MyPool` |
 | Rust | `maths/rust/src/pools/<pool>/` (+ `pub mod` in `pools/mod.rs`) | `maths/check/rust/src/main.rs` — a `match` arm in `make_pool` |
 
 The registry entry builds your pool from the `pool` block of the test-data file, numbers already converted to
@@ -165,7 +165,7 @@ The rules that make it match to the wei:
    existing port of that library and write only your pool class — like `liquidityBootstrapping` does. Port what
    is new.
 
-The template's `ConstantSum` pool (`maths/typescript/src/constantSum/`, `maths/python/src/pools/constant_sum/`,
+The template's `ConstantSum` pool (`maths/typescript/src/constantSum/`, `maths/python/bush_maths/pools/constant_sum/`,
 `maths/rust/src/pools/constant_sum/`) is a full worked example in ~80 lines per language. Once the check passes,
 also export the pool from the package (`maths/typescript/src/index.ts`) and add it to the `Vault`'s pool-type map
 in each language, so the maths' own suites cover your test data. The test readers are generic: in TypeScript and

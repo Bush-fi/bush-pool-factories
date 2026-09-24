@@ -5,8 +5,8 @@ from test.utils.map_pool_state import (
 from test.utils.read_test_data import read_test_data
 from typing import cast
 
-from src.common.types import PoolState, RemoveLiquidityInput, RemoveLiquidityKind
-from src.vault.vault import Vault
+from bush_maths.common.types import PoolState, RemoveLiquidityInput, RemoveLiquidityKind
+from bush_maths.vault.vault import Vault
 
 test_data = read_test_data()
 

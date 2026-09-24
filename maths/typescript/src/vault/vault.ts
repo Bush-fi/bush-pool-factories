@@ -11,6 +11,7 @@ import { Stable } from '../stable';
 import { LiquidityBootstrapping } from '../liquidityBootstrapping';
 import { FixedPriceLBP } from '../fixedPriceLBP';
 import { ReClamm } from '../reClamm';
+import { BufferState, erc4626BufferWrapOrUnwrap } from '../buffer';
 
 import {
     isSameAddress,
@@ -150,10 +151,16 @@ export class Vault {
      */
     public swap(
         swapInput: SwapInput,
-        poolState: PoolState,
+        state: PoolState | BufferState,
         hookState?: HookState | unknown,
     ): bigint {
         if (swapInput.amountRaw === 0n) return 0n;
+
+        // Buffers aren't pools: an ERC4626 wrap/unwrap is priced by the wrapper's rate alone
+        if (state.poolType === 'Buffer') {
+            return erc4626BufferWrapOrUnwrap(swapInput, state as BufferState);
+        }
+        const poolState = state as PoolState;
 
         const pool = this.getPool(poolState);
         const hook = this.getHook(poolState.hookType, hookState);

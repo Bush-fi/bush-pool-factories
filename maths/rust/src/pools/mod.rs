@@ -1,5 +1,7 @@
 //! Pool implementations for the Bush pool types
 
+/// ERC4626 wrap/unwrap through a Vault buffer; not a pool type, swapped with `Vault::swap_buffer`.
+pub mod buffer;
 /// Example pool for contributors (the template factory's ConstantSumPool); not a Bush pool type.
 pub mod constant_sum;
 pub mod fixed_price_lbp;
@@ -9,6 +11,7 @@ pub mod stable;
 pub mod weighted;
 
 // Re-export pool traits and types
+pub use buffer::{BufferImmutable, BufferMutable, BufferState};
 pub use fixed_price_lbp::{
     FixedPriceLBPImmutable, FixedPriceLBPMutable, FixedPriceLBPPool, FixedPriceLBPState,
 };

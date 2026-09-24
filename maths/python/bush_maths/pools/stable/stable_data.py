@@ -1,6 +1,6 @@
 from dataclasses import dataclass, fields
 
-from src.common.base_pool_state import BasePoolState
+from bush_maths.common.base_pool_state import BasePoolState
 
 
 @dataclass

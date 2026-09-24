@@ -22,6 +22,7 @@ from .cow.cow_router import (
     validate_protocol_fee_percentage,
 )
 from .hooks.stable_surge.stable_surge_hook import StableSurgeHook
+from .pools.buffer.buffer_data import BufferState
 from .pools.fixed_price_lbp.fixed_price_lbp import FixedPriceLBP
 from .pools.liquidity_bootstrapping.liquidity_bootstrapping import (
     LiquidityBootstrapping,
@@ -32,6 +33,7 @@ from .vault.vault import Vault
 
 __all__ = [
     "Vault",
+    "BufferState",
     "Weighted",
     "Stable",
     "LiquidityBootstrapping",

@@ -2,7 +2,7 @@ import json
 import os
 import sys
 
-from src.vault.vault import Vault
+from bush_maths.vault.vault import Vault
 
 
 def read_test_data():

@@ -1,8 +1,8 @@
-from src.hooks.stable_surge.types import (
+from bush_maths.hooks.stable_surge.types import (
     StableSurgeHookState,
     map_stable_surge_hook_state,
 )
-from src.hooks.types import HookState
+from bush_maths.hooks.types import HookState
 
 
 def map_hook_state(hook_data: dict, pool_data: dict) -> HookState:

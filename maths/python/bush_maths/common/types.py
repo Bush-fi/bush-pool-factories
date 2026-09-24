@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from enum import Enum
 
-from src.common.base_pool_state import BasePoolState
-from src.pools.fixed_price_lbp.fixed_price_lbp_data import FixedPriceLBPState
-from src.pools.liquidity_bootstrapping.liquidity_bootstrapping_data import (
+from bush_maths.common.base_pool_state import BasePoolState
+from bush_maths.pools.fixed_price_lbp.fixed_price_lbp_data import FixedPriceLBPState
+from bush_maths.pools.liquidity_bootstrapping.liquidity_bootstrapping_data import (
     LiquidityBootstrappingState,
 )
-from src.pools.stable.stable_data import StableState
-from src.pools.weighted.weighted_data import WeightedState
+from bush_maths.pools.stable.stable_data import StableState
+from bush_maths.pools.weighted.weighted_data import WeightedState
 
 
 class AddLiquidityKind(Enum):

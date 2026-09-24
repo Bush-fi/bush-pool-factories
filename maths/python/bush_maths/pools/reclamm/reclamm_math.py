@@ -7,9 +7,9 @@ ReClamm pools are always 2-token pools; token `a` is index 0 and token `b` index
 from dataclasses import dataclass
 from typing import List, Tuple
 
-from src.common.constants import MAX_POW_RELATIVE_ERROR, WAD
-from src.common.log_exp_math import LogExpMath
-from src.common.maths import (
+from bush_maths.common.constants import MAX_POW_RELATIVE_ERROR, WAD
+from bush_maths.common.log_exp_math import LogExpMath
+from bush_maths.common.maths import (
     Rounding,
     div_down_fixed,
     div_up_fixed,
@@ -17,7 +17,7 @@ from src.common.maths import (
     mul_down_fixed,
     mul_up_fixed,
 )
-from src.common.oz_math import sqrt
+from bush_maths.common.oz_math import sqrt
 
 A = 0
 B = 1

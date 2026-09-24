@@ -1,0 +1,25 @@
+use alloy_primitives::U256;
+use serde::{Deserialize, Serialize};
+
+/// Buffer mutable state
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BufferMutable {
+    pub rate: U256,
+    pub max_deposit: Option<U256>,
+    pub max_mint: Option<U256>,
+}
+
+/// Buffer immutable state
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BufferImmutable {
+    pub pool_address: String,
+    pub tokens: Vec<String>,
+}
+
+/// State of an ERC4626 buffer. Buffers live in the Vault rather than a pool contract, so there are no balances, fees
+/// or hooks: `pool_address` is the wrapped (ERC4626) token and `rate` its scaled-18 rate.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BufferState {
+    pub mutable: BufferMutable,
+    pub immutable: BufferImmutable,
+}

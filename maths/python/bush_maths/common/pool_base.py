@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from src.common.base_pool_state import BasePoolState
-from src.common.maths import Rounding
-from src.common.swap_params import SwapParams
+from bush_maths.common.base_pool_state import BasePoolState
+from bush_maths.common.maths import Rounding
+from bush_maths.common.swap_params import SwapParams
 
 
 class PoolBase(ABC):

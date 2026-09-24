@@ -8,10 +8,10 @@ Rules for a port that matches the contract to the wei:
 """
 from typing import List
 
-from src.common.maths import Rounding, div_down_fixed, div_up_fixed, mul_down_fixed, mul_up_fixed
-from src.common.pool_base import PoolBase
-from src.common.swap_params import SwapParams
-from src.common.types import SwapKind
+from bush_maths.common.maths import Rounding, div_down_fixed, div_up_fixed, mul_down_fixed, mul_up_fixed
+from bush_maths.common.pool_base import PoolBase
+from bush_maths.common.swap_params import SwapParams
+from bush_maths.common.types import SwapKind
 
 # The Vault's invariant-ratio bounds for unbalanced liquidity operations (ConstantSumPool._MIN/_MAX_INVARIANT_RATIO).
 _MIN_INVARIANT_RATIO = 500000000000000000  # 50%

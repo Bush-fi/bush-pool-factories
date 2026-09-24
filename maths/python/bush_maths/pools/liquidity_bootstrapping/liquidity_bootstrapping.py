@@ -1,11 +1,11 @@
-from src.common.swap_params import SwapParams
-from src.pools.liquidity_bootstrapping.liquidity_bootstrapping_data import (
+from bush_maths.common.swap_params import SwapParams
+from bush_maths.pools.liquidity_bootstrapping.liquidity_bootstrapping_data import (
     LiquidityBootstrappingState,
 )
-from src.pools.liquidity_bootstrapping.liquidity_bootstrapping_math import (
+from bush_maths.pools.liquidity_bootstrapping.liquidity_bootstrapping_math import (
     get_normalized_weights,
 )
-from src.pools.weighted.weighted import Weighted, compute_min_token_balances
+from bush_maths.pools.weighted.weighted import Weighted, compute_min_token_balances
 
 
 class LiquidityBootstrapping(Weighted):

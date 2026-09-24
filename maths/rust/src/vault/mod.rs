@@ -10,6 +10,7 @@ use crate::common::pool_base::PoolBase;
 use crate::common::types::*;
 use crate::hooks::types::HookState;
 use crate::hooks::{DefaultHook, HookBase, StableSurgeHook};
+use crate::pools::buffer::{erc4626_buffer_wrap_or_unwrap, BufferState};
 use crate::vault::add_liquidity::add_liquidity;
 use crate::vault::remove_liquidity::remove_liquidity;
 use crate::vault::swap::swap;
@@ -92,6 +93,19 @@ impl Vault {
             hook.as_ref(),
             hook_state,
         )
+    }
+
+    /// Wrap or unwrap through an ERC4626 buffer. Buffers aren't pools, so there's no pool maths, fee or hook: the
+    /// amount comes from the wrapper's rate alone.
+    pub fn swap_buffer(
+        &self,
+        swap_input: &SwapInput,
+        buffer_state: &BufferState,
+    ) -> Result<U256, PoolError> {
+        if swap_input.amount_raw.is_zero() {
+            return Ok(U256::ZERO);
+        }
+        erc4626_buffer_wrap_or_unwrap(swap_input, buffer_state)
     }
 
     /// Add liquidity to a pool

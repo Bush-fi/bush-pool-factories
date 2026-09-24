@@ -1,5 +1,5 @@
-from src.common.constants import WAD
-from src.common.maths import (
+from bush_maths.common.constants import WAD
+from bush_maths.common.maths import (
     complement_fixed,
     div_down_fixed,
     div_up_fixed,

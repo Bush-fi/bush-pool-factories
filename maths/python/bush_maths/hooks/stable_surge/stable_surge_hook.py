@@ -1,17 +1,17 @@
 from typing import List
 
-from src.common.maths import complement_fixed, div_down_fixed, mul_down_fixed
-from src.common.swap_params import SwapParams
-from src.common.types import AddLiquidityKind, RemoveLiquidityKind, SwapKind
-from src.hooks.default_hook import DefaultHook
-from src.hooks.stable_surge.types import StableSurgeHookState
-from src.hooks.types import (
+from bush_maths.common.maths import complement_fixed, div_down_fixed, mul_down_fixed
+from bush_maths.common.swap_params import SwapParams
+from bush_maths.common.types import AddLiquidityKind, RemoveLiquidityKind, SwapKind
+from bush_maths.hooks.default_hook import DefaultHook
+from bush_maths.hooks.stable_surge.types import StableSurgeHookState
+from bush_maths.hooks.types import (
     AfterAddLiquidityResult,
     AfterRemoveLiquidityResult,
     DynamicSwapFeeResult,
 )
-from src.pools.stable.stable import Stable
-from src.pools.stable.stable_data import StableMutable
+from bush_maths.pools.stable.stable import Stable
+from bush_maths.pools.stable.stable_data import StableMutable
 
 
 # Port of StableSurgeHook.sol / SurgeHookCommon.sol (pool-hooks).

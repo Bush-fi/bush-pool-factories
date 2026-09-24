@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Callable
 
-from src.common.bigint import BigInt
-from src.common.maths import (
+from bush_maths.common.bigint import BigInt
+from bush_maths.common.maths import (
     Rounding,
     complement_fixed,
     div_down_fixed,

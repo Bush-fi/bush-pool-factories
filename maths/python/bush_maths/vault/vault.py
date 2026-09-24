@@ -1,7 +1,7 @@
 from typing import Dict, Optional, Type
 
-from src.common.pool_base import PoolBase
-from src.common.types import (
+from bush_maths.common.pool_base import PoolBase
+from bush_maths.common.types import (
     AddLiquidityInput,
     AddLiquidityResult,
     PoolState,
@@ -9,19 +9,23 @@ from src.common.types import (
     RemoveLiquidityResult,
     SwapInput,
 )
-from src.hooks.default_hook import DefaultHook
-from src.hooks.stable_surge.stable_surge_hook import StableSurgeHook
-from src.hooks.types import HookBase, HookState
-from src.pools.fixed_price_lbp.fixed_price_lbp import FixedPriceLBP
-from src.pools.liquidity_bootstrapping.liquidity_bootstrapping import (
+from bush_maths.hooks.default_hook import DefaultHook
+from bush_maths.hooks.stable_surge.stable_surge_hook import StableSurgeHook
+from bush_maths.hooks.types import HookBase, HookState
+from bush_maths.pools.buffer.buffer_data import BufferState
+from bush_maths.pools.buffer.erc4626_buffer_wrap_or_unwrap import (
+    erc4626_buffer_wrap_or_unwrap,
+)
+from bush_maths.pools.fixed_price_lbp.fixed_price_lbp import FixedPriceLBP
+from bush_maths.pools.liquidity_bootstrapping.liquidity_bootstrapping import (
     LiquidityBootstrapping,
 )
-from src.pools.reclamm.reclamm import ReClamm
-from src.pools.stable.stable import Stable
-from src.pools.weighted.weighted import Weighted
-from src.vault.add_liquidity import add_liquidity
-from src.vault.remove_liquidity import remove_liquidity
-from src.vault.swap import swap
+from bush_maths.pools.reclamm.reclamm import ReClamm
+from bush_maths.pools.stable.stable import Stable
+from bush_maths.pools.weighted.weighted import Weighted
+from bush_maths.vault.add_liquidity import add_liquidity
+from bush_maths.vault.remove_liquidity import remove_liquidity
+from bush_maths.vault.swap import swap
 
 
 class Vault:
@@ -33,7 +37,7 @@ class Vault:
         default_pool_classes: Dict[str, Type[PoolBase]] = {
             "WEIGHTED": Weighted,
             # WeightedPool8020Factory and CowPoolFactory deploy WeightedPool; the CoW-specific
-            # logic lives in the CowRouter (see src/cow), not in the pool.
+            # logic lives in the CowRouter (see bush_maths/cow), not in the pool.
             "WEIGHTED_8020": Weighted,
             "COW": Weighted,
             "STABLE": Stable,
@@ -51,11 +55,15 @@ class Vault:
         self,
         *,
         swap_input: SwapInput,
-        pool_state: PoolState,
+        pool_state: PoolState | BufferState,
         hook_state: HookState | object | None = None,
     ) -> int:
         if swap_input.amount_raw == 0:
             return 0
+
+        # Buffers aren't pools: an ERC4626 wrap/unwrap is priced by the wrapper's rate alone
+        if isinstance(pool_state, BufferState):
+            return erc4626_buffer_wrap_or_unwrap(swap_input, pool_state)
 
         pool_class = self._get_pool(pool_state=pool_state)
         hook_class = self._get_hook(

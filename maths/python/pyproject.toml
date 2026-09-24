@@ -7,6 +7,10 @@ license = {text = "MIT"}
 keywords = ["bush", "defi", "amm", "liquidity", "pools", "mathematics"]
 requires-python = ">=3.10"
 
+[project.urls]
+Homepage = "https://github.com/Bush-fi/bush-pool-factories/tree/main/maths/python"
+Repository = "https://github.com/Bush-fi/bush-pool-factories"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0.0",
@@ -18,7 +22,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.pytest.ini_options]
-pythonpath = [".", "src"]
+pythonpath = ["."]
 testpaths = ["test"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
@@ -28,7 +32,7 @@ python_functions = ["test_*"]
 profile = "black"
 multi_line_output = 3
 line_length = 88
-known_first_party = ["src"]
+known_first_party = ["bush_maths"]
 
 [tool.mypy]
 python_version = "3.10"
@@ -38,7 +42,7 @@ line-length = 88
 target-version = ['py310']
 
 [tool.hatch.build.targets.wheel]
-packages = ["src"]
+packages = ["bush_maths"]
 
-[tool.hatch.build.targets.wheel.sources]
-"src" = "balancer_maths"
+[tool.hatch.build.targets.sdist]
+include = ["bush_maths", "test", "README.md"]

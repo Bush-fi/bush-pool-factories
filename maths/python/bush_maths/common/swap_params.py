@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
-from src.common.types import SwapKind
+from bush_maths.common.types import SwapKind
 
 
 @dataclass

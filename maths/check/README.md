@@ -62,7 +62,7 @@ of `maths/testData/`.
 
 ### The registries
 
-The maths itself goes into the packages (`maths/typescript/src/<pool>/`, `maths/python/src/pools/<pool>/`,
+The maths itself goes into the packages (`maths/typescript/src/<pool>/`, `maths/python/bush_maths/pools/<pool>/`,
 `maths/rust/src/pools/<pool>/`). Each registry then maps the adapter's `poolType` to a constructor that builds
 the pool from the `pool` block of a test-data file (numeric strings already converted to `bigint` / `int` /
 `U256`; in Rust, `PoolJson` gives typed access: `pool.u("amp")`, `pool.arr("weights")`,

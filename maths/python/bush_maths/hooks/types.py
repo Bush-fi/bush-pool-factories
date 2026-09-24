@@ -2,9 +2,9 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List
 
-from src.common.swap_params import SwapParams
-from src.common.types import AddLiquidityKind, RemoveLiquidityKind, SwapKind
-from src.hooks.stable_surge.types import StableSurgeHookState
+from bush_maths.common.swap_params import SwapParams
+from bush_maths.common.types import AddLiquidityKind, RemoveLiquidityKind, SwapKind
+from bush_maths.hooks.stable_surge.types import StableSurgeHookState
 
 HookState = StableSurgeHookState
 

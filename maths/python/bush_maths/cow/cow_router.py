@@ -6,7 +6,7 @@ arithmetic in ``CowRouter._donateToPool`` / ``_setProtocolFeePercentage``.
 from dataclasses import dataclass
 from typing import List
 
-from src.common.maths import mul_up_fixed
+from bush_maths.common.maths import mul_up_fixed
 
 # CowRouter._MAX_PROTOCOL_FEE_PERCENTAGE: 50%
 MAX_PROTOCOL_FEE_PERCENTAGE = 500000000000000000

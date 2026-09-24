@@ -12,8 +12,8 @@ MATHS = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."
 sys.path.insert(0, os.path.join(MATHS, "python"))
 sys.path.insert(0, os.path.dirname(__file__))
 
-from src.common.base_pool_state import pool_state_from_json  # noqa: E402
-from src.common.types import (  # noqa: E402
+from bush_maths.common.base_pool_state import pool_state_from_json  # noqa: E402
+from bush_maths.common.types import (  # noqa: E402
     AddLiquidityInput,
     AddLiquidityKind,
     RemoveLiquidityInput,
@@ -21,7 +21,7 @@ from src.common.types import (  # noqa: E402
     SwapInput,
     SwapKind,
 )
-from src.vault.vault import Vault  # noqa: E402
+from bush_maths.vault.vault import Vault  # noqa: E402
 
 from pools import HOOKS, POOLS  # noqa: E402
 

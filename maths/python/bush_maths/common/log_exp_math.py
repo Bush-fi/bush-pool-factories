@@ -1,4 +1,4 @@
-from src.common.bigint import BigInt
+from bush_maths.common.bigint import BigInt
 
 WAD = BigInt(1000000000000000000)
 RAY = BigInt(1000000000000000000000000000000000000)

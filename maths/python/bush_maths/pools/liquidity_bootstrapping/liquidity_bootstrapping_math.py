@@ -1,7 +1,7 @@
 from typing import List
 
-from src.common.constants import WAD
-from src.common.maths import div_down_fixed, mul_down_fixed
+from bush_maths.common.constants import WAD
+from bush_maths.common.maths import div_down_fixed, mul_down_fixed
 
 
 def get_normalized_weights(

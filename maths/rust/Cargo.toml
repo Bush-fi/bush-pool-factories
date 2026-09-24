@@ -4,7 +4,12 @@ version = "0.1.0"
 edition = "2021"
 description = "Exact fixed-point reference maths for Bush Protocol pools. Ported from balancer-maths (MIT)."
 license = "MIT"
-publish = false
+repository = "https://github.com/Bush-fi/bush-pool-factories"
+homepage = "https://github.com/Bush-fi/bush-pool-factories/tree/main/maths/rust"
+readme = "README.md"
+keywords = ["defi", "amm", "bush", "fixed-point", "ethereum"]
+categories = ["cryptography::cryptocurrencies", "mathematics"]
+include = ["src/**/*", "README.md", "LICENSE", "Cargo.toml"]
 
 [dependencies]
 alloy-primitives = { version = "1.3.0", features = ["serde"] }

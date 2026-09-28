@@ -1,0 +1,76 @@
+//! Exact port of contracts/__family__/__Pascal__Hook.sol, implementing the bush-maths `HookBase` trait so the
+//! bush-maths Vault flow calls it around swaps, adds and removes, as the on-chain Vault does.
+//!
+//! Rules for a port that matches the contract to the wei:
+//!   - the flags in `config` mirror __Pascal__Hook.getHookFlags() exactly (the Vault only calls what's switched on);
+//!   - use `U256` and the bush-maths fixed-point helpers (`mul_down_fixed` etc.), never floats;
+//!   - mirror every rounding direction of the Solidity call for call;
+//!   - use only `crate::pool_kit` (and this module).
+//!
+//! The hook's state reaches it as `HookState::Custom`: `data` is the adapter's `hook.dynamicData()` JSON.
+
+use crate::pool_kit::*;
+
+pub struct __Pascal__Hook {
+    config: HookConfig,
+}
+
+impl __Pascal__Hook {
+    pub fn new() -> Self {
+        Self {
+            // TODO: mirror __Pascal__Hook.getHookFlags().
+            config: HookConfig::default(),
+        }
+    }
+}
+
+impl Default for __Pascal__Hook {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl HookBase for __Pascal__Hook {
+    fn hook_type(&self) -> &str {
+        "__Pascal__"
+    }
+
+    fn config(&self) -> &HookConfig {
+        &self.config
+    }
+
+    // __Pascal__Hook.onComputeDynamicSwapFeePercentage
+    fn on_compute_dynamic_swap_fee(&self, _swap_params: &SwapParams, static_swap_fee_percentage: &U256, _hook_state: &HookState) -> DynamicSwapFeeResult {
+        DynamicSwapFeeResult { success: true, dynamic_swap_fee: *static_swap_fee_percentage }
+    }
+
+    // __Pascal__Hook.onBeforeSwap
+    fn on_before_swap(&self, swap_params: &SwapParams, _hook_state: &HookState) -> BeforeSwapResult {
+        BeforeSwapResult { success: true, hook_adjusted_balances_scaled_18: swap_params.balances_live_scaled_18.clone() }
+    }
+
+    // __Pascal__Hook.onAfterSwap
+    fn on_after_swap(&self, params: &AfterSwapParams, _hook_state: &HookState) -> AfterSwapResult {
+        AfterSwapResult { success: true, hook_adjusted_amount_calculated_raw: params.amount_calculated_raw }
+    }
+
+    // __Pascal__Hook.onBeforeAddLiquidity
+    fn on_before_add_liquidity(&self, _kind: AddLiquidityKind, _max_amounts_in_scaled_18: &[U256], _min_bpt_amount_out: &U256, balances_scaled_18: &[U256], _hook_state: &HookState) -> BeforeAddLiquidityResult {
+        BeforeAddLiquidityResult { success: true, hook_adjusted_balances_scaled_18: balances_scaled_18.to_vec() }
+    }
+
+    // __Pascal__Hook.onAfterAddLiquidity
+    fn on_after_add_liquidity(&self, _kind: AddLiquidityKind, _amounts_in_scaled_18: &[U256], amounts_in_raw: &[U256], _bpt_amount_out: &U256, _balances_scaled_18: &[U256], _hook_state: &HookState) -> AfterAddLiquidityResult {
+        AfterAddLiquidityResult { success: true, hook_adjusted_amounts_in_raw: amounts_in_raw.to_vec() }
+    }
+
+    // __Pascal__Hook.onBeforeRemoveLiquidity
+    fn on_before_remove_liquidity(&self, _kind: RemoveLiquidityKind, _max_bpt_amount_in: &U256, _min_amounts_out_scaled_18: &[U256], balances_scaled_18: &[U256], _hook_state: &HookState) -> BeforeRemoveLiquidityResult {
+        BeforeRemoveLiquidityResult { success: true, hook_adjusted_balances_scaled_18: balances_scaled_18.to_vec() }
+    }
+
+    // __Pascal__Hook.onAfterRemoveLiquidity
+    fn on_after_remove_liquidity(&self, _kind: RemoveLiquidityKind, _bpt_amount_in: &U256, _amounts_out_scaled_18: &[U256], amounts_out_raw: &[U256], _balances_scaled_18: &[U256], _hook_state: &HookState) -> AfterRemoveLiquidityResult {
+        AfterRemoveLiquidityResult { success: true, hook_adjusted_amounts_out_raw: amounts_out_raw.to_vec() }
+    }
+}

@@ -4,14 +4,21 @@ interface so the bush-maths Vault flow (token scaling, rates, swap fees, hooks) 
 Rules for a port that matches the contract to the wei:
   - use Python ints and the bush-maths fixed-point helpers (mul_down_fixed etc.), never floats or Decimal;
   - mirror every rounding direction of the Solidity (mulDown/mulUp/divDown/divUp) call for call;
-  - reproduce every revert as an exception (the check treats "both fail" as a match).
+  - reproduce every revert as an exception (the check treats "both fail" as a match);
+  - import only from bush_maths.pool_kit (and this package).
 """
 from typing import List
 
-from bush_maths.common.maths import Rounding, div_down_fixed, div_up_fixed, mul_down_fixed, mul_up_fixed
-from bush_maths.common.pool_base import PoolBase
-from bush_maths.common.swap_params import SwapParams
-from bush_maths.common.types import SwapKind
+from bush_maths.pool_kit import (
+    PoolBase,
+    Rounding,
+    SwapKind,
+    SwapParams,
+    div_down_fixed,
+    div_up_fixed,
+    mul_down_fixed,
+    mul_up_fixed,
+)
 
 # The Vault's invariant-ratio bounds for unbalanced liquidity operations (ConstantSumPool._MIN/_MAX_INVARIANT_RATIO).
 _MIN_INVARIANT_RATIO = 500000000000000000  # 50%

@@ -4,19 +4,20 @@
 // Rules for a port that matches the contract to the wei:
 //   - use bigint and the bush-maths fixed-point helpers (MathSol.mulDownFixed etc.), never floating point;
 //   - mirror every rounding direction of the Solidity (mulDown/mulUp/divDown/divUp) call for call;
-//   - reproduce every revert as a throw (the check treats "both fail" as a match).
+//   - reproduce every revert as a throw (the check treats "both fail" as a match);
+//   - import only from '../poolKit' (and this folder).
 
-import { MAX_UINT256 } from '../constants';
-import { MathSol } from '../utils/math';
-import { toRawUndoRateRoundDown } from '../vault/utils';
 import {
-    MaxSingleTokenRemoveParams,
-    MaxSwapParams,
+    MAX_UINT256,
+    MathSol,
+    toRawUndoRateRoundDown,
+    type MaxSingleTokenRemoveParams,
+    type MaxSwapParams,
     type PoolBase,
     Rounding,
     SwapKind,
     type SwapParams,
-} from '../vault/types';
+} from '../poolKit';
 
 /** The Vault's invariant-ratio bounds for unbalanced liquidity operations (ConstantSumPool._MIN/_MAX_INVARIANT_RATIO). */
 export const _MIN_INVARIANT_RATIO = 500000000000000000n; // 50%

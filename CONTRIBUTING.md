@@ -45,17 +45,43 @@ npm run compile      # this repo's contracts + the @bush.fi/v3-* packages (artif
 
 You need Node ≥ 20, Foundry, Python ≥ 3.10 and a Rust toolchain.
 
-## Step 1 — copy the template
+## Step 1 — scaffold from the template
 
 ```
-cp -r contracts/_template contracts/<family>
-cp -r test/foundry/_template test/foundry/<family>
-cp maths/check/adapters/_template-pool-factory.ts maths/check/adapters/<name>-pool-factory.ts
-cp -r docs/_template-pool-factory docs/<name>-pool-factory
+npm run new-factory -- MyCurve                  # PascalCase, without "Pool"/"Factory"
+npm run new-factory -- MyCurve --langs ts       # maths in some languages only (ts, py, rs)
+npm run new-factory -- MyCurve --blank          # skeletons with TODOs instead of the worked example
+npm run new-factory -- MyCurve --dry-run        # list what it would write
 ```
 
-Then replace `ConstantSumPool` with your contracts and fix the relative imports. Everything else in the template
-is generic.
+This writes a renamed copy of the template (`MyCurvePool`, `MyCurvePoolFactory`, pool type `MY_CURVE`, contracts
+in `contracts/my-curve/`, or `--family <dir>`): contracts, Forge test, maths adapter, maths in each language,
+docs, and the `maths/check` registry entries. It compiles, its tests pass and `maths:check` matches before you
+change anything, so every later failure is from your own change. Replace each part marked
+`TODO (scaffolded from the ConstantSum template…)` with your pool as you go through the steps below.
+
+If you'd rather start from an empty page, `--blank` writes skeletons instead (from `scripts/templates/blank/`): the
+same files and registry entries, with every function the Vault and `maths:check` need, comments on what each must
+do, and no curve maths. They compile, but the tests and `maths:check` fail with `NotImplemented` until you fill in
+every `TODO`. The constant-sum template stays the worked example to look at.
+
+### A hook on an existing pool type
+
+If your contribution is new behaviour around an existing pool (a dynamic fee, gated swaps, an exit fee…) rather than
+a new curve, scaffold a hook instead:
+
+```
+npm run new-hook -- MyFee                       # asks which pool type: weighted, stable or constant-sum
+npm run new-hook -- MyFee --pool weighted       # or say it
+```
+
+This writes `MyFeeHook` (every Vault callback, commented and switched off), `MyFeeWeightedPoolFactory` (deploys a
+standard `WeightedPool` registered with the hook, which it holds as an immutable), a Forge test inheriting
+`PoolPropertiesTest`, a math-check adapter, and the hook's maths in each language, registered with `maths/check`.
+The pool's own maths already exists, so only the hook is new. Deploy in order: the hook, the factory with the hook's
+address, then `hook.setFactory(factory)` from the hook's deployer, after which the hook accepts pools from that
+factory only. Everything passes before you change a line; switch on the callbacks you need in `getHookFlags` and
+follow the steps below for the hook instead of a pool.
 
 ## Step 2 — the contracts
 
@@ -89,9 +115,13 @@ passes it on registration. The maths for the hook is part of your maths contribu
 
 ## Step 3 — tests
 
-`test/foundry/<family>/*.t.sol`. Extend `BaseVaultTest` (from `@bush.fi/v3-vault`): it deploys a Vault, Router,
-tokens and users. Override `createPoolFactory`, `createPool` and `initPool` for your factory, then test swaps,
-adds, removes, and every revert your pool has. See `test/foundry/_template/ConstantSumPool.t.sol`. Deployer and
+`test/foundry/<family>/*.t.sol`. Extend `PoolPropertiesTest` (`test/foundry/utils/`), which extends
+`BaseVaultTest` from `@bush.fi/v3-vault`: it deploys a Vault, Router, tokens and users. Override
+`createPoolFactory`, `createPool` and `initPool` for your factory, and you inherit fuzz tests and a stateful
+invariant test of what every pool must satisfy: the invariant rounds and scales correctly, swaps never decrease it,
+round trips are never profitable, `computeBalance` reaches its target, no sequence of swaps, adds and removes dilutes
+the LPs, and the minimum swap fee is at least 0.0001% (`1e12`). Then add tests with hand-worked numbers for your
+curve and every revert your pool has. See `test/foundry/_template/ConstantSumPool.t.sol`. Deployer and
 base-test contracts shared between tests go in `test/foundry/utils/`.
 
 ```
@@ -164,6 +194,11 @@ The rules that make it match to the wei:
 5. **Reuse accepted library ports.** If your contract uses `WeightedMath.sol` or `StableMath.sol`, import the
    existing port of that library and write only your pool class — like `liquidityBootstrapping` does. Port what
    is new.
+6. **Import only from the pool kit** (and your own folder): `maths/typescript/src/poolKit.ts`,
+   `bush_maths.pool_kit`, `crate::pool_kit`. It has the fixed-point and log/exp maths, `sqrt`, `PoolBase` and the
+   Vault's types, the raw ↔ scaled18 conversions, the Weighted / Stable / LBP / ReClamm library ports (as
+   `WeightedMath`, `weighted_math`, …) and the hook interface with a no-op default hook. If you need something it
+   lacks, add it to the kit in your PR and say why, rather than importing it from elsewhere.
 
 The template's `ConstantSum` pool (`maths/typescript/src/constantSum/`, `maths/python/bush_maths/pools/constant_sum/`,
 `maths/rust/src/pools/constant_sum/`) is a full worked example in ~80 lines per language. Once the check passes,

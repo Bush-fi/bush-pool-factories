@@ -8,10 +8,12 @@
 import type { Contract } from 'ethers';
 
 /** Pool type strings understood by the maths libraries (see maths/typescript/src/vault/vault.ts). */
-export type PoolType = 'WEIGHTED' | 'WEIGHTED_8020' | 'COW' | 'STABLE' | 'LIQUIDITY_BOOTSTRAPPING' | 'FIXED_PRICE_LBP' | 'RECLAMM';
+/** Known types autocomplete; scaffolded pools (`npm run new-factory`) add their own, so any string is accepted. */
+export type PoolType = 'WEIGHTED' | 'WEIGHTED_8020' | 'COW' | 'STABLE' | 'LIQUIDITY_BOOTSTRAPPING' | 'FIXED_PRICE_LBP' | 'RECLAMM' | (string & {});
 
 /** Hook type strings understood by the maths libraries' test readers. */
-export type HookType = 'STABLE_SURGE';
+/** Known types autocomplete; scaffolded hooks (`npm run new-hook`) add their own, so any string is accepted. */
+export type HookType = 'STABLE_SURGE' | (string & {});
 
 /** Deterministic random source, so a run can be reproduced from its seed. */
 export interface Rng {

@@ -1,0 +1,47 @@
+// Math-check adapter: tells maths/check how to create this pool through its factory, and which pool-specific values
+// the off-chain maths needs. See maths/check/README.md.
+//
+// The generator (`npm run maths:generate`) calls `createPool` once per variant on a fresh local chain that already
+// has a Vault and Router, initializes the pool, queries swaps / adds / removes through the Router and writes the
+// results to a test-data file. `npm run maths:check` then replays that file through the maths in maths/<lang>.
+
+import { FactoryAdapter } from '../src/types';
+
+const adapter: FactoryAdapter = {
+  // One test-data file is generated per variant. Cover whatever changes a code path in the maths: token decimals
+  // (exercises the Vault's scaling), token counts, and every pool parameter.
+  variants: {
+    // TODO: add your pool's parameters to each variant, and more variants.
+    'decimals-18-6': { description: 'tokens with 18 and 6 decimals', decimals: [18, 6] },
+  },
+
+  async createPool(ctx) {
+    // ctx.createTokens deploys ERC20 test tokens and returns them address-sorted, which is the order the Vault
+    // registers them in. Everything else in the test data (balances, weights, ...) uses this order.
+    const tokens = await ctx.createTokens(ctx.variant.decimals as number[]);
+
+    // Deploy the factory (artifact name from this package's contracts/) and create the pool exactly as a user would.
+    const factory = await ctx.deploy('__Pascal__PoolFactory', [ctx.vault, ctx.MONTH * 12, 'factory v1', 'pool v1']);
+    const tx = await factory.create(
+      '__Title__ Pool',
+      'POOL',
+      ctx.tokenConfig(tokens),
+      // TODO: your pool's creation parameters, from ctx.variant (ctx.fp: number -> 18-decimal fixed point bigint).
+      { pauseManager: ctx.ZERO_ADDRESS, swapFeeManager: ctx.ZERO_ADDRESS, poolCreator: ctx.ZERO_ADDRESS },
+      ctx.fp(0.01), // 1% swap fee
+      ctx.ZERO_BYTES32
+    );
+    const pool = await ctx.attach('__Pascal__Pool', ctx.poolCreated(await tx.wait()));
+
+    return {
+      pool,
+      // A name for this pool type. The maths/check registries build the pool from this string.
+      poolType: '__UPPER__',
+      // TODO: pool-specific fields for the test-data file, as strings. Read them back from the chain with the pool's
+      // getters, never echo the create() args: this is what an integrator would read, and what your maths gets.
+      poolData: async () => ({}),
+    };
+  },
+};
+
+export default adapter;

@@ -1,0 +1,110 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+pragma solidity ^0.8.24;
+
+import { IPoolVersion } from "@bush.fi/v3-interfaces/contracts/solidity-utils/helpers/IPoolVersion.sol";
+import { IHooks } from "@bush.fi/v3-interfaces/contracts/vault/IHooks.sol";
+import { IVault } from "@bush.fi/v3-interfaces/contracts/vault/IVault.sol";
+import {
+    TokenConfig,
+    PoolRoleAccounts,
+    LiquidityManagement
+} from "@bush.fi/v3-interfaces/contracts/vault/VaultTypes.sol";
+
+import { BasePoolFactory } from "@bush.fi/v3-pool-utils/contracts/BasePoolFactory.sol";
+import { Version } from "@bush.fi/v3-solidity-utils/contracts/helpers/Version.sol";
+
+import { ConstantSumPool } from "../_template/ConstantSumPool.sol";
+
+/**
+ * @notice Deploys standard `ConstantSumPool`s, every one registered with the same immutable `__Pascal__Hook`.
+ * @dev Scaffolded by `npm run new-hook`. The pool is the unmodified ConstantSumPool: all the new behaviour lives in the hook.
+ // @open {
+ * Deploy the hook first, then this factory with its address.
+ // @open }
+ // @restricted {
+ * Deploy the hook first, then this factory with its address, then call `hook.setFactory(factory)` (see the hook).
+ // @restricted }
+ */
+contract __Factory__ is IPoolVersion, BasePoolFactory, Version {
+    address private immutable _hook;
+
+    string private _poolVersion;
+
+    constructor(
+        IVault vault,
+        address hook,
+        uint32 pauseWindowDuration,
+        string memory factoryVersion,
+        string memory poolVersion
+    ) BasePoolFactory(vault, pauseWindowDuration, type(ConstantSumPool).creationCode) Version(factoryVersion) {
+        _hook = hook;
+        _poolVersion = poolVersion;
+    }
+
+    /// @inheritdoc IPoolVersion
+    function getPoolVersion() external view returns (string memory) {
+        return _poolVersion;
+    }
+
+    /// @notice The hook every pool from this factory is registered with.
+    function getHook() external view returns (address) {
+        return _hook;
+    }
+
+    error PoolNeedsTwoTokens();
+
+    /**
+     * @notice Deploys a new `ConstantSumPool` with the hook.
+     * @dev Tokens must be sorted by address for pool registration.
+     * @param name The name of the pool (also the BPT name)
+     * @param symbol The symbol of the pool (also the BPT symbol)
+     * @param tokens Exactly two token descriptors
+     * @param rate How many token1 one token0 is worth, 18 decimals
+     * @param roleAccounts Addresses the Vault will allow to change certain pool settings
+     * @param swapFeePercentage Initial swap fee percentage
+     * @param salt The salt value that will be passed to CREATE2
+     */
+    function create(
+        string memory name,
+        string memory symbol,
+        TokenConfig[] memory tokens,
+        uint256 rate,
+        PoolRoleAccounts memory roleAccounts,
+        uint256 swapFeePercentage,
+        bytes32 salt
+    ) external returns (address pool) {
+        if (tokens.length != 2) {
+            revert PoolNeedsTwoTokens();
+        }
+
+        LiquidityManagement memory liquidityManagement = _liquidityManagement(false, false);
+
+        pool = _create(
+            abi.encode(
+                ConstantSumPool.NewPoolParams({ name: name, symbol: symbol, version: _poolVersion, rate: rate }),
+                getVault()
+            ),
+            salt
+        );
+
+        _registerPoolWithVault(
+            pool,
+            tokens,
+            swapFeePercentage,
+            false, // not exempt from protocol fees
+            roleAccounts,
+            _hook,
+            liquidityManagement
+        );
+    }
+
+    /// @dev The Vault only accepts a hook that adjusts amounts on pools with unbalanced liquidity disabled.
+    function _liquidityManagement(bool enableDonation, bool disableUnbalancedLiquidity) private view returns (LiquidityManagement memory liquidityManagement) {
+        liquidityManagement = getDefaultLiquidityManagement();
+        liquidityManagement.enableDonation = enableDonation;
+        liquidityManagement.disableUnbalancedLiquidity =
+            disableUnbalancedLiquidity ||
+            IHooks(_hook).getHookFlags().enableHookAdjustedAmounts;
+    }
+}

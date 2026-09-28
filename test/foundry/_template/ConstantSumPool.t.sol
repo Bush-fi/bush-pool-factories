@@ -11,17 +11,18 @@ import { ArrayHelpers } from "@bush.fi/v3-solidity-utils/contracts/test/ArrayHel
 import { CastingHelpers } from "@bush.fi/v3-solidity-utils/contracts/helpers/CastingHelpers.sol";
 import { InputHelpers } from "@bush.fi/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
 import { FixedPoint } from "@bush.fi/v3-solidity-utils/contracts/math/FixedPoint.sol";
-import { BaseVaultTest } from "@bush.fi/v3-vault/test/foundry/utils/BaseVaultTest.sol";
 
 import { ConstantSumPoolFactory } from "../../../contracts/_template/ConstantSumPoolFactory.sol";
 import { ConstantSumPool } from "../../../contracts/_template/ConstantSumPool.sol";
+import { PoolPropertiesTest } from "../utils/PoolPropertiesTest.sol";
 
 /**
  * @notice TEMPLATE: tests for the pool and its factory.
- * @dev `BaseVaultTest` deploys a Vault, Router, test tokens and users; we override `createPoolFactory`, `createPool`
- * and `initPool` so the base test works with our factory, then test the pool's behaviour through the Vault.
+ * @dev `BaseVaultTest` (through `PoolPropertiesTest`) deploys a Vault, Router, test tokens and users; we override
+ * `createPoolFactory`, `createPool` and `initPool` so it works with our factory. `PoolPropertiesTest` then runs its
+ * fuzz and invariant tests (properties every pool must have) against the pool; the tests here add hand-worked numbers.
  */
-contract ConstantSumPoolTest is BaseVaultTest {
+contract ConstantSumPoolTest is PoolPropertiesTest {
     using ArrayHelpers for *;
     using CastingHelpers for address[];
     using FixedPoint for uint256;
@@ -29,8 +30,6 @@ contract ConstantSumPoolTest is BaseVaultTest {
     string private constant POOL_VERSION = "Pool v1";
     uint256 private constant RATE = 2e18; // 1 token0 = 2 token1
     uint256 private constant SWAP_FEE = 1e16; // 1%
-
-    IERC20[] private poolTokens;
 
     function setUp() public override {
         super.setUp();
@@ -43,9 +42,6 @@ contract ConstantSumPoolTest is BaseVaultTest {
     function createPool() internal override returns (address newPool, bytes memory poolArgs) {
         IERC20[] memory sortedTokens = InputHelpers.sortTokens([address(dai), address(usdc)].toMemoryArray().asIERC20());
         TokenConfig[] memory tokenConfigs = vault.buildTokenConfig(sortedTokens);
-        for (uint256 i = 0; i < sortedTokens.length; i++) {
-            poolTokens.push(sortedTokens[i]);
-        }
 
         PoolRoleAccounts memory roleAccounts;
         newPool = ConstantSumPoolFactory(poolFactory).create(
@@ -66,8 +62,10 @@ contract ConstantSumPoolTest is BaseVaultTest {
     }
 
     function initPool() internal override {
+        // Runs inside `super.setUp()`, before `poolTokens` is filled: read the tokens from the Vault.
+        IERC20[] memory tokens = vault.getPoolTokens(pool);
         vm.prank(lp);
-        router.initialize(pool, poolTokens, [poolInitAmount, poolInitAmount].toMemoryArray(), 0, false, bytes(""));
+        router.initialize(pool, tokens, [poolInitAmount, poolInitAmount].toMemoryArray(), 0, false, bytes(""));
     }
 
     function testPoolIsFromFactory() public view {

@@ -36,6 +36,12 @@ allow_internal_expect_revert = true
 runs = 10000
 max_test_rejects = 60000
 
+# Stateful tests (test/foundry/utils/PoolHandler.sol): `runs` random sequences of `depth` operations each. Every
+# operation goes through the Vault, so keep runs x depth in the thousands, not Foundry's default 256 x 500.
+[invariant]
+runs = 128
+depth = 64
+
 [profile.coverage.fuzz]
 runs = 100
 max_test_rejects = 60000

@@ -1,0 +1,50 @@
+//! Exact fixed-point port of contracts/__family__/__Pascal__Pool.sol, implementing the bush-maths `PoolBase` trait
+//! so the bush-maths Vault flow (token scaling, rates, swap fees, hooks) can run it.
+//!
+//! Rules for a port that matches the contract to the wei:
+//!   - use `U256` and the bush-maths fixed-point helpers (`mul_down_fixed` etc.), never floats;
+//!   - mirror every rounding direction of the Solidity (mulDown/mulUp/divDown/divUp) call for call;
+//!   - reproduce every revert as an `Err` (the check treats "both fail" as a match);
+//!   - use only `crate::pool_kit` (and this module).
+
+use crate::pool_kit::*;
+
+/// The Vault's invariant-ratio bounds for unbalanced liquidity operations (__Pascal__Pool._MIN/_MAX_INVARIANT_RATIO).
+pub const MIN_INVARIANT_RATIO: U256 = uint!(500000000000000000_U256); // 50%
+pub const MAX_INVARIANT_RATIO: U256 = uint!(2000000000000000000_U256); // 200%
+
+pub struct __Pascal__Pool {
+    // TODO: your pool's parameters.
+}
+
+impl __Pascal__Pool {
+    // TODO: take your parameters (and update the __UPPER__ arm in maths/check/rust/src/main.rs to pass them).
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl PoolBase for __Pascal__Pool {
+    // __Pascal__Pool.onSwap
+    fn on_swap(&self, _swap_params: &SwapParams) -> Result<U256, PoolError> {
+        Err(PoolError::Custom("NotImplemented".into()))
+    }
+
+    // __Pascal__Pool.computeInvariant
+    fn compute_invariant(&self, _balances: &[U256], _rounding: Rounding) -> Result<U256, PoolError> {
+        Err(PoolError::Custom("NotImplemented".into()))
+    }
+
+    // __Pascal__Pool.computeBalance
+    fn compute_balance(&self, _balances: &[U256], _token_in_index: usize, _invariant_ratio: &U256) -> Result<U256, PoolError> {
+        Err(PoolError::Custom("NotImplemented".into()))
+    }
+
+    fn get_maximum_invariant_ratio(&self) -> U256 {
+        MAX_INVARIANT_RATIO
+    }
+
+    fn get_minimum_invariant_ratio(&self) -> U256 {
+        MIN_INVARIANT_RATIO
+    }
+}

@@ -1,0 +1,261 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+pragma solidity ^0.8.24;
+
+// @restricted {
+import { IBasePoolFactory } from "@bush.fi/v3-interfaces/contracts/vault/IBasePoolFactory.sol";
+// @restricted }
+import { IVault } from "@bush.fi/v3-interfaces/contracts/vault/IVault.sol";
+import {
+    AddLiquidityKind,
+    AfterSwapParams,
+    HookFlags,
+    LiquidityManagement,
+    PoolSwapParams,
+    RemoveLiquidityKind,
+    TokenConfig
+} from "@bush.fi/v3-interfaces/contracts/vault/VaultTypes.sol";
+
+import { Version } from "@bush.fi/v3-solidity-utils/contracts/helpers/Version.sol";
+import { BaseHooks } from "@bush.fi/v3-vault/contracts/BaseHooks.sol";
+import { VaultGuard } from "@bush.fi/v3-vault/contracts/VaultGuard.sol";
+
+/**
+ * @notice TODO: one line on what this hook does.
+ *
+ * @dev Skeleton scaffolded by `npm run new-hook`. Every pool created by `__Factory__` is registered with this hook,
+ * which the factory holds as an immutable. The Vault calls the hook around each operation, but only the callbacks
+ * whose flag is set in `getHookFlags`: turn on the ones you need and implement those; the rest are never called.
+ *
+ // @open {
+ * Deployment: deploy this hook, then `__Factory__` with the hook's address.
+ *
+ * Open registration (like StableSurgeHook): any pool, from any factory, may register with this hook. That's safe
+ * while everything the hook stores is per pool, keyed by the pool's address: a stranger's pool only gets its own
+ * entry. If the hook ever holds funds or state shared between pools (a fee pot, global totals), or relies on the
+ * pool being a __POOL__, restrict registration to the factory: re-scaffold with `--restricted` for the pattern.
+ // @open }
+ // @restricted {
+ * Deployment, in this order (the hook must exist before the factory that holds it):
+ *   1. deploy this hook;
+ *   2. deploy `__Factory__` with the hook's address;
+ *   3. call `setFactory(factory)` from the deployer, once. Until then `onRegister` refuses every pool.
+ * Only pools created by that factory can then register with this hook, so no one else can attach pools to it: needed
+ * when the hook holds funds or state shared between pools, or relies on the pool being a __POOL__.
+ // @restricted }
+ *
+ * The callbacks are `view` while they do nothing: drop `view` from any you make write state (the compiler says
+ * which). Every callback is `onlyVault`. Balances and amounts ending in Scaled18 are 18-decimal, with token rates applied;
+ * amounts ending in Raw are in the token's own decimals. Rounding in anything that moves value must favour the Vault.
+ * The off-chain maths (maths/<lang>/.../__snake__) must reproduce every callback that's switched on, to the wei.
+ */
+contract __Pascal__Hook is BaseHooks, VaultGuard, Version {
+    // @open {
+    constructor(IVault vault, string memory version) VaultGuard(vault) Version(version) {
+        // TODO: the hook's parameters (defaults for new pools, fee rates, ...), validated.
+    }
+    // @open }
+    // @restricted {
+    address private immutable _deployer;
+    address private _factory;
+
+    /// @notice The factory whose pools may register with this hook has been set.
+    event FactorySet(address indexed factory);
+
+    error NotDeployer();
+    error FactoryAlreadySet();
+    error FactoryDoesNotUseThisHook();
+
+    constructor(IVault vault, string memory version) VaultGuard(vault) Version(version) {
+        _deployer = msg.sender;
+    }
+
+    /**
+     * @notice Binds the hook to its factory: from now on, only pools from `factory` can register. Callable once,
+     * by the deployer, and only for a factory that holds this hook.
+     */
+    function setFactory(address factory) external {
+        if (msg.sender != _deployer) revert NotDeployer();
+        if (_factory != address(0)) revert FactoryAlreadySet();
+        if (I__Pascal__HookFactory(factory).getHook() != address(this)) revert FactoryDoesNotUseThisHook();
+
+        _factory = factory;
+        emit FactorySet(factory);
+    }
+
+    /// @notice The factory whose pools may register with this hook (zero until `setFactory`).
+    function getFactory() external view returns (address) {
+        return _factory;
+    }
+    // @restricted }
+
+    /***************************************************************************
+                                 Registration
+    ***************************************************************************/
+
+    /// @inheritdoc BaseHooks
+    function getHookFlags() public pure override returns (HookFlags memory hookFlags) {
+        // TODO: switch on the callbacks this hook implements (each is described where it's defined below).
+        hookFlags.enableHookAdjustedAmounts = false; // after-callbacks may change the user's amounts (see below)
+        hookFlags.shouldCallBeforeInitialize = false;
+        hookFlags.shouldCallAfterInitialize = false;
+        hookFlags.shouldCallComputeDynamicSwapFee = false;
+        hookFlags.shouldCallBeforeSwap = false;
+        hookFlags.shouldCallAfterSwap = false;
+        hookFlags.shouldCallBeforeAddLiquidity = false;
+        hookFlags.shouldCallAfterAddLiquidity = false;
+        hookFlags.shouldCallBeforeRemoveLiquidity = false;
+        hookFlags.shouldCallAfterRemoveLiquidity = false;
+    }
+
+    // @open {
+    /**
+     * @notice Called once, when a pool registers with the Vault naming this hook. Return false to refuse the pool.
+     * @dev Open: accepts every pool. Set up any per-pool state here (see StableSurgeHook, which stores each pool's
+     * default surge settings), keyed by `pool`.
+     */
+    function onRegister(
+        address,
+        address,
+        TokenConfig[] memory,
+        LiquidityManagement calldata
+    ) public view override onlyVault returns (bool) {
+        // TODO: per-pool setup, if the hook keeps state per pool (then drop `view`).
+        return true;
+    }
+    // @open }
+    // @restricted {
+    /**
+     * @notice Called once, when a pool registers with the Vault naming this hook. Return false to refuse the pool.
+     * @dev Accepts only pools created by the bound factory. Set up any per-pool state here.
+     */
+    function onRegister(
+        address factory,
+        address pool,
+        TokenConfig[] memory,
+        LiquidityManagement calldata
+    ) public view override onlyVault returns (bool) {
+        // TODO: per-pool setup, if the hook keeps state per pool.
+        return factory != address(0) && factory == _factory && IBasePoolFactory(factory).isPoolFromFactory(pool);
+    }
+    // @restricted }
+
+    /***************************************************************************
+                                Initialization
+    ***************************************************************************/
+
+    /// @notice Before the pool's first deposit. Return false to revert the initialization.
+    function onBeforeInitialize(uint256[] memory, bytes memory) public view override onlyVault returns (bool) {
+        return true;
+    }
+
+    /// @notice After the pool's first deposit. Return false to revert the initialization.
+    function onAfterInitialize(uint256[] memory, uint256, bytes memory) public view override onlyVault returns (bool) {
+        return true;
+    }
+
+    /***************************************************************************
+                                     Swaps
+    ***************************************************************************/
+
+    /**
+     * @notice The swap fee for this swap, instead of the pool's static fee. Return (true, fee); 18 decimals.
+     * @dev The most common hook: fees that depend on the trade, the pool state, the sender... It must stay within the
+     * pool's fee bounds and should respect the 0.0001% floor.
+     */
+    function onComputeDynamicSwapFeePercentage(
+        PoolSwapParams calldata,
+        address,
+        uint256 staticSwapFeePercentage
+    ) public view override onlyVault returns (bool, uint256) {
+        return (true, staticSwapFeePercentage);
+    }
+
+    /// @notice Before the pool computes a swap. Return false to revert it (e.g. to block or gate swaps).
+    function onBeforeSwap(PoolSwapParams calldata, address) public view override onlyVault returns (bool) {
+        return true;
+    }
+
+    /**
+     * @notice After the pool computes a swap. Returns (success, amountCalculatedRaw).
+     * @dev With `enableHookAdjustedAmounts`, the returned amount replaces the pool's result: the hook can take a cut
+     * (return less out / ask more in) and must settle that difference with the Vault itself. Otherwise return
+     * `params.amountCalculatedRaw` unchanged.
+     */
+    function onAfterSwap(AfterSwapParams calldata params) public view override onlyVault returns (bool, uint256) {
+        return (true, params.amountCalculatedRaw);
+    }
+
+    /***************************************************************************
+                                   Liquidity
+    ***************************************************************************/
+
+    /// @notice Before an add. Return false to revert it (e.g. allowlisted LPs only).
+    function onBeforeAddLiquidity(
+        address,
+        address,
+        AddLiquidityKind,
+        uint256[] memory,
+        uint256,
+        uint256[] memory,
+        bytes memory
+    ) public view override onlyVault returns (bool) {
+        return true;
+    }
+
+    /**
+     * @notice After an add. Returns (success, amountsInRaw).
+     * @dev With `enableHookAdjustedAmounts`, returned amounts replace what the user pays (the factory then disables
+     * unbalanced liquidity, as the Vault requires). Otherwise return `amountsInRaw` unchanged.
+     */
+    function onAfterAddLiquidity(
+        address,
+        address,
+        AddLiquidityKind,
+        uint256[] memory,
+        uint256[] memory amountsInRaw,
+        uint256,
+        uint256[] memory,
+        bytes memory
+    ) public view override onlyVault returns (bool, uint256[] memory) {
+        return (true, amountsInRaw);
+    }
+
+    /// @notice Before a remove. Return false to revert it (e.g. a lock-up period).
+    function onBeforeRemoveLiquidity(
+        address,
+        address,
+        RemoveLiquidityKind,
+        uint256,
+        uint256[] memory,
+        uint256[] memory,
+        bytes memory
+    ) public view override onlyVault returns (bool) {
+        return true;
+    }
+
+    /**
+     * @notice After a remove. Returns (success, amountsOutRaw).
+     * @dev With `enableHookAdjustedAmounts`, returned amounts replace what the user receives (e.g. an exit fee).
+     * Otherwise return `amountsOutRaw` unchanged.
+     */
+    function onAfterRemoveLiquidity(
+        address,
+        address,
+        RemoveLiquidityKind,
+        uint256,
+        uint256[] memory,
+        uint256[] memory amountsOutRaw,
+        uint256[] memory,
+        bytes memory
+    ) public view override onlyVault returns (bool, uint256[] memory) {
+        return (true, amountsOutRaw);
+    }
+}
+
+// @restricted {
+/// @dev The one thing the hook needs from its factory, to check it's bound to the right one.
+interface I__Pascal__HookFactory {
+    function getHook() external view returns (address);
+}
+// @restricted }

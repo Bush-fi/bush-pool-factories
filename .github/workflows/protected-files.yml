@@ -1,0 +1,66 @@
+# Fails a PR that touches dependency, build or CI configuration (package.json, lockfiles, remappings, Cargo
+# manifests, workflows, ...) until a maintainer reviews it and adds the `deps-approved` label. These files decide
+# which code gets imported and what runs on `npm install` / `forge test`, so a factory PR should not need them.
+#
+# Runs on `pull_request_target` so the check itself always comes from `main`: a PR cannot edit this file to skip
+# it. It never checks out or runs the PR's code; it only reads the list of changed files from the API.
+# Make "Protected files" a required status check on `main` for it to block merges.
+name: Protected files
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: write # to remove a stale approval label
+
+concurrency:
+  group: protected-files-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Protected files
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      PR: ${{ github.event.pull_request.number }}
+      ACTION: ${{ github.event.action }}
+      APPROVAL_LABEL: deps-approved
+    steps:
+      - name: Check changed files
+        run: |
+          set -euo pipefail
+
+          # Paths that control dependencies, import resolution, build/test execution or CI.
+          PROTECTED='(^|/)(package\.json|package-lock\.json|npm-shrinkwrap\.json|yarn\.lock|pnpm-lock\.yaml|\.npmrc|\.yarnrc(\.yml)?|Cargo\.toml|Cargo\.lock|rust-toolchain(\.toml)?|build\.rs|pyproject\.toml|requirements[^/]*\.txt|setup\.py|setup\.cfg|remappings\.txt|foundry\.toml|hardhat[^/]*\.ts|tsconfig[^/]*\.json|\.gitmodules|CODEOWNERS)$|^(scripts|\.github|\.devcontainer|\.vscode|lib)/'
+
+          # Both sides of a rename count, so moving a protected file away is caught too.
+          changed=$(gh api --paginate "repos/$REPO/pulls/$PR/files" \
+            --jq '.[] | .filename, (.previous_filename // empty)' | sort -u)
+          hits=$(printf '%s\n' "$changed" | grep -E "$PROTECTED" || true)
+
+          if [ -z "$hits" ]; then
+            echo "No protected files changed."
+            exit 0
+          fi
+
+          echo "This PR changes protected files:"
+          printf '  %s\n' $hits
+
+          labels=$(gh api "repos/$REPO/issues/$PR/labels" --jq '.[].name')
+          if ! printf '%s\n' "$labels" | grep -qx "$APPROVAL_LABEL"; then
+            echo "::error::Protected files changed. A maintainer must review them and add the '$APPROVAL_LABEL' label."
+            exit 1
+          fi
+
+          # New commits after approval: the label approved an older diff, so drop it and require a fresh review.
+          if [ "$ACTION" = "synchronize" ]; then
+            gh api -X DELETE "repos/$REPO/issues/$PR/labels/$APPROVAL_LABEL" > /dev/null
+            echo "::error::New commits after '$APPROVAL_LABEL' was added. The label was removed; re-review and add it again."
+            exit 1
+          fi
+
+          echo "Protected file changes approved with '$APPROVAL_LABEL'."

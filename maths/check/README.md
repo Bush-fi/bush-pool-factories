@@ -69,6 +69,15 @@ the pool from the `pool` block of a test-data file (numeric strings already conv
 `pool.base_state(hook_type)`). A pool with a hook also registers the hook under the `type` the adapter reports,
 returning the hook maths and the state the Vault hands it on every call — see `STABLE_SURGE`.
 
+## Against the live deployments
+
+`npm run live:check` compares every active contract in the deployments file
+([bush-deployments](https://github.com/Bush-fi/bush-deployments), Robinhood Chain by default) with this repo's
+compiled bytecode (immutables and library links masked, the metadata hash reported separately), then forks the
+chain and runs every adapter whose factory is deployed against the *live* factory, Vault and Router, replaying the
+results through the maths in every language. `LIVE_RPC_URL`, `ADDRESSES` (path or URL), `PARTS=bytecode` and
+`FACTORIES` narrow it down; see [scripts/live/check.ts](../../scripts/live/check.ts).
+
 ## Regenerating
 
 `maths:generate` is deterministic for a given `SEED` (default 1); pool parameters and amounts come from the

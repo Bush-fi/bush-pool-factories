@@ -4,6 +4,7 @@
 pub mod buffer;
 /// Example pool for contributors (the template factory's ConstantSumPool); not a Bush pool type.
 pub mod constant_sum;
+// scaffold:modules (`npm run new-factory` adds modules above this line; move yours into the list once approved)
 pub mod fixed_price_lbp;
 pub mod liquidity_bootstrapping;
 pub mod reclamm;

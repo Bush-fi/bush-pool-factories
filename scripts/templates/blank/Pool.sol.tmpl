@@ -1,0 +1,137 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+pragma solidity ^0.8.24;
+
+import { IBasePool } from "@bush.fi/v3-interfaces/contracts/vault/IBasePool.sol";
+import { ISwapFeePercentageBounds } from "@bush.fi/v3-interfaces/contracts/vault/ISwapFeePercentageBounds.sol";
+import {
+    IUnbalancedLiquidityInvariantRatioBounds
+} from "@bush.fi/v3-interfaces/contracts/vault/IUnbalancedLiquidityInvariantRatioBounds.sol";
+import { IVault } from "@bush.fi/v3-interfaces/contracts/vault/IVault.sol";
+import { PoolSwapParams, Rounding, SwapKind } from "@bush.fi/v3-interfaces/contracts/vault/VaultTypes.sol";
+
+import { FixedPoint } from "@bush.fi/v3-solidity-utils/contracts/math/FixedPoint.sol";
+import { Version } from "@bush.fi/v3-solidity-utils/contracts/helpers/Version.sol";
+import { BushPoolToken } from "@bush.fi/v3-vault/contracts/BushPoolToken.sol";
+import { PoolInfo } from "@bush.fi/v3-pool-utils/contracts/PoolInfo.sol";
+
+/**
+ * @notice TODO: one line on what this pool is.
+ *
+ * @dev Skeleton scaffolded by `npm run new-factory -- --blank`: every function the Vault needs is here, none has a
+ * body yet. The Vault calls the pool with balances already scaled to 18 decimals (token decimals and rates applied),
+ * and does everything else itself: token transfers, balance bookkeeping, swap fees, BPT minting/burning.
+ * The pool only does maths.
+ *
+ * The three maths functions all describe the same curve:
+ *   - `computeInvariant` which curve the pool is on: one number summarising the balances (the pool's "size");
+ *   - `onSwap`           a move along that curve: the amount that keeps the invariant constant (or growing);
+ *   - `computeBalance`   the curve solved for one balance: the balance that gives a target invariant.
+ * If they disagree, arbitrageurs drain the pool. A swap must never decrease the invariant.
+ *
+ * Rounding: every rounding decision must favour the Vault. Round amounts the user receives down, amounts the user
+ * pays up, and invariants as the `rounding` argument says. The off-chain maths (maths/<lang>) must reproduce these
+ * exact choices to match the contract to the wei.
+ *
+ * For worked examples see contracts/_template/ConstantSumPool.sol (smallest), contracts/weighted/WeightedPool.sol
+ * and contracts/stable/StablePool.sol.
+ */
+contract __Pascal__Pool is IBasePool, BushPoolToken, PoolInfo, Version {
+    using FixedPoint for uint256;
+
+    /// @notice Parameters the factory passes to the constructor (ABI-encoded together with the Vault address).
+    struct NewPoolParams {
+        string name;
+        string symbol;
+        string version;
+        // TODO: your pool's creation parameters (a price, weights, an amplification factor, ...).
+    }
+
+    // TODO: swap fee bounds the Vault enforces when the fee is set. 18-decimal percentages (1e18 = 100%).
+    // Minimum 0.0001%, never lower: the fee must cover the rounding error of the pool's fixed-point maths, or
+    // repeated tiny swaps can extract it. (StablePool uses the same floor.)
+    uint256 private constant _MIN_SWAP_FEE_PERCENTAGE = 1e12; // 0.0001%
+    uint256 private constant _MAX_SWAP_FEE_PERCENTAGE = 10e16; // 10%
+
+    // TODO: how far one unbalanced add/remove may move the invariant (1e18 = no change). Pick bounds inside which
+    // your maths stays accurate; curved pools need tighter ones than flat ones.
+    uint256 private constant _MIN_INVARIANT_RATIO = 50e16; // 50%
+    uint256 private constant _MAX_INVARIANT_RATIO = 200e16; // 200%
+
+    // TODO: storage for your parameters, usually immutables set in the constructor.
+
+    error NotImplemented();
+
+    constructor(
+        NewPoolParams memory params,
+        IVault vault
+    ) BushPoolToken(vault, params.name, params.symbol) PoolInfo(vault) Version(params.version) {
+        // TODO: validate and store your parameters (revert on values your maths can't handle).
+    }
+
+    // TODO: a getter for each parameter. maths/check's adapter reads them back from the chain for the off-chain maths.
+
+    /**
+     * @inheritdoc IBasePool
+     * @dev Price a swap. `request.kind` says which amount the user fixed:
+     *   - EXACT_IN:  `request.amountGivenScaled18` is the amount of token `indexIn` sent in; return the amount of
+     *                token `indexOut` out. The user receives it: round down.
+     *   - EXACT_OUT: `request.amountGivenScaled18` is the amount of token `indexOut` wanted; return the amount of
+     *                token `indexIn` to pay. The user pays it: round up.
+     * `request.balancesScaled18` are the balances before the swap. The amount given is net of the swap fee: the
+     * Vault charges fees itself, so don't. Revert on invalid indices or on swaps your curve can't serve.
+     */
+    function onSwap(PoolSwapParams memory request) public pure override returns (uint256 amountCalculatedScaled18) {
+        // TODO: solve your invariant for the unknown amount, holding the invariant constant. (Make it `view` once it
+        // reads the pool's parameters: the compiler rejects a mutability that's stricter or looser than needed.)
+        revert NotImplemented();
+    }
+
+    /**
+     * @inheritdoc IBasePool
+     * @dev The pool's invariant for `balances`, rounded as `rounding` asks. The Vault uses it to mint the initial
+     * BPT on initialization and to price unbalanced adds/removes: BPT minted or burned is proportional to how much
+     * the invariant changes. It must grow (at least) linearly with the balances: doubling every balance must double
+     * the invariant, or proportional adds/removes and unbalanced ones give different BPT for the same value.
+     */
+    function computeInvariant(uint256[] memory balances, Rounding rounding) public pure override returns (uint256) {
+        // TODO: your invariant formula (and `view` once it reads the pool's parameters).
+        revert NotImplemented();
+    }
+
+    /**
+     * @inheritdoc IBasePool
+     * @dev The new balance of token `tokenInIndex` that, with every other balance unchanged, makes the invariant
+     * `invariantRatio` times its current value. Used by single-token adds (ratio > 1) and removes (ratio < 1).
+     * Round so the user gets the worse side: target invariant up, and the resulting balance up.
+     */
+    function computeBalance(
+        uint256[] memory balances,
+        uint256 tokenInIndex,
+        uint256 invariantRatio
+    ) external pure override returns (uint256 newBalance) {
+        // TODO: target = computeInvariant(balances, ROUND_UP).mulUp(invariantRatio); solve for balances[tokenInIndex].
+        // (`view` once it reads the pool's parameters.)
+        revert NotImplemented();
+    }
+
+    /// @inheritdoc ISwapFeePercentageBounds
+    function getMinimumSwapFeePercentage() external pure override returns (uint256) {
+        return _MIN_SWAP_FEE_PERCENTAGE;
+    }
+
+    /// @inheritdoc ISwapFeePercentageBounds
+    function getMaximumSwapFeePercentage() external pure override returns (uint256) {
+        return _MAX_SWAP_FEE_PERCENTAGE;
+    }
+
+    /// @inheritdoc IUnbalancedLiquidityInvariantRatioBounds
+    function getMinimumInvariantRatio() external pure override returns (uint256) {
+        return _MIN_INVARIANT_RATIO;
+    }
+
+    /// @inheritdoc IUnbalancedLiquidityInvariantRatioBounds
+    function getMaximumInvariantRatio() external pure override returns (uint256) {
+        return _MAX_INVARIANT_RATIO;
+    }
+}

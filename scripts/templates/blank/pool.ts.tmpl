@@ -1,0 +1,67 @@
+// Exact fixed-point port of contracts/__family__/__Pascal__Pool.sol, implementing the bush-maths `PoolBase`
+// interface so the bush-maths Vault flow (token scaling, rates, swap fees, hooks) can run it.
+//
+// Rules for a port that matches the contract to the wei:
+//   - use bigint and the bush-maths fixed-point helpers (MathSol.mulDownFixed etc.), never floating point;
+//   - mirror every rounding direction of the Solidity (mulDown/mulUp/divDown/divUp) call for call;
+//   - reproduce every revert as a throw (the check treats "both fail" as a match);
+//   - import only from '../poolKit' (and this folder).
+
+import {
+    type MaxSingleTokenRemoveParams,
+    type MaxSwapParams,
+    type PoolBase,
+    Rounding,
+    type SwapParams,
+} from '../poolKit';
+
+/** The Vault's invariant-ratio bounds for unbalanced liquidity operations (__Pascal__Pool._MIN/_MAX_INVARIANT_RATIO). */
+export const _MIN_INVARIANT_RATIO = 500000000000000000n; // 50%
+export const _MAX_INVARIANT_RATIO = 2000000000000000000n; // 200%
+
+export class __Pascal__ implements PoolBase {
+    // TODO: your pool's parameters, as the adapter's poolData() reports them.
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    constructor(poolState: any) {
+        // TODO: read your parameters from poolState (they arrive as strings in the test data: BigInt(...) them).
+    }
+
+    getMaximumInvariantRatio(): bigint {
+        return _MAX_INVARIANT_RATIO;
+    }
+
+    getMinimumInvariantRatio(): bigint {
+        return _MIN_INVARIANT_RATIO;
+    }
+
+    /** Largest swap the pool accepts, in raw token units of the given token (see the ConstantSum template). */
+    getMaxSwapAmount(p: MaxSwapParams): bigint {
+        throw new Error('NotImplemented');
+    }
+
+    /** Largest single-token add the pool accepts (MAX_UINT256 if unbounded). */
+    getMaxSingleTokenAddAmount(): bigint {
+        throw new Error('NotImplemented');
+    }
+
+    /** Largest single-token remove the pool accepts (at most the token's balance). */
+    getMaxSingleTokenRemoveAmount(p: MaxSingleTokenRemoveParams): bigint {
+        throw new Error('NotImplemented');
+    }
+
+    // __Pascal__Pool.onSwap
+    onSwap(swapParams: SwapParams): bigint {
+        throw new Error('NotImplemented');
+    }
+
+    // __Pascal__Pool.computeInvariant
+    computeInvariant(balancesLiveScaled18: bigint[], rounding: Rounding): bigint {
+        throw new Error('NotImplemented');
+    }
+
+    // __Pascal__Pool.computeBalance
+    computeBalance(balancesLiveScaled18: bigint[], tokenInIndex: number, invariantRatio: bigint): bigint {
+        throw new Error('NotImplemented');
+    }
+}

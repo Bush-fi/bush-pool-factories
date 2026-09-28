@@ -32,8 +32,8 @@ import { PoolInfo } from "@bush.fi/v3-pool-utils/contracts/PoolInfo.sol";
  * plus the fee and invariant-ratio bounds the Vault enforces, and the ERC20 (BPT) behaviour from BushPoolToken.
  *
  * Rounding rule of thumb: every rounding decision must favour the Vault (round amounts the user receives down,
- * amounts the user pays up, invariants as the `rounding` argument says). The off-chain maths in
- * The off-chain maths (maths/<lang>) must reproduce these exact choices to match the contract to the wei.
+ * amounts the user pays up, invariants as the `rounding` argument says). The off-chain maths
+ * (maths/<lang>) must reproduce these exact choices to match the contract to the wei.
  */
 contract ConstantSumPool is IBasePool, BushPoolToken, PoolInfo, Version {
     using FixedPoint for uint256;
@@ -47,7 +47,9 @@ contract ConstantSumPool is IBasePool, BushPoolToken, PoolInfo, Version {
     }
 
     // Swap fee bounds enforced by the Vault when the fee is set. 18-decimal percentages (1e18 = 100%).
-    uint256 private constant _MIN_SWAP_FEE_PERCENTAGE = 0;
+    // Minimum 0.0001%, never lower: the fee must cover the rounding error of the pool's fixed-point maths, or
+    // repeated tiny swaps can extract it. (StablePool uses the same floor.)
+    uint256 private constant _MIN_SWAP_FEE_PERCENTAGE = 1e12; // 0.0001%
     uint256 private constant _MAX_SWAP_FEE_PERCENTAGE = 10e16; // 10%
 
     // Bounds on how much an unbalanced add/remove may change the invariant. A constant-sum pool has no curvature,

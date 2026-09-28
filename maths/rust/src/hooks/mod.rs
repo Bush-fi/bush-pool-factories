@@ -1,6 +1,7 @@
 //! Hook implementations for Bush pools
 
 pub mod stable_surge;
+// scaffold:modules (`npm run new-hook` adds modules above this line)
 pub mod types;
 
 pub use stable_surge::{StableSurgeHook, StableSurgeHookState};

@@ -4,13 +4,10 @@
 //! Rules for a port that matches the contract to the wei:
 //!   - use `U256` and the bush-maths fixed-point helpers (`mul_down_fixed` etc.), never floats;
 //!   - mirror every rounding direction of the Solidity (mulDown/mulUp/divDown/divUp) call for call;
-//!   - reproduce every revert as an `Err` (the check treats "both fail" as a match).
+//!   - reproduce every revert as an `Err` (the check treats "both fail" as a match);
+//!   - use only `crate::pool_kit` (and this module).
 
-use alloy_primitives::{uint, U256};
-use crate::common::errors::PoolError;
-use crate::common::maths::{div_down_fixed, div_up_fixed, mul_down_fixed, mul_up_fixed};
-use crate::common::pool_base::PoolBase;
-use crate::common::types::{Rounding, SwapKind, SwapParams};
+use crate::pool_kit::*;
 
 /// The Vault's invariant-ratio bounds for unbalanced liquidity operations (ConstantSumPool._MIN/_MAX_INVARIANT_RATIO).
 pub const MIN_INVARIANT_RATIO: U256 = uint!(500000000000000000_U256); // 50%

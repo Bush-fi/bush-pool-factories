@@ -1,0 +1,146 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+pragma solidity ^0.8.24;
+
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+import { IVault } from "@bush.fi/v3-interfaces/contracts/vault/IVault.sol";
+import "@bush.fi/v3-interfaces/contracts/vault/VaultTypes.sol";
+
+import { ArrayHelpers } from "@bush.fi/v3-solidity-utils/contracts/test/ArrayHelpers.sol";
+import { CastingHelpers } from "@bush.fi/v3-solidity-utils/contracts/helpers/CastingHelpers.sol";
+import { InputHelpers } from "@bush.fi/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
+__EXTRA_IMPORTS__
+import { __Factory__ } from "../../../contracts/__family__/__Factory__.sol";
+import { __Pascal__Hook } from "../../../contracts/__family__/__Pascal__Hook.sol";
+import { __POOL__ } from "../../../contracts/__POOL_PATH__";
+import { PoolPropertiesTest } from "../utils/PoolPropertiesTest.sol";
+
+/**
+ * @notice Tests for `__Pascal__Hook` on `__POOL__`s from `__Factory__`.
+ // @open {
+ * @dev `createPoolFactory` deploys the hook, then the factory holding it, exactly as on chain.
+ // @open }
+ // @restricted {
+ * @dev `createPoolFactory` deploys the hook, then the factory holding it, then binds them, exactly as on chain.
+ // @restricted }
+ *
+ * `PoolPropertiesTest` (test/foundry/utils/) runs its fuzz and invariant tests against the hooked pool: whatever
+ * the hook does, swaps must not decrease the invariant and no operation may dilute the LPs. (Its check that the
+ * Vault's result equals the pool's quote is skipped automatically once the hook sets a dynamic fee or adjusts
+ * amounts.) The tests here cover the hook itself.
+ *
+ *   forge test --match-path 'test/foundry/__family__/*' --fuzz-runs 256    # quick iteration
+ */
+contract __Pascal__HookTest is PoolPropertiesTest {
+    using ArrayHelpers for *;
+    using CastingHelpers for address[];
+
+    string private constant POOL_VERSION = "Pool v1";
+    uint256 private constant SWAP_FEE = 1e16; // 1%
+
+    __Pascal__Hook internal hook;
+
+    constructor() {
+        // Fuzz ranges for a __POOL__ (see PoolPropertiesTest for all of them).
+__RANGES__
+    }
+
+    function setUp() public override {
+        super.setUp();
+    }
+
+    function createPoolFactory() internal override returns (address factory) {
+        hook = new __Pascal__Hook(IVault(address(vault)), "Hook v1");
+        factory = address(new __Factory__(IVault(address(vault)), address(hook), 365 days, "Factory v1", POOL_VERSION));
+        // @restricted {
+        hook.setFactory(factory);
+        // @restricted }
+        vm.label(address(hook), "__title__ hook");
+    }
+
+    function createPool() internal override returns (address newPool, bytes memory poolArgs) {
+        IERC20[] memory sortedTokens = InputHelpers.sortTokens([address(dai), address(usdc)].toMemoryArray().asIERC20());
+        TokenConfig[] memory tokenConfigs = vault.buildTokenConfig(sortedTokens);
+        PoolRoleAccounts memory roleAccounts;
+
+__CREATE__
+        vm.label(newPool, "__title__ pool");
+    }
+
+    function initPool() internal override {
+        // Runs inside `super.setUp()`, before `poolTokens` is filled: read the tokens from the Vault.
+        IERC20[] memory tokens = vault.getPoolTokens(pool);
+        vm.prank(lp);
+        router.initialize(pool, tokens, [poolInitAmount, poolInitAmount].toMemoryArray(), 0, false, bytes(""));
+    }
+
+    /***************************************************************************
+                                  Wiring
+    ***************************************************************************/
+
+    function testPoolIsRegisteredWithHook() public view {
+        assertTrue(__Factory__(poolFactory).isPoolFromFactory(pool), "Pool not from factory");
+        assertEq(__Factory__(poolFactory).getHook(), address(hook), "Factory holds a different hook");
+        assertEq(vault.getHooksConfig(pool).hooksContract, address(hook), "Pool registered without the hook");
+        // @restricted {
+        assertEq(hook.getFactory(), poolFactory, "Hook bound to a different factory");
+        // @restricted }
+    }
+
+    // @open {
+    /// @dev Open registration: a pool from any factory may use the hook (safe while its state is per pool).
+    function testHookAcceptsPoolsFromAnyFactory() public {
+        TokenConfig[] memory tokenConfigs;
+        LiquidityManagement memory liquidityManagement;
+
+        vm.prank(address(vault));
+        assertTrue(hook.onRegister(address(0xBEEF), address(0xCAFE), tokenConfigs, liquidityManagement), "Refused a pool");
+    }
+    // @open }
+
+    // @restricted {
+    function testHookRefusesPoolsFromOtherFactories() public {
+        TokenConfig[] memory tokenConfigs;
+        LiquidityManagement memory liquidityManagement;
+
+        vm.prank(address(vault));
+        assertFalse(hook.onRegister(address(0xBAD), pool, tokenConfigs, liquidityManagement), "Accepted a foreign factory");
+
+        // A pool the bound factory didn't create.
+        vm.prank(address(vault));
+        assertFalse(hook.onRegister(poolFactory, address(0xBAD), tokenConfigs, liquidityManagement), "Accepted a foreign pool");
+    }
+
+    function testSetFactoryOnlyOnce() public {
+        vm.expectRevert(__Pascal__Hook.FactoryAlreadySet.selector);
+        hook.setFactory(poolFactory);
+    }
+
+    function testSetFactoryOnlyByDeployer() public {
+        __Pascal__Hook freshHook = new __Pascal__Hook(IVault(address(vault)), "Hook v1");
+        vm.prank(alice);
+        vm.expectRevert(__Pascal__Hook.NotDeployer.selector);
+        freshHook.setFactory(poolFactory);
+    }
+
+    function testSetFactoryRejectsFactoryWithOtherHook() public {
+        __Pascal__Hook freshHook = new __Pascal__Hook(IVault(address(vault)), "Hook v1");
+        // poolFactory holds `hook`, not `freshHook`.
+        vm.expectRevert(__Pascal__Hook.FactoryDoesNotUseThisHook.selector);
+        freshHook.setFactory(poolFactory);
+    }
+    // @restricted }
+
+    function testCallbacksOnlyFromVault() public {
+        TokenConfig[] memory tokenConfigs;
+        LiquidityManagement memory liquidityManagement;
+        vm.expectRevert(abi.encodeWithSignature("SenderIsNotVault(address)", address(this)));
+        hook.onRegister(poolFactory, pool, tokenConfigs, liquidityManagement);
+    }
+
+    // TODO: test what the hook does, for each callback you switch on in getHookFlags. For example:
+    //   - a dynamic fee: the fee for a few hand-worked swaps, and that it stays within the pool's fee bounds;
+    //   - before-callbacks that gate operations: the allowed case and the reverting one;
+    //   - adjusted amounts: what the user pays/receives, and that the hook's cut is settled with the Vault.
+}

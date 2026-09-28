@@ -7,6 +7,8 @@
 pub mod common;
 pub mod cow;
 pub mod hooks;
+/// Everything a new pool or hook needs, in one `use crate::pool_kit::*;`.
+pub mod pool_kit;
 pub mod pools;
 pub mod vault;
 

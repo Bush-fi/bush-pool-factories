@@ -18,6 +18,11 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       allowUnlimitedContractSize: true,
+      // `npm run live:check` forks a live chain (FORK_URL); everything else runs on a fresh local chain. Hardhat
+      // doesn't know the hardfork history of chains outside its list, so give Robinhood Chain's.
+      ...(process.env.FORK_URL
+        ? { forking: { url: process.env.FORK_URL }, chains: { 4663: { hardforkHistory: { cancun: 0 } } } }
+        : {}),
     },
   },
   solidity: {

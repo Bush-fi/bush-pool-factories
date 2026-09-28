@@ -12,6 +12,7 @@ from bush_maths.pools.liquidity_bootstrapping.liquidity_bootstrapping import Liq
 from bush_maths.pools.reclamm.reclamm import ReClamm
 from bush_maths.pools.stable.stable import Stable
 from bush_maths.pools.weighted.weighted import Weighted
+# scaffold:imports (`npm run new-factory` adds imports above this line)
 
 POOLS = {
     "WEIGHTED": Weighted,
@@ -24,6 +25,7 @@ POOLS = {
     "RECLAMM": ReClamm,
     # Template example.
     "CONSTANT_SUM": ConstantSum,
+    # scaffold:pools (`npm run new-factory` adds pools above this line)
 }
 
 
@@ -41,4 +43,5 @@ def _stable_surge(pool):
 # under `hook_state.hook_type`.
 HOOKS = {
     "STABLE_SURGE": _stable_surge,
+    # scaffold:hooks (`npm run new-hook` adds hooks above this line)
 }

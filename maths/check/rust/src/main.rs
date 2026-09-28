@@ -8,6 +8,7 @@
 use bush_maths::hooks::types::HookState;
 use bush_maths::hooks::{StableSurgeHook, StableSurgeHookState};
 use bush_maths::pools::constant_sum::ConstantSumPool;
+// scaffold:imports (`npm run new-factory` adds imports above this line)
 use bush_maths::pools::state_from_json;
 use bush_maths::{PoolBase, Vault};
 use math_check::{Hook, PoolJson};
@@ -16,6 +17,7 @@ fn make_pool(pool: &PoolJson) -> Result<Box<dyn PoolBase>, String> {
     Ok(match pool.s("poolType")?.as_str() {
         // Template example.
         "CONSTANT_SUM" => Box::new(ConstantSumPool::new(pool.u("rate")?)),
+        // scaffold:pools (`npm run new-factory` adds pools above this line)
         _ => Vault::get_pool(&state_from_json(pool, None)?).map_err(|e| format!("{e:?}"))?,
     })
 }
@@ -38,6 +40,7 @@ fn make_hook(pool: &PoolJson) -> Result<Option<Hook>, String> {
                 state: HookState::StableSurge(state),
             }))
         }
+        // scaffold:hooks (`npm run new-hook` adds hooks above this line)
         other => Err(format!("no Rust maths registered for hook type {other} (maths/check/rust/src/main.rs)")),
     }
 }

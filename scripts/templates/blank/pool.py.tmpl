@@ -1,0 +1,40 @@
+"""Exact fixed-point port of contracts/__family__/__Pascal__Pool.sol, implementing the bush-maths `PoolBase`
+interface so the bush-maths Vault flow (token scaling, rates, swap fees, hooks) can run it.
+
+Rules for a port that matches the contract to the wei:
+  - use Python ints and the bush-maths fixed-point helpers (mul_down_fixed etc.), never floats or Decimal;
+  - mirror every rounding direction of the Solidity (mulDown/mulUp/divDown/divUp) call for call;
+  - reproduce every revert as an exception (the check treats "both fail" as a match);
+  - import only from bush_maths.pool_kit (and this package).
+"""
+from typing import List
+
+from bush_maths.pool_kit import PoolBase, Rounding, SwapParams
+
+# The Vault's invariant-ratio bounds for unbalanced liquidity operations (__Pascal__Pool._MIN/_MAX_INVARIANT_RATIO).
+_MIN_INVARIANT_RATIO = 500000000000000000  # 50%
+_MAX_INVARIANT_RATIO = 2000000000000000000  # 200%
+
+
+class __Pascal__(PoolBase):
+    def __init__(self, pool_state):
+        # TODO: read your parameters from pool_state (the adapter's poolData() fields, as snake_case attributes).
+        pass
+
+    def get_maximum_invariant_ratio(self) -> int:
+        return _MAX_INVARIANT_RATIO
+
+    def get_minimum_invariant_ratio(self) -> int:
+        return _MIN_INVARIANT_RATIO
+
+    # __Pascal__Pool.onSwap
+    def on_swap(self, swap_params: SwapParams) -> int:
+        raise NotImplementedError("NotImplemented")
+
+    # __Pascal__Pool.computeInvariant
+    def compute_invariant(self, balances_live_scaled18: List[int], rounding: Rounding) -> int:
+        raise NotImplementedError("NotImplemented")
+
+    # __Pascal__Pool.computeBalance
+    def compute_balance(self, balances_live_scaled18: List[int], token_in_index: int, invariant_ratio: int) -> int:
+        raise NotImplementedError("NotImplemented")

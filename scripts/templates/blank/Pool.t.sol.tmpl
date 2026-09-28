@@ -1,0 +1,95 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+pragma solidity ^0.8.24;
+
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+import { IVault } from "@bush.fi/v3-interfaces/contracts/vault/IVault.sol";
+import "@bush.fi/v3-interfaces/contracts/vault/VaultTypes.sol";
+
+import { ArrayHelpers } from "@bush.fi/v3-solidity-utils/contracts/test/ArrayHelpers.sol";
+import { CastingHelpers } from "@bush.fi/v3-solidity-utils/contracts/helpers/CastingHelpers.sol";
+import { InputHelpers } from "@bush.fi/v3-solidity-utils/contracts/helpers/InputHelpers.sol";
+
+import { __Pascal__PoolFactory } from "../../../contracts/__family__/__Pascal__PoolFactory.sol";
+import { __Pascal__Pool } from "../../../contracts/__family__/__Pascal__Pool.sol";
+import { PoolPropertiesTest } from "../utils/PoolPropertiesTest.sol";
+
+/**
+ * @notice Tests for the pool and its factory.
+ * @dev `BaseVaultTest` (through `PoolPropertiesTest`) deploys a Vault, Router, test tokens and users; we override
+ * `createPoolFactory`, `createPool` and `initPool` so it works with our factory.
+ *
+ * `PoolPropertiesTest` (test/foundry/utils/) then runs, against this pool, fuzz tests and a stateful invariant test
+ * of the properties every pool must have: the invariant rounds and scales correctly, swaps never decrease it, round
+ * trips are never profitable, computeBalance reaches its target, no operation dilutes the LPs, and the minimum swap
+ * fee is at least 0.0001%. Read it to see exactly what's checked. The tests in this file add what properties can't:
+ * your curve's actual numbers.
+ *
+ * Until `computeInvariant` is implemented, `setUp` reverts (initializing the pool computes the first invariant),
+ * so every test fails with `NotImplemented`. That's expected.
+ *
+ *   forge test --match-path 'test/foundry/__family__/*' --fuzz-runs 256    # quick iteration
+ *   forge test --match-test <name> --fuzz-seed <seed> -vvv                 # replay a failure
+ */
+contract __Pascal__PoolTest is PoolPropertiesTest {
+    using ArrayHelpers for *;
+    using CastingHelpers for address[];
+
+    string private constant POOL_VERSION = "Pool v1";
+    uint256 private constant SWAP_FEE = 1e16; // 1%
+
+    constructor() {
+        // TODO: tune the fuzz ranges to your pool's real limits (see PoolPropertiesTest for all of them), e.g.
+        // maxSwapRatio = 30e16; // weighted pools refuse swaps above 30% of the balance
+    }
+
+    function setUp() public override {
+        super.setUp();
+    }
+
+    function createPoolFactory() internal override returns (address) {
+        return address(new __Pascal__PoolFactory(IVault(address(vault)), 365 days, "Factory v1", POOL_VERSION));
+    }
+
+    function createPool() internal override returns (address newPool, bytes memory poolArgs) {
+        IERC20[] memory sortedTokens = InputHelpers.sortTokens([address(dai), address(usdc)].toMemoryArray().asIERC20());
+        TokenConfig[] memory tokenConfigs = vault.buildTokenConfig(sortedTokens);
+
+        PoolRoleAccounts memory roleAccounts;
+        // TODO: pass your pool's creation parameters.
+        newPool = __Pascal__PoolFactory(poolFactory).create(
+            "__Title__ Pool",
+            "POOL",
+            tokenConfigs,
+            roleAccounts,
+            SWAP_FEE,
+            bytes32(0)
+        );
+        vm.label(newPool, "__title__ pool");
+
+        // The constructor arguments, as the factory encodes them (BaseVaultTest checks the deployment against them).
+        poolArgs = abi.encode(
+            __Pascal__Pool.NewPoolParams({ name: "__Title__ Pool", symbol: "POOL", version: POOL_VERSION }),
+            vault
+        );
+    }
+
+    function initPool() internal override {
+        // Runs inside `super.setUp()`, before `poolTokens` is filled: read the tokens from the Vault.
+        IERC20[] memory tokens = vault.getPoolTokens(pool);
+        vm.prank(lp);
+        router.initialize(pool, tokens, [poolInitAmount, poolInitAmount].toMemoryArray(), 0, false, bytes(""));
+    }
+
+    function testPoolIsFromFactory() public view {
+        assertTrue(__Pascal__PoolFactory(poolFactory).isPoolFromFactory(pool), "Pool not registered with factory");
+    }
+
+    // TODO: your curve's own numbers. The inherited tests prove the maths is self-consistent; these prove it's the
+    // right maths. For example (see test/foundry/_template/ConstantSumPool.t.sol for each of these):
+    //   - computeInvariant on balances you've worked out by hand, both roundings;
+    //   - an EXACT_IN and an EXACT_OUT swap through the router, against amounts worked out by hand;
+    //   - 1-wei swaps round against the user;
+    //   - every revert: constructor and factory on bad parameters, swaps your curve refuses.
+}

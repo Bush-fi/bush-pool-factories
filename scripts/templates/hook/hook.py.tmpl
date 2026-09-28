@@ -1,0 +1,71 @@
+"""Exact port of contracts/__family__/__Pascal__Hook.sol, implementing the bush-maths `HookBase` interface so the
+bush-maths Vault flow calls it around swaps, adds and removes, as the on-chain Vault does.
+
+Rules for a port that matches the contract to the wei:
+  - the should_* flags below mirror __Pascal__Hook.getHookFlags() exactly (the Vault only calls what's switched on);
+  - use Python ints and the bush-maths fixed-point helpers (mul_down_fixed etc.), never floats or Decimal;
+  - mirror every rounding direction of the Solidity call for call;
+  - import only from bush_maths.pool_kit (and this package).
+"""
+from dataclasses import dataclass
+
+from bush_maths.pool_kit import (
+    AfterAddLiquidityResult,
+    AfterRemoveLiquidityResult,
+    AfterSwapParams,
+    AfterSwapResult,
+    BeforeAddLiquidityResult,
+    BeforeRemoveLiquidityResult,
+    BeforeSwapResult,
+    DynamicSwapFeeResult,
+    HookBase,
+    SwapParams,
+)
+
+
+@dataclass
+class __Pascal__HookState:
+    """What the maths needs from the chain: the adapter's `hook.dynamicData()` fields."""
+
+    # TODO: the hook's parameters, e.g. a fee rate (int).
+    hook_type: str = "__Pascal__"
+
+
+class __Pascal__Hook(HookBase):
+    # TODO: mirror __Pascal__Hook.getHookFlags().
+    should_call_compute_dynamic_swap_fee = False
+    should_call_before_swap = False
+    should_call_after_swap = False
+    should_call_before_add_liquidity = False
+    should_call_after_add_liquidity = False
+    should_call_before_remove_liquidity = False
+    should_call_after_remove_liquidity = False
+    enable_hook_adjusted_amounts = False
+
+    # __Pascal__Hook.onComputeDynamicSwapFeePercentage
+    def on_compute_dynamic_swap_fee(self, swap_params: SwapParams, static_swap_fee_percentage: int, hook_state) -> DynamicSwapFeeResult:
+        return DynamicSwapFeeResult(success=True, dynamic_swap_fee=static_swap_fee_percentage)
+
+    # __Pascal__Hook.onBeforeSwap
+    def on_before_swap(self, swap_params: SwapParams, hook_state) -> BeforeSwapResult:
+        return BeforeSwapResult(success=True, hook_adjusted_balances_scaled18=list(swap_params.balances_live_scaled18))
+
+    # __Pascal__Hook.onAfterSwap
+    def on_after_swap(self, after_swap_params: AfterSwapParams, hook_state) -> AfterSwapResult:
+        return AfterSwapResult(success=True, hook_adjusted_amount_calculated_raw=after_swap_params.amount_calculated_raw)
+
+    # __Pascal__Hook.onBeforeAddLiquidity
+    def on_before_add_liquidity(self, kind, max_amounts_in_scaled18, min_bpt_amount_out, balances_scaled18, hook_state) -> BeforeAddLiquidityResult:
+        return BeforeAddLiquidityResult(success=True, hook_adjusted_balances_scaled18=list(balances_scaled18))
+
+    # __Pascal__Hook.onAfterAddLiquidity
+    def on_after_add_liquidity(self, kind, amounts_in_scaled18, amounts_in_raw, bpt_amount_out, balances_scaled18, hook_state) -> AfterAddLiquidityResult:
+        return AfterAddLiquidityResult(success=True, hook_adjusted_amounts_in_raw=list(amounts_in_raw))
+
+    # __Pascal__Hook.onBeforeRemoveLiquidity
+    def on_before_remove_liquidity(self, kind, max_bpt_amount_in, min_amounts_out_scaled18, balances_scaled18, hook_state) -> BeforeRemoveLiquidityResult:
+        return BeforeRemoveLiquidityResult(success=True, hook_adjusted_balances_scaled18=list(balances_scaled18))
+
+    # __Pascal__Hook.onAfterRemoveLiquidity
+    def on_after_remove_liquidity(self, kind, bpt_amount_in, amounts_out_scaled18, amounts_out_raw, balances_scaled18, hook_state) -> AfterRemoveLiquidityResult:
+        return AfterRemoveLiquidityResult(success=True, hook_adjusted_amounts_out_raw=list(amounts_out_raw))

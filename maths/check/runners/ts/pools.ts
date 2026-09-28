@@ -13,6 +13,7 @@ import { FixedPriceLBP } from '@bush.fi/maths/fixedPriceLBP';
 import { ReClamm } from '@bush.fi/maths/reClamm';
 import { HookStateStableSurge, StableSurgeHook } from '@bush.fi/maths/hooks/stableSurgeHook';
 import { ConstantSum } from '@bush.fi/maths/constantSum';
+// scaffold:imports (`npm run new-factory` adds imports above this line)
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -28,6 +29,7 @@ export const pools: Record<string, (pool: any) => PoolBase> = {
     RECLAMM: (pool) => new ReClamm(pool),
     // Template example.
     CONSTANT_SUM: (pool) => new ConstantSum(pool),
+    // scaffold:pools (`npm run new-factory` adds pools above this line)
 };
 
 // Keyed by the hook `type` the adapter reports. Returns the hook maths and the state the Vault hands it on every call.
@@ -41,4 +43,5 @@ export const hooks: Record<string, (pool: any) => { hook: HookBase; hookState: u
         };
         return { hook: new StableSurgeHook(hookState), hookState };
     },
+    // scaffold:hooks (`npm run new-hook` adds hooks above this line)
 };

@@ -1,0 +1,42 @@
+// Math-check adapter: creates a __POOL__ with __Pascal__Hook through __Factory__, and reports the fields the maths
+// needs for the pool and for the hook. See maths/check/README.md.
+
+import { FactoryAdapter } from '../src/types';
+
+const adapter: FactoryAdapter = {
+  // One test-data file per variant. Cover what changes a code path in the hook's maths: token decimals (the Vault
+  // scales every balance to 18 decimals), and each of the hook's parameters.
+  variants: {
+__VARIANTS__
+  },
+
+  async createPool(ctx) {
+    const tokens = await ctx.createTokens(ctx.variant.decimals as number[]);
+
+    // The hook first, then the factory holding it: the same steps as a live deployment.
+    const hook = await ctx.deploy('__Pascal__Hook', [ctx.vault, 'hook v1']);
+    const factory = await ctx.deploy('__Factory__', [ctx.vault, await hook.getAddress(), ctx.MONTH * 12, 'factory v1', 'pool v1']);
+    // @restricted {
+    await (await hook.setFactory(await factory.getAddress())).wait();
+    // @restricted }
+
+__CREATE__
+    const pool = await ctx.attach('__POOL__', ctx.poolCreated(await tx.wait()));
+
+    return {
+      pool,
+      // The pool is a standard __POOL__, so the maths for it already exists: only the hook is new.
+      poolType: '__POOL_TYPE__',
+      poolData: __POOL_DATA__,
+      hook: {
+        contract: hook,
+        type: '__UPPER__',
+        // TODO: the hook's parameters the maths needs, read back from the chain (never echo what you set), as
+        // strings: e.g. `feeRate: (await hook.getFeeRate(await pool.getAddress())).toString()`.
+        dynamicData: async () => ({}),
+      },
+    };
+  },
+};
+
+export default adapter;

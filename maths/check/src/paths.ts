@@ -21,7 +21,11 @@ export function discoverFactories(includeExamples = false): { name: string; adap
     .map((name) => ({ name, adapter: path.join(ADAPTERS, `${name}.ts`) }));
 }
 
-/** Where a factory's generated test data lives: examples stay out of maths/testData (the maths suites only know accepted types). */
+/**
+ * Where a factory's generated test data lives: examples stay out of maths/testData (the maths suites only know
+ * accepted types). MATHS_DATA_DIR overrides it, e.g. for data generated against live contracts (`npm run live:check`).
+ */
 export function testDataDirFor(factory: string): string {
+  if (process.env.MATHS_DATA_DIR) return path.resolve(REPO, process.env.MATHS_DATA_DIR);
   return factory.startsWith('_') ? path.join(ROOT, 'out', 'testData') : TEST_DATA;
 }

@@ -11,6 +11,7 @@ import { Stable } from '../stable';
 import { LiquidityBootstrapping } from '../liquidityBootstrapping';
 import { FixedPriceLBP } from '../fixedPriceLBP';
 import { ReClamm } from '../reClamm';
+import { BondingReClamm } from '../bondingReClamm';
 import { BufferState, erc4626BufferWrapOrUnwrap } from '../buffer';
 
 import {
@@ -65,6 +66,7 @@ export class Vault {
             LIQUIDITY_BOOTSTRAPPING: LiquidityBootstrapping,
             FIXED_PRICE_LBP: FixedPriceLBP,
             RECLAMM: ReClamm,
+            BONDING_RECLAMM: BondingReClamm,
             // custom add liquidity types take precedence over base types
             ...customPoolClasses,
         };

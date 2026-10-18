@@ -12,6 +12,7 @@ from bush_maths.pools.liquidity_bootstrapping.liquidity_bootstrapping import Liq
 from bush_maths.pools.reclamm.reclamm import ReClamm
 from bush_maths.pools.stable.stable import Stable
 from bush_maths.pools.weighted.weighted import Weighted
+from bush_maths.pools.bonding_reclamm.bonding_reclamm import BondingReClamm
 # scaffold:imports (`npm run new-factory` adds imports above this line)
 
 POOLS = {
@@ -25,6 +26,7 @@ POOLS = {
     "RECLAMM": ReClamm,
     # Template example.
     "CONSTANT_SUM": ConstantSum,
+    "BONDING_RECLAMM": BondingReClamm,
     # scaffold:pools (`npm run new-factory` adds pools above this line)
 }
 

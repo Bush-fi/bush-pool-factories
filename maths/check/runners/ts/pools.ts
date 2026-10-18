@@ -13,6 +13,9 @@ import { FixedPriceLBP } from '@bush.fi/maths/fixedPriceLBP';
 import { ReClamm } from '@bush.fi/maths/reClamm';
 import { HookStateStableSurge, StableSurgeHook } from '@bush.fi/maths/hooks/stableSurgeHook';
 import { ConstantSum } from '@bush.fi/maths/constantSum';
+// Oracle-bin is kept local and gitignored; uncomment both lines to check it (needs maths/typescript/src/oracleBin).
+// import { OracleBin } from '@bush.fi/maths/oracleBin';
+import { BondingReClamm } from '@bush.fi/maths/bondingReClamm';
 // scaffold:imports (`npm run new-factory` adds imports above this line)
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -29,6 +32,8 @@ export const pools: Record<string, (pool: any) => PoolBase> = {
     RECLAMM: (pool) => new ReClamm(pool),
     // Template example.
     CONSTANT_SUM: (pool) => new ConstantSum(pool),
+    // ORACLE_BIN: (pool) => new OracleBin(pool),
+    BONDING_RECLAMM: (pool) => new BondingReClamm(pool),
     // scaffold:pools (`npm run new-factory` adds pools above this line)
 };
 

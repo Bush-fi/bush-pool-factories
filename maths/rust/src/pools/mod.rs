@@ -4,6 +4,7 @@
 pub mod buffer;
 /// Example pool for contributors (the template factory's ConstantSumPool); not a Bush pool type.
 pub mod constant_sum;
+pub mod bonding_reclamm;
 // scaffold:modules (`npm run new-factory` adds modules above this line; move yours into the list once approved)
 pub mod fixed_price_lbp;
 pub mod liquidity_bootstrapping;
@@ -42,6 +43,7 @@ pub fn state_from_json(pool: &PoolJson, hook_type: Option<String>) -> Result<Poo
         }
         "FIXED_PRICE_LBP" => PoolState::FixedPriceLBP(FixedPriceLBPState::from_json(pool, base)?),
         "RECLAMM" => PoolState::ReClamm(ReClammState::from_json(pool, base)?),
+        "BONDING_RECLAMM" => PoolState::BondingReClamm(bonding_reclamm::BondingReClammState::from_json(pool, base)?),
         other => return Err(format!("Unsupported pool type: {other}")),
     })
 }

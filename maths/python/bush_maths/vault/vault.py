@@ -21,6 +21,7 @@ from bush_maths.pools.liquidity_bootstrapping.liquidity_bootstrapping import (
     LiquidityBootstrapping,
 )
 from bush_maths.pools.reclamm.reclamm import ReClamm
+from bush_maths.pools.bonding_reclamm.bonding_reclamm import BondingReClamm
 from bush_maths.pools.stable.stable import Stable
 from bush_maths.pools.weighted.weighted import Weighted
 from bush_maths.vault.add_liquidity import add_liquidity
@@ -44,6 +45,7 @@ class Vault:
             "LIQUIDITY_BOOTSTRAPPING": LiquidityBootstrapping,
             "FIXED_PRICE_LBP": FixedPriceLBP,
             "RECLAMM": ReClamm,
+            "BONDING_RECLAMM": BondingReClamm,
         }
         default_hook_classes: Dict[str, Type[HookBase]] = {
             "StableSurge": StableSurgeHook,

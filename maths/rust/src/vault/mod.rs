@@ -71,6 +71,9 @@ impl Vault {
             PoolState::ReClamm(reclamm_state) => Box::new(
                 crate::pools::reclamm::ReClammPool::from(reclamm_state.clone()),
             ),
+            PoolState::BondingReClamm(bonding_reclamm_state) => Box::new(
+                crate::pools::bonding_reclamm::BondingReClammPool::from(bonding_reclamm_state.clone()),
+            ),
             PoolState::Base(base) => {
                 return Err(PoolError::UnsupportedPoolType(base.pool_type.clone()))
             }

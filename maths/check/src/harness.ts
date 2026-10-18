@@ -98,6 +98,7 @@ export async function makeContext(chain: Chain, rng: Rng, variant: Record<string
 
 /** Mints, approves (via Permit2) and initializes the pool through the Router, as the factory tests do. */
 export async function initializePool(chain: Chain, setup: PoolSetup): Promise<void> {
+  if (setup.initializedByFactory) return;
   const [admin] = await ethers.getSigners();
   const pool = await setup.pool.getAddress();
   const tokens: string[] = [...(await chain.vault.getPoolTokens(pool))];

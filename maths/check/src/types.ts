@@ -84,6 +84,8 @@ export interface PoolSetup {
    * Raw amounts to initialize the pool with, per token in registration order. Defaults to 1000 whole tokens each.
    */
   initialAmounts?: bigint[];
+  /** The factory initialized the pool itself (e.g. a launch factory), so the generator must not. */
+  initializedByFactory?: boolean;
   /**
    * Runs after the pool is initialized and before `queryTimestamp` is mined to. For state that only exists on an
    * initialized pool: e.g. swapping to push a ReClamm pool out of its target range, or starting a price ratio update.

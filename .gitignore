@@ -21,3 +21,12 @@ maths/python/**/__pycache__/
 maths/python/.pytest_cache/
 maths/check/out/
 maths/check/rust/target/
+
+# Oracle-bin pool: kept locally, not tracked (contracts, mocks, tests, docs, maths)
+contracts/oracle-bin/
+contracts/test/OracleBinPriceProviderMock.sol
+test/foundry/oracle-bin/
+docs/oracle-bin-pool-factory/
+maths/check/adapters/oracle-bin-pool-factory.ts
+maths/typescript/src/oracleBin/
+maths/testData/*oracle-bin*

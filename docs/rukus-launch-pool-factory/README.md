@@ -1,4 +1,4 @@
-# BondingReClamm Pool Factory
+# RukusLaunch Pool Factory
 
 A token launch pool. It sells a new token along a pump.fun-style bonding curve, and when the curve sells out it
 graduates **in place** into a (practically) full-range pool that trades like a 50/50 constant-product pool. There's
@@ -6,25 +6,25 @@ no migration step and no second pool: the same address, balances and BPT carry o
 
 ## Pool Type
 
-BONDING_RECLAMM
+RUKUS_LAUNCH
 
 ## Overview
 
-`BondingReClammPoolFactory.create` launches a token in one transaction, like pump.fun:
+`RukusLaunchPoolFactory.create` launches a token in one transaction, like pump.fun:
 
-1. It deploys a new **launch token** (`BondingLaunchToken`): a plain ERC20, 18 decimals, fixed supply, no owner and
+1. It deploys a new **launch token** (`RukusLaunchToken`): a plain ERC20, 18 decimals, fixed supply, no owner and
    no mint.
-2. It creates a 2-token `BondingReClammPool` between the launch token and **WETH** (always WETH, set when the factory
+2. It creates a 2-token `RukusLaunchPool` between the launch token and **WETH** (always WETH, set when the factory
    is deployed, so no launch can be paired with a look-alike token). Buyers can pay in ETH through the Router.
 3. It initializes the pool with the **whole supply** and no quote, and mints the initial BPT to the burn address
    `0x…dEaD`.
 4. The pool is registered as its **own pool creator**, and when initialized it fixes the creator share of the swap fee
-   at 99.999% (the fee controller's maximum), for good. There is no pause manager and no swap fee manager: only
-   governance can change the fee rate.
+   at 99.999% (the fee controller's maximum) while bonding. There is no pause manager, and the pool is its own swap
+   fee manager: nobody else (governance included) can change the fee rate.
 5. If ETH is sent with `create`, it makes the **creator's initial buy** in the same transaction (tokens to the caller,
    at least `minInitialBuyAmountOut`), so no one can buy ahead of the creator.
 
-`BondingLaunchCreated` carries the pool, the token, the creator, the supply, the `metadataURI` (image, description,
+`RukusLaunchCreated` carries the pool, the token, the creator, the supply, the `metadataURI` (image, description,
 links; emitted, not stored) and the initial buy.
 
 So every launch token in circulation was bought from the curve, nobody holds BPT that could withdraw the raise, and
@@ -86,8 +86,9 @@ around the price (it gets shallower). The freeze keeps any trade from spanning b
 and with a 99.999% creator share that is all but 0.001% of the fee. So the curve stays exactly on its prices however
 much is traded while bonding, the pool graduates balanced (at exactly the configured graduation price and reserves),
 and the graduated range never widens. Creator fees are paid to the launch's `creatorFeeRecipient` (a user or a
-contract) by `withdrawCreatorFees()`, which anyone can call. Nothing can change the creator share afterwards: only the
-pool creator can, and the pool has no function that does. The protocol's share (set by governance) comes first; the
+contract) by `withdrawCreatorFees()`, which anyone can call. The creator share changes exactly once, at graduation, to
+the launch's `graduatedCreatorFeePercentage` (at least the factory's `minGraduatedCreatorFeePercentage`); nothing else
+can change it: only the pool creator can, and the pool has no other function that does. The protocol's share (set by governance) comes first; the
 creator gets the rest.
 
 The 5 ETH preset (a factory deployed with these values; `testLaunchPreset5Eth`): 1B tokens, 800M sold on the curve and
@@ -102,8 +103,11 @@ initialPrice)`, so 200M of 1B means `r = 4` and a 16x curve: `graduationPrice` =
   liquidity proportionally and later withdraw their own share (and only that).
 - **No pause manager.** The factory never sets one. Governance can still pause during the factory's pause window; with no
   BPT holder, a recovery-mode exit has nobody to pay out.
-- **The fee rate** is set at launch. There is no swap fee manager, so only governance can change it, within [0.001%,
-  10%] (ReClamm's bounds). The creator share of it is fixed at 99.999%.
+- **The fee rate** is set at launch, within [0.001%, 5%], and the pool is its own swap fee manager, so nobody can
+  change it. At graduation the pool sets the Vault's static swap fee to the launch's `graduatedSwapFeePercentage`
+  itself: there is no dynamic fee hook, so `getStaticSwapFeePercentage(pool)` is the fee charged in every phase, and
+  aggregators can quote the pool from it. (The swap that graduates the pool still pays the bonding fee: the Vault loads
+  a swap's fee before the hook that graduates it.) Graduation can't happen while the pool is paused.
 - **No price drift.** Because nothing moves with time, pushing the price and waiting gains nothing (tested: push-and-hold
   loses for any push and hold of up to a year). Earlier designs with a moving or narrowing range were exploitable this
   way when the pool is the token's only market.
@@ -112,14 +116,14 @@ initialPrice)`, so 200M of 1B means `r = 4` and a 16x curve: `graduationPrice` =
 
 ## Key Files
 
-- Contracts: [`contracts/bonding-reclamm/`](../../contracts/bonding-reclamm) (the pool, the factory, and
-  `BondingLaunchToken`). The swap maths is [`ReClammMath`](../../contracts/reclamm/lib/ReClammMath.sol),
-  unchanged; `lib/BondingReClammMath.sol` adds the curve setup and the graduation solve.
-- Tests: [`test/foundry/bonding-reclamm/`](../../test/foundry/bonding-reclamm), including attack scenarios
-  (`BondingReClammAttacks.t.sol`) and a volatility simulation (`BondingReClammVolatilitySim.t.sol`, run with
+- Contracts: [`contracts/rukus-launch/`](../../contracts/rukus-launch) (the pool, the factory, and
+  `RukusLaunchToken`). The swap maths is [`ReClammMath`](../../contracts/reclamm/lib/ReClammMath.sol),
+  unchanged; `lib/RukusLaunchMath.sol` adds the curve setup and the graduation solve.
+- Tests: [`test/foundry/rukus-launch/`](../../test/foundry/rukus-launch), including attack scenarios
+  (`RukusLaunchAttacks.t.sol`) and a volatility simulation (`RukusLaunchVolatilitySim.t.sol`, run with
   `FOUNDRY_GAS_LIMIT=9000000000 RUN_SIM=true`)
 - Maths: [`maths/`](../../maths) (TypeScript, Python, Rust; checked against the deployed pool by
-  `npm run maths:check -- bonding-reclamm-pool-factory`)
+  `npm run maths:check -- rukus-launch-pool-factory`)
 - How to run the tests: [TESTING.md](./TESTING.md); latest results: [TEST_REPORT.md](./TEST_REPORT.md)
 - Parameters: [PARAMETERS.md](./PARAMETERS.md)
 - Gas costs: [GAS_CHARACTERISTICS.md](./GAS_CHARACTERISTICS.md)
@@ -137,10 +141,10 @@ import { Vault, SwapKind } from '@bush.fi/maths';
 const amountOut = new Vault().swap({ amountRaw, tokenIn, tokenOut, swapKind: SwapKind.GivenIn }, poolState);
 ```
 
-`poolState` is `getBondingReClammPoolDynamicData()`, plus `graduatedPriceRatio` from
-`getBondingReClammPoolImmutableData()` and the `currentTimestamp` to price at (only used to tell whether a `COMPLETED`
+`poolState` is `getRukusLaunchPoolDynamicData()`, plus `graduatedPriceRatio` from
+`getRukusLaunchPoolImmutableData()` and the `currentTimestamp` to price at (only used to tell whether a `COMPLETED`
 pool would graduate) (see
-`maths/testData/*bonding-reclamm-pool-factory*.json` for the exact shape). Points to handle in routing:
+`maths/testData/*rukus-launch-pool-factory*.json` for the exact shape). Points to handle in routing:
 
 - While `BONDING`, sells can only pay out quote that buyers put in (`AmountOutGreaterThanBalance`).
 - In the block a buy completes the curve, every swap reverts. Skip the pool until the next block.

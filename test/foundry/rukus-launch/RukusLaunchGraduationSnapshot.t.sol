@@ -10,17 +10,17 @@ import { FixedPoint } from "@bush.fi/v3-solidity-utils/contracts/math/FixedPoint
 import { ReClammMath } from "../../../contracts/reclamm/lib/ReClammMath.sol";
 import {
     BondingPhase,
-    BondingReClammCurveParams
-} from "../../../contracts/bonding-reclamm/interfaces/IBondingReClammPool.sol";
+    RukusLaunchCurveParams
+} from "../../../contracts/rukus-launch/interfaces/IRukusLaunchPool.sol";
 
-import { BaseBondingReClammTest } from "../utils/BaseBondingReClammTest.sol";
+import { BaseRukusLaunchTest } from "../utils/BaseRukusLaunchTest.sol";
 
 /**
  * @notice A visual proof that graduation doesn't move the price: the 5 ETH preset launch, printed side by side just
  * before and just after graduation, and the price through the whole lifecycle as a chart with graduation marked.
- * The numbers also land in TEST_REPORT.md (npm run test:bonding-reclamm:report).
+ * The numbers also land in TEST_REPORT.md (npm run test:rukus-launch:report).
  */
-contract BondingReClammGraduationSnapshotTest is BaseBondingReClammTest {
+contract RukusLaunchGraduationSnapshotTest is BaseRukusLaunchTest {
     using FixedPoint for uint256;
 
     uint256 internal constant SUPPLY = 1e9 * 1e18;
@@ -41,7 +41,7 @@ contract BondingReClammGraduationSnapshotTest is BaseBondingReClammTest {
     function setUp() public override {
         super.setUp();
         // The 5 ETH preset factory: it fixes the supply and curve of every launch.
-        _useFactory(SUPPLY, BondingReClammCurveParams({ initialPrice: INITIAL_PRICE, graduationPrice: GRADUATION_PRICE }));
+        _useFactory(SUPPLY, RukusLaunchCurveParams({ initialPrice: INITIAL_PRICE, graduationPrice: GRADUATION_PRICE }));
     }
 
     /**

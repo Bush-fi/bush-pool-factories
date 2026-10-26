@@ -16,16 +16,16 @@ import { WETHTestToken } from "@bush.fi/v3-solidity-utils/contracts/test/WETHTes
 import { RouterMock } from "@bush.fi/v3-vault/contracts/test/RouterMock.sol";
 import { BaseVaultTest } from "@bush.fi/v3-vault/test/foundry/utils/BaseVaultTest.sol";
 
-import { BondingReClammPool } from "../../../contracts/bonding-reclamm/BondingReClammPool.sol";
-import { BondingReClammPoolFactory } from "../../../contracts/bonding-reclamm/BondingReClammPoolFactory.sol";
+import { RukusLaunchPool } from "../../../contracts/rukus-launch/RukusLaunchPool.sol";
+import { RukusLaunchPoolFactory } from "../../../contracts/rukus-launch/RukusLaunchPoolFactory.sol";
 import {
-    BondingReClammCurveParams,
-    BondingReClammPoolParams
-} from "../../../contracts/bonding-reclamm/interfaces/IBondingReClammPool.sol";
-import { BondingLaunchParams } from "../../../contracts/bonding-reclamm/interfaces/IBondingReClammPoolFactory.sol";
+    RukusLaunchCurveParams,
+    RukusLaunchPoolParams
+} from "../../../contracts/rukus-launch/interfaces/IRukusLaunchPool.sol";
+import { RukusLaunchParams } from "../../../contracts/rukus-launch/interfaces/IRukusLaunchPoolFactory.sol";
 
 /**
- * @notice Launches a token through the BondingReClamm factory, which deploys the token, creates the pool, initializes
+ * @notice Launches a token through the RukusLaunch factory, which deploys the token, creates the pool, initializes
  * it with the whole supply and burns the initial BPT, all in `create`. The quote token is always WETH. By default the
  * launch token sorts first; set `_launchTokenIndex = 1` in a constructor to make it sort second (the salt is searched
  * until the new token's address lands on that side of WETH).
@@ -39,13 +39,13 @@ import { BondingLaunchParams } from "../../../contracts/bonding-reclamm/interfac
  * Fork mode: with FORK_URL set (and optionally FORK_BLOCK), every test runs on a fork of Robinhood Chain, against its
  * live Vault, Router, Permit2, WETH and protocol fee controller (and its real protocol fee), instead of local mocks.
  * The few tests that need mock-only controls (pausing the Vault, forcing a 0% fee, granting governance roles) skip
- * there, saying why. `npm run test:bonding-reclamm:fork`.
+ * there, saying why. `npm run test:rukus-launch:fork`.
  */
 interface IRouterWithPermit2 {
     function getPermit2() external view returns (IPermit2);
 }
 
-contract BaseBondingReClammTest is BaseVaultTest {
+contract BaseRukusLaunchTest is BaseVaultTest {
     // Robinhood Chain deployments (Bush-fi/bush-deployments addresses/robinhoodchain.json).
     address internal constant _LIVE_VAULT = 0xB055000fbE3cc9bDE7742C583a86cc6283E3fF85;
     address internal constant _LIVE_ROUTER = 0xa93179c0cd90B9D1569Cf20FD403a9A67540Ea4d;
@@ -56,9 +56,18 @@ contract BaseBondingReClammTest is BaseVaultTest {
     using FixedPoint for uint256;
 
     uint256 internal constant _SWAP_FEE = 1e16; // 1%, as on pump.fun
-    string internal constant _POOL_VERSION = "BondingReClamm Pool v1";
+    string internal constant _POOL_VERSION = "RukusLaunch Pool v1";
     address internal constant _BURN = 0x000000000000000000000000000000000000dEaD;
     address internal constant _CREATOR_FEE_RECIPIENT = address(0xFEE5);
+    address internal constant _RUKUS_FEE_RECIPIENT = address(0x2B5);
+    // Rukus's cut of every trade: small enough for the 1% test fee to cover locally (0% protocol fee) and on the fork
+    // (30%). Production uses 1% with a higher swap fee.
+    uint256 internal constant _RUKUS_FEE_PERCENTAGE = 0.25e16;
+    // From graduation on: the same swap fee, and fees still leave the pool (tests of other values set their own).
+    uint256 internal constant _GRADUATED_SWAP_FEE = _SWAP_FEE;
+    uint256 internal constant _GRADUATED_CREATOR_FEE_PERCENTAGE = 99.999e16;
+    // The factory's floor on the graduated creator fee a launch may choose.
+    uint256 internal constant _MIN_GRADUATED_CREATOR_FEE_PERCENTAGE = 10e16;
 
     uint256 internal constant _LAUNCH_SUPPLY = 100e6 * 1e18;
     uint256 internal constant _INITIAL_PRICE = 0.0001e18;
@@ -67,7 +76,7 @@ contract BaseBondingReClammTest is BaseVaultTest {
     uint256 internal _launchTokenIndex = 0;
     uint256 internal _quoteTokenIndex = 1;
 
-    BondingReClammPoolFactory internal factory;
+    RukusLaunchPoolFactory internal factory;
     IERC20[] internal sortedTokens;
     IERC20 internal launchToken;
     IERC20 internal quoteToken;
@@ -119,13 +128,13 @@ contract BaseBondingReClammTest is BaseVaultTest {
 
     function createPoolFactory() internal virtual override returns (address) {
         factory = _deployFactory(_LAUNCH_SUPPLY, _defaultCurve());
-        vm.label(address(factory), "BondingReClamm Factory");
+        vm.label(address(factory), "RukusLaunch Factory");
         return address(factory);
     }
 
     function createPool() internal virtual override returns (address newPool, bytes memory poolArgs) {
         (newPool, launchToken) = _launch(_launchTokenIndex);
-        vm.label(newPool, "bondingReClammPool");
+        vm.label(newPool, "rukusLaunchPool");
         vm.label(address(launchToken), "launchToken");
 
         quoteToken = IERC20(address(weth));
@@ -136,13 +145,17 @@ contract BaseBondingReClammTest is BaseVaultTest {
         sortedTokens.push(tokens[1]);
 
         poolArgs = abi.encode(
-            BondingReClammPoolParams({
-                name: "Launch Bonding Pool",
-                symbol: "LAUNCH-BRECLAMM",
+            RukusLaunchPoolParams({
+                name: "Launch Rukus Launch Pool",
+                symbol: "LAUNCH-RUKUS",
                 version: _POOL_VERSION,
                 launchToken: launchToken,
                 launchTokenIndex: _launchTokenIndex,
                 creatorFeeRecipient: _CREATOR_FEE_RECIPIENT,
+                rukusFeeRecipient: _RUKUS_FEE_RECIPIENT,
+                rukusFeeShare: factory.computeRukusFeeShare(_SWAP_FEE),
+                graduatedSwapFeePercentage: _GRADUATED_SWAP_FEE,
+                graduatedCreatorFeePercentage: _GRADUATED_CREATOR_FEE_PERCENTAGE,
                 curve: _defaultCurve()
             }),
             vault
@@ -159,21 +172,24 @@ contract BaseBondingReClammTest is BaseVaultTest {
     /// @dev A factory whose launches all have this supply and curve (the factory fixes them; launchers can't).
     function _deployFactory(
         uint256 supply,
-        BondingReClammCurveParams memory curve
-    ) internal returns (BondingReClammPoolFactory newFactory) {
-        newFactory = new BondingReClammPoolFactory(
+        RukusLaunchCurveParams memory curve
+    ) internal returns (RukusLaunchPoolFactory newFactory) {
+        newFactory = new RukusLaunchPoolFactory(
             vault,
             365 days,
             IWETH(address(weth)),
+            _RUKUS_FEE_RECIPIENT,
+            _RUKUS_FEE_PERCENTAGE,
+            _MIN_GRADUATED_CREATOR_FEE_PERCENTAGE,
             supply,
             curve,
-            "BondingReClamm Factory v1",
+            "RukusLaunch Factory v1",
             _POOL_VERSION
         );
     }
 
     /// @dev Switches to a factory with this supply and curve, launches from it, and points the helpers at the launch.
-    function _useFactory(uint256 supply, BondingReClammCurveParams memory curve) internal {
+    function _useFactory(uint256 supply, RukusLaunchCurveParams memory curve) internal {
         factory = _deployFactory(supply, curve);
         (pool, launchToken) = _launch(_launchTokenIndex);
     }
@@ -182,7 +198,23 @@ contract BaseBondingReClammTest is BaseVaultTest {
     function _launch(
         uint256 launchIndex
     ) internal returns (address newPool, IERC20 newToken) {
-        BondingLaunchParams memory params = _launchParams();
+        return _launch(launchIndex, _SWAP_FEE);
+    }
+
+    /// @dev As `_launch`, with this swap fee.
+    function _launch(
+        uint256 launchIndex,
+        uint256 swapFeePercentage
+    ) internal returns (address newPool, IERC20 newToken) {
+        return _launch(launchIndex, swapFeePercentage, _launchParams());
+    }
+
+    /// @dev As `_launch`, with this swap fee and these launch params.
+    function _launch(
+        uint256 launchIndex,
+        uint256 swapFeePercentage,
+        RukusLaunchParams memory params
+    ) internal returns (address newPool, IERC20 newToken) {
         bytes32 salt;
         while (true) {
             salt = bytes32(_saltNumber++);
@@ -190,18 +222,20 @@ contract BaseBondingReClammTest is BaseVaultTest {
             if ((predicted < address(weth) ? 0 : 1) == launchIndex) break;
         }
 
-        (newPool, newToken) = factory.create(params, _SWAP_FEE, salt);
+        (newPool, newToken) = factory.create(params, swapFeePercentage, salt);
         _approveLaunchToken(newToken);
     }
 
-    function _launchParams() internal pure returns (BondingLaunchParams memory) {
+    function _launchParams() internal pure returns (RukusLaunchParams memory) {
         return
-            BondingLaunchParams({
+            RukusLaunchParams({
                 name: "Launch",
                 symbol: "LAUNCH",
                 creatorFeeRecipient: _CREATOR_FEE_RECIPIENT,
                 metadataURI: "ipfs://launch",
-                minInitialBuyAmountOut: 0
+                minInitialBuyAmountOut: 0,
+                graduatedSwapFeePercentage: _GRADUATED_SWAP_FEE,
+                graduatedCreatorFeePercentage: _GRADUATED_CREATOR_FEE_PERCENTAGE
             });
     }
 
@@ -215,8 +249,8 @@ contract BaseBondingReClammTest is BaseVaultTest {
         }
     }
 
-    function _defaultCurve() internal pure returns (BondingReClammCurveParams memory) {
-        return BondingReClammCurveParams({ initialPrice: _INITIAL_PRICE, graduationPrice: _GRADUATION_PRICE });
+    function _defaultCurve() internal pure returns (RukusLaunchCurveParams memory) {
+        return RukusLaunchCurveParams({ initialPrice: _INITIAL_PRICE, graduationPrice: _GRADUATION_PRICE });
     }
 
     function _roleAccounts() internal view returns (PoolRoleAccounts memory) {
@@ -229,8 +263,8 @@ contract BaseBondingReClammTest is BaseVaultTest {
         amounts[_launchTokenIndex] = launchAmount;
     }
 
-    function _brc() internal view returns (BondingReClammPool) {
-        return BondingReClammPool(pool);
+    function _brc() internal view returns (RukusLaunchPool) {
+        return RukusLaunchPool(pool);
     }
 
     /// @dev The stored virtual balances as (launch, quote).

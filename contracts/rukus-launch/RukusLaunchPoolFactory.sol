@@ -20,15 +20,16 @@ import {
 
 import { BasePoolFactory } from "@bush.fi/v3-pool-utils/contracts/BasePoolFactory.sol";
 import { Version } from "@bush.fi/v3-solidity-utils/contracts/helpers/Version.sol";
+import { FixedPoint } from "@bush.fi/v3-solidity-utils/contracts/math/FixedPoint.sol";
 
-import { BondingReClammCurveParams, BondingReClammPoolParams } from "./interfaces/IBondingReClammPool.sol";
-import { IBondingReClammPoolFactory, BondingLaunchParams } from "./interfaces/IBondingReClammPoolFactory.sol";
-import { BondingReClammPoolFactoryLib } from "./lib/BondingReClammPoolFactoryLib.sol";
-import { BondingReClammPool } from "./BondingReClammPool.sol";
-import { BondingLaunchToken } from "./BondingLaunchToken.sol";
+import { RukusLaunchCurveParams, RukusLaunchPoolParams } from "./interfaces/IRukusLaunchPool.sol";
+import { IRukusLaunchPoolFactory, RukusLaunchParams } from "./interfaces/IRukusLaunchPoolFactory.sol";
+import { RukusLaunchPoolFactoryLib } from "./lib/RukusLaunchPoolFactoryLib.sol";
+import { RukusLaunchPool } from "./RukusLaunchPool.sol";
+import { RukusLaunchToken } from "./RukusLaunchToken.sol";
 
 /**
- * @notice Launches a token, pump.fun style: one call deploys a new fixed-supply token, a `BondingReClammPool` that
+ * @notice Launches a token, pump.fun style: one call deploys a new fixed-supply token, a `RukusLaunchPool` that
  * sells it for WETH, initializes the pool with the whole supply, and optionally makes the creator's first buy.
  * @dev Doing it all in one transaction closes the ways a launch could be drained or front-run:
  *
@@ -44,10 +45,22 @@ import { BondingLaunchToken } from "./BondingLaunchToken.sol";
  *
  * Roles are fixed: no pause manager, no swap fee manager (only governance can change the fee rate), and the pool is
  * its own pool creator, so it can fix the creator share of the swap fee at 99.999% when initialized (keeping fees out
- * of the pool); creator fees go to the launch's `creatorFeeRecipient`. The quote token is always WETH, so a launch
- * from this factory can't be paired with a look-alike token.
+ * of the pool); creator fees are split between the launch's `creatorFeeRecipient` and the factory's `rukusFeeRecipient`.
+ * The quote token is always WETH, so a launch from this factory can't be paired with a look-alike token.
+ *
+ * Rukus gets a fixed cut of every trade, `rukusFeePercentage` (set when the factory is deployed), whatever swap fee the
+ * launcher picks: at `create`, the factory works out the share of the creator fees that comes to, from the swap fee and
+ * the protocol swap fee, and fixes it in the pool (see `computeRukusFeeShare`). The creator gets the rest of the swap
+ * fee after the protocol's share, so the swap fee must at least cover the Rukus cut.
+ *
+ * At graduation the pool switches to the launcher's `graduatedSwapFeePercentage` and `graduatedCreatorFeePercentage`
+ * (the rest of each fee then stays in the pool), and pays out the bonding fees. The factory sets a floor on the
+ * graduated creator fee (`minGraduatedCreatorFeePercentage`). Rukus keeps the same share of the creator fees, so its
+ * cut of a graduated trade follows those fees: a lower graduated creator fee means a smaller Rukus cut.
  */
-contract BondingReClammPoolFactory is IBondingReClammPoolFactory, IPoolVersion, BasePoolFactory, Version {
+contract RukusLaunchPoolFactory is IRukusLaunchPoolFactory, IPoolVersion, BasePoolFactory, Version {
+    using FixedPoint for uint256;
+
     /// @notice Where the initial BPT goes: nobody holds the key, so the pool's liquidity is permanent.
     address public constant BPT_BURN_ADDRESS = 0x000000000000000000000000000000000000dEaD;
 
@@ -55,6 +68,13 @@ contract BondingReClammPoolFactory is IBondingReClammPoolFactory, IPoolVersion, 
     uint256 public constant MAX_LAUNCH_SUPPLY = 1e12 * 1e18;
 
     IWETH private immutable _WETH;
+
+    // Receives the Rukus share of every launch's creator fees.
+    address private immutable _RUKUS_FEE_RECIPIENT;
+    // Rukus's cut of every trade (18-decimal FP, of the amount in).
+    uint256 private immutable _RUKUS_FEE_PERCENTAGE;
+    // The lowest creator share of the swap fee from graduation on that a launch may choose.
+    uint256 private immutable _MIN_GRADUATED_CREATOR_FEE_PERCENTAGE;
 
     // The supply and curve of every launch.
     uint256 private immutable _LAUNCH_SUPPLY;
@@ -77,6 +97,10 @@ contract BondingReClammPoolFactory is IBondingReClammPoolFactory, IPoolVersion, 
      * @param vault The Vault
      * @param pauseWindowDuration How long governance can pause this factory's pools
      * @param weth The quote token of every launch
+     * @param rukusFeeRecipient Where the Rukus share of every launch's creator fees goes
+     * @param rukusFeePercentage Rukus's cut of every trade (18-decimal FP, e.g. 1e16 for 1%)
+     * @param minGraduatedCreatorFeePercentage The lowest creator share of the swap fee from graduation on that a launch
+     * may choose (18-decimal FP, at most 99.999%)
      * @param launchSupply Every launch token's supply (18 decimals), all of it put in the pool
      * @param curve Every launch's bonding curve (initial and graduation prices)
      * @param factoryVersion Version string of the factory
@@ -86,20 +110,32 @@ contract BondingReClammPoolFactory is IBondingReClammPoolFactory, IPoolVersion, 
         IVault vault,
         uint32 pauseWindowDuration,
         IWETH weth,
+        address rukusFeeRecipient,
+        uint256 rukusFeePercentage,
+        uint256 minGraduatedCreatorFeePercentage,
         uint256 launchSupply,
-        BondingReClammCurveParams memory curve,
+        RukusLaunchCurveParams memory curve,
         string memory factoryVersion,
         string memory poolVersion
-    ) BasePoolFactory(vault, pauseWindowDuration, type(BondingReClammPool).creationCode) Version(factoryVersion) {
+    ) BasePoolFactory(vault, pauseWindowDuration, type(RukusLaunchPool).creationCode) Version(factoryVersion) {
         if (address(weth) == address(0)) {
             revert InvalidWeth();
+        }
+        if (rukusFeeRecipient == address(0)) {
+            revert InvalidRukusFeeRecipient();
+        }
+        if (minGraduatedCreatorFeePercentage > RukusLaunchPoolFactoryLib.CREATOR_FEE_PERCENTAGE) {
+            revert InvalidMinGraduatedCreatorFee();
         }
         if (launchSupply == 0 || launchSupply > MAX_LAUNCH_SUPPLY) {
             revert InvalidLaunchSupply();
         }
-        BondingReClammPoolFactoryLib.validateCurveParams(curve);
+        RukusLaunchPoolFactoryLib.validateCurveParams(curve);
 
         _WETH = weth;
+        _RUKUS_FEE_RECIPIENT = rukusFeeRecipient;
+        _RUKUS_FEE_PERCENTAGE = rukusFeePercentage;
+        _MIN_GRADUATED_CREATOR_FEE_PERCENTAGE = minGraduatedCreatorFeePercentage;
         _LAUNCH_SUPPLY = launchSupply;
         _INITIAL_PRICE = curve.initialPrice;
         _GRADUATION_PRICE = curve.graduationPrice;
@@ -116,27 +152,79 @@ contract BondingReClammPoolFactory is IBondingReClammPoolFactory, IPoolVersion, 
         return _WETH;
     }
 
+    /// @notice Where the Rukus share of every launch's creator fees goes.
+    function getRukusFeeRecipient() external view returns (address) {
+        return _RUKUS_FEE_RECIPIENT;
+    }
+
+    /// @notice Rukus's cut of every trade from this factory's launches (18-decimal FP, of the amount in).
+    function getRukusFeePercentage() external view returns (uint256) {
+        return _RUKUS_FEE_PERCENTAGE;
+    }
+
+    /// @notice The lowest creator share of the swap fee from graduation on that a launch may choose (18-decimal FP).
+    function getMinGraduatedCreatorFeePercentage() external view returns (uint256) {
+        return _MIN_GRADUATED_CREATOR_FEE_PERCENTAGE;
+    }
+
+    /**
+     * @notice The share of the creator fees a launch with this swap fee gives Rukus, so that Rukus gets
+     * `getRukusFeePercentage()` of every trade.
+     * @dev The protocol takes its share of the swap fee first, and the pool's creator share (99.999%) applies to the
+     * rest: Rukus's cut is `swapFee * (1 - protocolFee) * creatorFee * share`. Rounded up, so Rukus gets at least its
+     * cut. Uses the global protocol swap fee, which the Vault gives the pool when it registers it; if governance later
+     * changes the pool's protocol fee, the share stays as it was.
+     * @param swapFeePercentage The swap fee the launch will be created with
+     * @return rukusFeeShare The share (18-decimal FP); reverts with `SwapFeeTooLowForRukusFee` above 100%
+     */
+    function computeRukusFeeShare(uint256 swapFeePercentage) public view returns (uint256 rukusFeeShare) {
+        if (_RUKUS_FEE_PERCENTAGE == 0) {
+            return 0;
+        }
+
+        uint256 protocolFeePercentage = getVault().getProtocolFeeController().getGlobalProtocolSwapFeePercentage();
+        uint256 creatorFeePercentage = swapFeePercentage.mulDown(FixedPoint.ONE - protocolFeePercentage).mulDown(
+            RukusLaunchPoolFactoryLib.CREATOR_FEE_PERCENTAGE
+        );
+        if (creatorFeePercentage < _RUKUS_FEE_PERCENTAGE) {
+            revert SwapFeeTooLowForRukusFee(swapFeePercentage);
+        }
+
+        return _RUKUS_FEE_PERCENTAGE.divUp(creatorFeePercentage);
+    }
+
     /// @notice The supply and bonding curve of every launch from this factory.
-    function getLaunchConfig() external view returns (uint256 launchSupply, BondingReClammCurveParams memory curve) {
-        return (_LAUNCH_SUPPLY, BondingReClammCurveParams({ initialPrice: _INITIAL_PRICE, graduationPrice: _GRADUATION_PRICE }));
+    function getLaunchConfig() external view returns (uint256 launchSupply, RukusLaunchCurveParams memory curve) {
+        return (_LAUNCH_SUPPLY, RukusLaunchCurveParams({ initialPrice: _INITIAL_PRICE, graduationPrice: _GRADUATION_PRICE }));
     }
 
     /**
      * @notice Creates a launch: a new token, its pool against WETH, initialized with the whole supply, the initial BPT
      * burned, and, if ETH is sent, the creator's initial buy (the launch tokens go to the caller). The supply and the
      * curve are the factory's (`getLaunchConfig`).
-     * @param launch The token's name and symbol, its creator fee recipient and metadata, and the initial buy's minimum
-     * @param swapFeePercentage The swap fee rate (only governance can change it afterwards)
+     * @param launch The token's name and symbol, its creator fee recipient and metadata, the initial buy's minimum, and
+     * the swap fee and creator fee from graduation on
+     * @param swapFeePercentage The swap fee rate while bonding, up to 5% (nobody can change it; the pool replaces it with
+     * the graduated fee at graduation). It must cover the Rukus cut after the protocol's share (see
+     * `computeRukusFeeShare`).
      * @param salt Salt for the token and pool addresses (combined with the caller and the chain id)
-     * @return pool The new BondingReClammPool
+     * @return pool The new RukusLaunchPool
      * @return launchToken The new token
      */
     function create(
-        BondingLaunchParams memory launch,
+        RukusLaunchParams memory launch,
         uint256 swapFeePercentage,
         bytes32 salt
     ) external payable returns (address pool, IERC20 launchToken) {
-        launchToken = new BondingLaunchToken{ salt: _computeFinalSalt(salt) }(
+        // The pool checks the 99.999% maximum; the floor is the factory's.
+        if (launch.graduatedCreatorFeePercentage < _MIN_GRADUATED_CREATOR_FEE_PERCENTAGE) {
+            revert GraduatedCreatorFeeBelowMinimum(
+                launch.graduatedCreatorFeePercentage,
+                _MIN_GRADUATED_CREATOR_FEE_PERCENTAGE
+            );
+        }
+
+        launchToken = new RukusLaunchToken{ salt: _computeFinalSalt(salt) }(
             launch.name,
             launch.symbol,
             _LAUNCH_SUPPLY,
@@ -162,7 +250,7 @@ contract BondingReClammPoolFactory is IBondingReClammPoolFactory, IPoolVersion, 
             (uint256)
         );
 
-        emit BondingLaunchCreated(
+        emit RukusLaunchCreated(
             pool,
             launchToken,
             msg.sender,
@@ -178,14 +266,14 @@ contract BondingReClammPoolFactory is IBondingReClammPoolFactory, IPoolVersion, 
      * @dev Lets a launchpad know the token's sort order (and so its index in the pool) before creating.
      */
     function getLaunchTokenAddress(
-        BondingLaunchParams memory launch,
+        RukusLaunchParams memory launch,
         address creator,
         bytes32 salt
     ) external view returns (address) {
         bytes32 finalSalt = keccak256(abi.encode(creator, block.chainid, salt));
         bytes32 initCodeHash = keccak256(
             abi.encodePacked(
-                type(BondingLaunchToken).creationCode,
+                type(RukusLaunchToken).creationCode,
                 abi.encode(launch.name, launch.symbol, _LAUNCH_SUPPLY, address(this))
             )
         );
@@ -236,7 +324,7 @@ contract BondingReClammPoolFactory is IBondingReClammPoolFactory, IPoolVersion, 
     }
 
     function _createAndRegister(
-        BondingLaunchParams memory launch,
+        RukusLaunchParams memory launch,
         LaunchState memory state,
         TokenConfig[] memory tokens,
         uint256 swapFeePercentage,
@@ -244,23 +332,29 @@ contract BondingReClammPoolFactory is IBondingReClammPoolFactory, IPoolVersion, 
     ) internal returns (address pool) {
         pool = _create(
             abi.encode(
-                BondingReClammPoolParams({
-                    name: string.concat(launch.name, " Bonding Pool"),
-                    symbol: string.concat(launch.symbol, "-BRECLAMM"),
+                RukusLaunchPoolParams({
+                    name: string.concat(launch.name, " Rukus Launch Pool"),
+                    symbol: string.concat(launch.symbol, "-RUKUS"),
                     version: _poolVersion,
                     launchToken: state.launchToken,
                     launchTokenIndex: state.launchTokenIndex,
                     creatorFeeRecipient: launch.creatorFeeRecipient,
-                    curve: BondingReClammCurveParams({ initialPrice: _INITIAL_PRICE, graduationPrice: _GRADUATION_PRICE })
+                    rukusFeeRecipient: _RUKUS_FEE_RECIPIENT,
+                    rukusFeeShare: computeRukusFeeShare(swapFeePercentage),
+                    graduatedSwapFeePercentage: launch.graduatedSwapFeePercentage,
+                    graduatedCreatorFeePercentage: launch.graduatedCreatorFeePercentage,
+                    curve: RukusLaunchCurveParams({ initialPrice: _INITIAL_PRICE, graduationPrice: _GRADUATION_PRICE })
                 }),
                 getVault()
             ),
             salt
         );
 
-        // No pause manager and no swap fee manager; the pool is its own pool creator (see the contract notes).
+        // No pause manager. The pool is its own pool creator and its own swap fee manager: only it can change the fee
+        // rate, and it does once, at graduation (see the contract notes).
         PoolRoleAccounts memory roleAccounts;
         roleAccounts.poolCreator = pool;
+        roleAccounts.swapFeeManager = pool;
 
         LiquidityManagement memory liquidityManagement = getDefaultLiquidityManagement();
         liquidityManagement.enableDonation = false;

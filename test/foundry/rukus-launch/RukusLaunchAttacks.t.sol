@@ -13,17 +13,17 @@ import "@bush.fi/v3-interfaces/contracts/vault/VaultTypes.sol";
 import { FixedPoint } from "@bush.fi/v3-solidity-utils/contracts/math/FixedPoint.sol";
 
 import { ReClammMath } from "../../../contracts/reclamm/lib/ReClammMath.sol";
-import { IBondingReClammPool, BondingPhase } from "../../../contracts/bonding-reclamm/interfaces/IBondingReClammPool.sol";
+import { IRukusLaunchPool, BondingPhase } from "../../../contracts/rukus-launch/interfaces/IRukusLaunchPool.sol";
 
-import { BaseBondingReClammTest } from "../utils/BaseBondingReClammTest.sol";
+import { BaseRukusLaunchTest } from "../utils/BaseRukusLaunchTest.sol";
 
 /**
- * @notice Attack and trading scenarios, beyond the unit tests in BondingReClammPool.t.sol.
+ * @notice Attack and trading scenarios, beyond the unit tests in RukusLaunchPool.t.sol.
  *
  * Every test account starts with 1e9 of both tokens, so "launch tokens" here are not only those bought from the pool.
  * Tests that care about who bought what track it explicitly.
  */
-contract BondingReClammAttacksTest is BaseBondingReClammTest {
+contract RukusLaunchAttacksTest is BaseRukusLaunchTest {
     using FixedPoint for uint256;
 
     function setUp() public virtual override {
@@ -188,7 +188,7 @@ contract BondingReClammAttacksTest is BaseBondingReClammTest {
         _buyExactIn(alice, 5_000e18);
 
         vm.prank(bob);
-        vm.expectRevert(IBondingReClammPool.LiquidityLockedUntilGraduation.selector);
+        vm.expectRevert(IRukusLaunchPool.LiquidityLockedUntilGraduation.selector);
         router.addLiquidityProportional(pool, _maxAmounts(), 1e18, false, "");
         assertEq(IERC20(pool).balanceOf(bob), 0, "Bob got BPT");
     }
@@ -402,9 +402,9 @@ contract BondingReClammAttacksTest is BaseBondingReClammTest {
         _completeCurve(alice);
         vm.roll(block.number + 5);
 
-        vm.expectRevert(IBondingReClammPool.GraduationPending.selector);
+        vm.expectRevert(IRukusLaunchPool.GraduationPending.selector);
         _sellExactIn(alice, 1e18);
-        vm.expectRevert(IBondingReClammPool.GraduationPending.selector);
+        vm.expectRevert(IRukusLaunchPool.GraduationPending.selector);
         _brc().graduate();
     }
 
@@ -415,7 +415,7 @@ contract BondingReClammAttacksTest is BaseBondingReClammTest {
         uint256 graduationBalance = _brc().getGraduationLaunchBalance();
         uint256 maxOut = launchBalance - (graduationBalance - graduationBalance.mulDown(0.1e16));
 
-        vm.expectRevert(abi.encodeWithSelector(IBondingReClammPool.GraduationBuyTooLarge.selector, maxOut));
+        vm.expectRevert(abi.encodeWithSelector(IRukusLaunchPool.GraduationBuyTooLarge.selector, maxOut));
         _buyExactOut(hacker, launchBalance - 1e18);
 
         _buyExactOut(hacker, maxOut);
@@ -442,27 +442,30 @@ contract BondingReClammAttacksTest is BaseBondingReClammTest {
     }
 
     /**
-     * @dev No swap fee manager: nobody but governance can change the fee rate (not the creator, not the launchpad), and
-     * governance only within [0.001%, 10%].
+     * @dev The pool is its own swap fee manager: nobody can change the fee rate (not the creator, not the launchpad, not
+     * governance), while bonding or after graduation. The pool itself only sets it once, at graduation.
      */
-    function testOnlyGovernanceCanChangeTheFeeRate() public {
-        address[4] memory accounts = [address(admin), lp, alice, address(factory)];
-        for (uint256 i = 0; i < accounts.length; ++i) {
-            vm.prank(accounts[i]);
-            vm.expectRevert(IAuthentication.SenderNotAllowed.selector);
-            vault.setStaticSwapFeePercentage(pool, 10e16);
+    function testNobodyCanChangeTheFeeRate() public {
+        // Governance included (needs the local authorizer to grant the role; on the fork, admin has no role anyway).
+        if (onFork == false) {
+            authorizer.grantRole(vault.getActionId(IVaultAdmin.setStaticSwapFeePercentage.selector), admin);
         }
+        address[5] memory accounts = [address(admin), lp, alice, address(factory), _CREATOR_FEE_RECIPIENT];
 
-        // Governance can (needs the local authorizer to grant the role; on the fork, the check above is the test).
-        if (onFork) return;
-        authorizer.grantRole(vault.getActionId(IVaultAdmin.setStaticSwapFeePercentage.selector), admin);
-        vm.prank(admin);
-        vault.setStaticSwapFeePercentage(pool, 10e16);
-        assertEq(vault.getStaticSwapFeePercentage(pool), 10e16, "Governance could not set the fee");
-
-        vm.prank(admin);
-        vm.expectRevert(IVaultErrors.SwapFeePercentageTooHigh.selector);
-        vault.setStaticSwapFeePercentage(pool, 10e16 + 1);
+        for (uint256 phase = 0; phase < 2; ++phase) {
+            for (uint256 i = 0; i < accounts.length; ++i) {
+                vm.prank(accounts[i]);
+                vm.expectRevert(IAuthentication.SenderNotAllowed.selector);
+                vault.setStaticSwapFeePercentage(pool, 5e16);
+            }
+            if (phase == 0) {
+                _completeCurve(alice);
+                vm.warp(block.timestamp + 1);
+                _brc().graduate();
+            }
+        }
+        (uint256 graduatedSwapFee, ) = _brc().getGraduatedFees();
+        assertEq(vault.getStaticSwapFeePercentage(pool), graduatedSwapFee, "Fee changed");
     }
 
     /// @dev Push the graduated pool hard and trade straight back (within the hour): two fees and the price impact.
@@ -548,17 +551,17 @@ contract BondingReClammAttacksTest is BaseBondingReClammTest {
 
     function _assertLiquidityLocked(address holder) internal {
         vm.startPrank(holder);
-        vm.expectRevert(IBondingReClammPool.LiquidityLockedUntilGraduation.selector);
+        vm.expectRevert(IRukusLaunchPool.LiquidityLockedUntilGraduation.selector);
         router.removeLiquidityProportional(pool, 1e18, new uint256[](2), false, "");
 
         // Single-token paths: the pool's hook rejects them while bonding (the Vault would anyway, after graduation).
-        vm.expectRevert(IBondingReClammPool.LiquidityLockedUntilGraduation.selector);
+        vm.expectRevert(IRukusLaunchPool.LiquidityLockedUntilGraduation.selector);
         router.removeLiquiditySingleTokenExactIn(pool, 1e18, quoteToken, 0, false, "");
 
-        vm.expectRevert(IBondingReClammPool.LiquidityLockedUntilGraduation.selector);
+        vm.expectRevert(IRukusLaunchPool.LiquidityLockedUntilGraduation.selector);
         router.addLiquiditySingleTokenExactOut(pool, quoteToken, MAX_UINT128, 1e18, false, "");
 
-        vm.expectRevert(IBondingReClammPool.LiquidityLockedUntilGraduation.selector);
+        vm.expectRevert(IRukusLaunchPool.LiquidityLockedUntilGraduation.selector);
         router.addLiquidityProportional(pool, _maxAmounts(), 1e18, false, "");
         vm.stopPrank();
     }

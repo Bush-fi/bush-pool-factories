@@ -30,3 +30,10 @@ docs/oracle-bin-pool-factory/
 maths/check/adapters/oracle-bin-pool-factory.ts
 maths/typescript/src/oracleBin/
 maths/testData/*oracle-bin*
+
+# Flywheel ReClamm pool: kept locally on this branch, not tracked (contracts, tests, docs, maths)
+contracts/flywheel-reclamm/
+test/foundry/flywheel-reclamm/
+docs/flywheel-reclamm-pool-factory/
+maths/check/adapters/flywheel-reclamm-pool-factory.ts
+maths/testData/*flywheel-reclamm*

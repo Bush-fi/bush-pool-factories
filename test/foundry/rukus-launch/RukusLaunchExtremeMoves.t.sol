@@ -7,15 +7,15 @@ import { console2 } from "forge-std/console2.sol";
 import { FixedPoint } from "@bush.fi/v3-solidity-utils/contracts/math/FixedPoint.sol";
 
 import { ReClammMath } from "../../../contracts/reclamm/lib/ReClammMath.sol";
-import { BondingPhase } from "../../../contracts/bonding-reclamm/interfaces/IBondingReClammPool.sol";
+import { BondingPhase } from "../../../contracts/rukus-launch/interfaces/IRukusLaunchPool.sol";
 
-import { BaseBondingReClammTest } from "../utils/BaseBondingReClammTest.sol";
+import { BaseRukusLaunchTest } from "../utils/BaseRukusLaunchTest.sol";
 
 /**
  * @notice Extreme price paths through the graduated (full-range) pool: a 5,000x run and a full round trip back down,
  * and a crash pushed far past anything the real supply could do.
  */
-contract BondingReClammExtremeMovesTest is BaseBondingReClammTest {
+contract RukusLaunchExtremeMovesTest is BaseRukusLaunchTest {
     using FixedPoint for uint256;
 
     function setUp() public override {

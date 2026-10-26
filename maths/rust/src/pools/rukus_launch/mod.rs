@@ -1,7 +1,7 @@
-//! Port of contracts/bonding-reclamm/BondingReClammPool.sol (and the graduation solve from
-//! lib/BondingReClammMath.sol), implementing the bush-maths `PoolBase` trait.
+//! Port of contracts/rukus-launch/RukusLaunchPool.sol (and the graduation solve from
+//! lib/RukusLaunchMath.sol), implementing the bush-maths `PoolBase` trait.
 //!
-//! A BondingReClamm pool sells its launch token along a bonding curve (pump.fun's virtual-reserve curve) and then
+//! A RukusLaunch pool sells its launch token along a bonding curve (pump.fun's virtual-reserve curve) and then
 //! graduates, in place, into a (practically) full-range pool. The swap maths is ReClamm's (constant product on real +
 //! virtual balances) in both phases; what changes is the virtual balances it runs with:
 //!   - BONDING:   the bonding curve's, which never move (and the buy completing the curve may go at most 0.1%
@@ -13,26 +13,26 @@
 
 use crate::pool_kit::*;
 
-mod bonding_reclamm_data;
-pub use bonding_reclamm_data::*;
+mod rukus_launch_data;
+pub use rukus_launch_data::*;
 
-/// BondingReClammPool._MIN_SWAP_FEE_PERCENTAGE / _MAX_SWAP_FEE_PERCENTAGE (the same as ReClammPool's).
+/// RukusLaunchPool._MIN_SWAP_FEE_PERCENTAGE / _MAX_SWAP_FEE_PERCENTAGE (the same as ReClammPool's).
 pub const MIN_SWAP_FEE_PERCENTAGE: U256 = uint!(1_000_000_000_000_U256); // 0.001%
 pub const MAX_SWAP_FEE_PERCENTAGE: U256 = uint!(100_000_000_000_000_000_U256); // 10%
 
-/// BondingReClammPool.MAX_GRADUATION_OVERSHOOT: 0.1% of the graduation balance.
+/// RukusLaunchPool.MAX_GRADUATION_OVERSHOOT: 0.1% of the graduation balance.
 pub const MAX_GRADUATION_OVERSHOOT: U256 = uint!(1_000_000_000_000_000_U256);
 
-pub struct BondingReClammPool {
-    pub state: BondingReClammMutable,
+pub struct RukusLaunchPool {
+    pub state: RukusLaunchMutable,
 }
 
-impl BondingReClammPool {
-    pub fn new(state: BondingReClammMutable) -> Self {
+impl RukusLaunchPool {
+    pub fn new(state: RukusLaunchMutable) -> Self {
         Self { state }
     }
 
-    /// BondingReClammPool._minLaunchBalance: the graduation balance less the overshoot allowed.
+    /// RukusLaunchPool._minLaunchBalance: the graduation balance less the overshoot allowed.
     pub fn min_launch_balance(&self) -> Result<U256, PoolError> {
         let g = self.state.graduation_launch_balance;
         Ok(g - mul_down_fixed(&g, &MAX_GRADUATION_OVERSHOOT)?)
@@ -43,7 +43,7 @@ impl BondingReClammPool {
     pub fn swap_virtual_balances(&self, balances_live_scaled18: &[U256]) -> Result<(U256, U256), PoolError> {
         let s = &self.state;
         if s.phase == BondingPhase::Completed {
-            // BondingReClammPool._graduate.
+            // RukusLaunchPool._graduate.
             if s.current_timestamp <= s.bonding_completed_at {
                 return Err(PoolError::Custom("GraduationPending".into()));
             }
@@ -58,14 +58,14 @@ impl BondingReClammPool {
     }
 }
 
-impl From<BondingReClammState> for BondingReClammPool {
-    fn from(state: BondingReClammState) -> Self {
+impl From<RukusLaunchState> for RukusLaunchPool {
+    fn from(state: RukusLaunchState) -> Self {
         Self::new(state.mutable)
     }
 }
 
-impl PoolBase for BondingReClammPool {
-    /// BondingReClammPool.onSwap.
+impl PoolBase for RukusLaunchPool {
+    /// RukusLaunchPool.onSwap.
     fn on_swap(&self, swap_params: &SwapParams) -> Result<U256, PoolError> {
         let balances = &swap_params.balances_live_scaled_18;
         let (virtual_a, virtual_b) = self.swap_virtual_balances(balances)?;
@@ -103,12 +103,12 @@ impl PoolBase for BondingReClammPool {
         Ok(amount_calculated)
     }
 
-    /// BondingReClammPool.computeInvariant: a view, so a completed pool still uses the bonding virtual balances.
+    /// RukusLaunchPool.computeInvariant: a view, so a completed pool still uses the bonding virtual balances.
     fn compute_invariant(&self, balances: &[U256], rounding: Rounding) -> Result<U256, PoolError> {
         reclamm_math::compute_invariant(balances, &self.state.virtual_balance_a, &self.state.virtual_balance_b, rounding)
     }
 
-    /// BondingReClammPool.computeBalance: reverts NotImplemented, the pool does not allow unbalanced liquidity.
+    /// RukusLaunchPool.computeBalance: reverts NotImplemented, the pool does not allow unbalanced liquidity.
     fn compute_balance(&self, _balances: &[U256], _token_in_index: usize, _invariant_ratio: &U256) -> Result<U256, PoolError> {
         Err(PoolError::Custom("NotImplemented".into()))
     }
@@ -123,7 +123,7 @@ impl PoolBase for BondingReClammPool {
     }
 }
 
-/// BondingReClammMath.computeGraduationVirtualBalances: new virtual balances for the ReClamm range at the current
+/// RukusLaunchMath.computeGraduationVirtualBalances: new virtual balances for the ReClamm range at the current
 /// price, for the given sqrt(price ratio). See the contract for the derivation.
 pub fn compute_graduation_virtual_balances(
     balances_scaled18: &[U256],

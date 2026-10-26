@@ -3,42 +3,42 @@
         {
             "swapKind": 0,
             "amountRaw": "10000000000000000000000",
-            "tokenIn": "0x14346F93eeED6E0979E08F6B66218fFb1d73E1d7",
+            "tokenIn": "0x0E60106aaB89E76C52887de6d16e35e45df53567",
             "tokenOut": "0x4c5859f0F772848b2D91F1D83E2Fe57935348029",
             "outputRaw": "1828801701948901552520"
         },
         {
             "swapKind": 1,
             "amountRaw": "1885990091575471203989",
-            "tokenIn": "0x14346F93eeED6E0979E08F6B66218fFb1d73E1d7",
+            "tokenIn": "0x0E60106aaB89E76C52887de6d16e35e45df53567",
             "tokenOut": "0x4c5859f0F772848b2D91F1D83E2Fe57935348029",
             "outputRaw": "10313022632695924990903"
         },
         {
             "swapKind": 0,
             "amountRaw": "100000000000000000000000",
-            "tokenIn": "0x14346F93eeED6E0979E08F6B66218fFb1d73E1d7",
+            "tokenIn": "0x0E60106aaB89E76C52887de6d16e35e45df53567",
             "tokenOut": "0x4c5859f0F772848b2D91F1D83E2Fe57935348029",
             "outputRaw": "18129804548148188881305"
         },
         {
             "swapKind": 1,
             "amountRaw": "18859900915754712039890",
-            "tokenIn": "0x14346F93eeED6E0979E08F6B66218fFb1d73E1d7",
+            "tokenIn": "0x0E60106aaB89E76C52887de6d16e35e45df53567",
             "tokenOut": "0x4c5859f0F772848b2D91F1D83E2Fe57935348029",
             "outputRaw": "104067725589097983449596"
         },
         {
             "swapKind": 0,
             "amountRaw": "1000000000000000060000000",
-            "tokenIn": "0x14346F93eeED6E0979E08F6B66218fFb1d73E1d7",
+            "tokenIn": "0x0E60106aaB89E76C52887de6d16e35e45df53567",
             "tokenOut": "0x4c5859f0F772848b2D91F1D83E2Fe57935348029",
             "outputRaw": "166862510893725106253129"
         },
         {
             "swapKind": 1,
             "amountRaw": "188599009157547131714841",
-            "tokenIn": "0x14346F93eeED6E0979E08F6B66218fFb1d73E1d7",
+            "tokenIn": "0x0E60106aaB89E76C52887de6d16e35e45df53567",
             "tokenOut": "0x4c5859f0F772848b2D91F1D83E2Fe57935348029",
             "outputRaw": "1144739090197342823032557"
         },
@@ -46,42 +46,42 @@
             "swapKind": 0,
             "amountRaw": "1885990091575471203989",
             "tokenIn": "0x4c5859f0F772848b2D91F1D83E2Fe57935348029",
-            "tokenOut": "0x14346F93eeED6E0979E08F6B66218fFb1d73E1d7",
+            "tokenOut": "0x0E60106aaB89E76C52887de6d16e35e45df53567",
             "outputRaw": "10087699889740060984918"
         },
         {
             "swapKind": 1,
             "amountRaw": "10000000000000000000000",
             "tokenIn": "0x4c5859f0F772848b2D91F1D83E2Fe57935348029",
-            "tokenOut": "0x14346F93eeED6E0979E08F6B66218fFb1d73E1d7",
+            "tokenOut": "0x0E60106aaB89E76C52887de6d16e35e45df53567",
             "outputRaw": "1869577684509374715184"
         },
         {
             "swapKind": 0,
             "amountRaw": "18859900915754712039890",
             "tokenIn": "0x4c5859f0F772848b2D91F1D83E2Fe57935348029",
-            "tokenOut": "0x14346F93eeED6E0979E08F6B66218fFb1d73E1d7",
+            "tokenOut": "0x0E60106aaB89E76C52887de6d16e35e45df53567",
             "outputRaw": "99987040767819011479547"
         },
         {
             "swapKind": 1,
             "amountRaw": "100000000000000000000000",
             "tokenIn": "0x4c5859f0F772848b2D91F1D83E2Fe57935348029",
-            "tokenOut": "0x14346F93eeED6E0979E08F6B66218fFb1d73E1d7",
+            "tokenOut": "0x0E60106aaB89E76C52887de6d16e35e45df53567",
             "outputRaw": "18862369532525105898150"
         },
         {
             "swapKind": 0,
             "amountRaw": "188599009157547131714841",
             "tokenIn": "0x4c5859f0F772848b2D91F1D83E2Fe57935348029",
-            "tokenOut": "0x14346F93eeED6E0979E08F6B66218fFb1d73E1d7",
+            "tokenOut": "0x0E60106aaB89E76C52887de6d16e35e45df53567",
             "outputRaw": "918810968927678038909322"
         },
         {
             "swapKind": 1,
             "amountRaw": "1000000000000000060000000",
             "tokenIn": "0x4c5859f0F772848b2D91F1D83E2Fe57935348029",
-            "tokenOut": "0x14346F93eeED6E0979E08F6B66218fFb1d73E1d7",
+            "tokenOut": "0x0E60106aaB89E76C52887de6d16e35e45df53567",
             "outputRaw": "207075606746305036309890"
         }
     ],
@@ -115,10 +115,10 @@
     "pool": {
         "chainId": "31337",
         "blockNumber": "62",
-        "poolType": "BONDING_RECLAMM",
-        "poolAddress": "0x86BBAC8027671A243Fa9Ac20F6CC463F7Db444Ab",
+        "poolType": "RUKUS_LAUNCH",
+        "poolAddress": "0xd7ddC46de76845a2E5fd936396C28E7E51303edc",
         "tokens": [
-            "0x14346F93eeED6E0979E08F6B66218fFb1d73E1d7",
+            "0x0E60106aaB89E76C52887de6d16e35e45df53567",
             "0x4c5859f0F772848b2D91F1D83E2Fe57935348029"
         ],
         "scalingFactors": [
@@ -140,12 +140,12 @@
         "launchTokenIndex": "0",
         "graduatedPriceRatio": "1000000000000000000000000000000",
         "phase": "2",
-        "bondingCompletedAt": "1792341474",
+        "bondingCompletedAt": "1793033734",
         "graduationLaunchBalance": "200000000000000000000000000",
         "virtualBalances": [
             "200202727996256266666666",
             "96094892475878041148"
         ],
-        "currentTimestamp": "1794933476"
+        "currentTimestamp": "1795625736"
     }
 }

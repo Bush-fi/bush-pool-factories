@@ -21,9 +21,9 @@ import {BaseHooks} from "@bush.fi/v3-vault/contracts/BaseHooks.sol";
 import {PoolInfo} from "@bush.fi/v3-pool-utils/contracts/PoolInfo.sol";
 
 import {ReClammMath, a, b} from "../reclamm/lib/ReClammMath.sol";
-import {BondingReClammMath} from "./lib/BondingReClammMath.sol";
-import {BondingReClammPoolFactoryLib} from "./lib/BondingReClammPoolFactoryLib.sol";
-import "./interfaces/IBondingReClammPool.sol";
+import {RukusLaunchMath} from "./lib/RukusLaunchMath.sol";
+import {RukusLaunchPoolFactoryLib} from "./lib/RukusLaunchPoolFactoryLib.sol";
+import "./interfaces/IRukusLaunchPool.sol";
 
 /**
  * @notice A token launch pool: a pump.fun-style bonding curve that graduates, in place, into a full-range pool.
@@ -47,14 +47,21 @@ import "./interfaces/IBondingReClammPool.sol";
  * spanning both shapes in one transaction (e.g., a flash loan that buys out the curve, graduates and trades back).
  *
  * Fees: the pool is its own pool creator, and sets the creator share of the swap fee to the 99.999% maximum when it is
- * initialized, for good. The Vault takes the protocol and creator shares out of every trade before crediting the pool,
- * so (but for the 0.001% left) no fee stays in the pool: the bonding curve stays exact, the pool graduates balanced, and
- * the graduated range never widens. Creator fees go to `creatorFeeRecipient` (`withdrawCreatorFees`).
+ * initialized. The Vault takes the protocol and creator shares out of every trade before crediting the pool, so (but
+ * for the 0.001% left) no fee stays in the pool while bonding: the bonding curve stays exact and the pool graduates
+ * balanced. At graduation the pool switches, in the same transaction, to the launch's `graduatedSwapFeePercentage`
+ * (it sets the Vault's static swap fee, as its own swap fee manager, so the static fee is always the fee charged) and
+ * the launch's `graduatedCreatorFeePercentage` (the rest of each fee then stays in the pool, for good, since the BPT is burned), and
+ * pays out the creator fees collected while bonding. Creator fees are split between the factory's `rukusFeeRecipient`, which gets
+ * `rukusFeeShare` of them (set by the factory so Rukus gets a fixed cut of every trade), and `creatorFeeRecipient`,
+ * which gets the rest (`withdrawCreatorFees`).
  *
- * The pool is its own hook (initialization and liquidity), like ReClammPool, and reuses ReClammMath for the swap maths.
+ * The pool is its own hook (initialization, swaps and liquidity), like ReClammPool, and reuses ReClammMath for the swap
+ * maths. Graduation runs in the before-swap and before-liquidity hooks, not in `onSwap`: the Vault holds its reentrancy
+ * lock around `onSwap`, and changing the creator fee and paying it out need the Vault (to collect the fees).
  */
-contract BondingReClammPool is
-    IBondingReClammPool,
+contract RukusLaunchPool is
+    IRukusLaunchPool,
     BushPoolToken,
     PoolInfo,
     Version,
@@ -65,7 +72,7 @@ contract BondingReClammPool is
     using SafeERC20 for IERC20;
 
     /// @notice The creator share of the swap fee: the fee controller's maximum, set once at initialization.
-    uint256 public constant CREATOR_FEE_PERCENTAGE = 99.999e16;
+    uint256 public constant CREATOR_FEE_PERCENTAGE = RukusLaunchPoolFactoryLib.CREATOR_FEE_PERCENTAGE;
 
     /// @notice The width the graduated virtual balances are solved for: max price / min price = 1e12.
     uint256 public constant GRADUATED_PRICE_RATIO = 1e12 * 1e18;
@@ -82,8 +89,8 @@ contract BondingReClammPool is
     uint256 public constant MAX_GRADUATION_OVERSHOOT = 0.1e16;
 
     // Same bounds as ReClammPool. A bonding curve usually charges much more (pump.fun: 1%).
-    uint256 internal constant _MIN_SWAP_FEE_PERCENTAGE = 0.001e16; // 0.001%
-    uint256 internal constant _MAX_SWAP_FEE_PERCENTAGE = 10e16; // 10%
+    uint256 internal constant _MIN_SWAP_FEE_PERCENTAGE = RukusLaunchPoolFactoryLib.MIN_SWAP_FEE_PERCENTAGE;
+    uint256 internal constant _MAX_SWAP_FEE_PERCENTAGE = RukusLaunchPoolFactoryLib.MAX_SWAP_FEE_PERCENTAGE;
 
     IERC20 internal immutable _LAUNCH_TOKEN;
     uint256 internal immutable _LAUNCH_TOKEN_INDEX;
@@ -92,6 +99,13 @@ contract BondingReClammPool is
     uint256 internal immutable _GRADUATION_PRICE;
 
     address internal immutable _CREATOR_FEE_RECIPIENT;
+    address internal immutable _RUKUS_FEE_RECIPIENT;
+    // The Rukus share of the creator fees, as 18-decimal FP. The creator fee recipient gets the rest.
+    uint256 internal immutable _RUKUS_FEE_SHARE;
+
+    // The swap fee and creator share of it from graduation on.
+    uint256 internal immutable _GRADUATED_SWAP_FEE_PERCENTAGE;
+    uint256 internal immutable _GRADUATED_CREATOR_FEE_PERCENTAGE;
 
     // The virtual balances: the bonding curve's (fixed) until graduation, then the graduated ones (fixed but for
     // proportional adds and removes).
@@ -109,14 +123,14 @@ contract BondingReClammPool is
     }
 
     constructor(
-        BondingReClammPoolParams memory params,
+        RukusLaunchPoolParams memory params,
         IVault vault
     )
         BushPoolToken(vault, params.name, params.symbol)
         PoolInfo(vault)
         Version(params.version)
     {
-        BondingReClammPoolFactoryLib.validateCurveParams(params.curve);
+        RukusLaunchPoolFactoryLib.validateCurveParams(params.curve);
         if (
             params.launchTokenIndex > 1 ||
             address(params.launchToken) == address(0)
@@ -127,6 +141,20 @@ contract BondingReClammPool is
             revert InvalidCreatorFeeRecipient();
         }
         _CREATOR_FEE_RECIPIENT = params.creatorFeeRecipient;
+        if (params.rukusFeeRecipient == address(0)) {
+            revert InvalidRukusFeeRecipient();
+        }
+        _RUKUS_FEE_RECIPIENT = params.rukusFeeRecipient;
+        if (params.rukusFeeShare > FixedPoint.ONE) {
+            revert InvalidRukusFeeShare();
+        }
+        _RUKUS_FEE_SHARE = params.rukusFeeShare;
+        RukusLaunchPoolFactoryLib.validateGraduatedSwapFee(params.graduatedSwapFeePercentage);
+        _GRADUATED_SWAP_FEE_PERCENTAGE = params.graduatedSwapFeePercentage;
+        if (params.graduatedCreatorFeePercentage > CREATOR_FEE_PERCENTAGE) {
+            revert InvalidGraduatedCreatorFee();
+        }
+        _GRADUATED_CREATOR_FEE_PERCENTAGE = params.graduatedCreatorFeePercentage;
 
         _LAUNCH_TOKEN = params.launchToken;
         _LAUNCH_TOKEN_INDEX = params.launchTokenIndex;
@@ -167,11 +195,7 @@ contract BondingReClammPool is
     function onSwap(
         PoolSwapParams memory request
     ) public onlyVault returns (uint256 amountCalculatedScaled18) {
-        if (_graduated == false && _bondingCompletedAt != 0) {
-            // The curve completed in an earlier block (`_graduate` reverts if it was this one).
-            _graduate(request.balancesScaled18);
-        }
-
+        // A completed curve graduated in `onBeforeSwap`, which the Vault always calls first.
         uint256 launchAmountOut;
         if (request.kind == SwapKind.EXACT_IN) {
             amountCalculatedScaled18 = ReClammMath.computeOutGivenIn(
@@ -243,7 +267,7 @@ contract BondingReClammPool is
 
     /// @inheritdoc IRateProvider
     function getRate() public pure override returns (uint256) {
-        revert BondingReClammPoolBptRateUnsupported();
+        revert RukusLaunchPoolBptRateUnsupported();
     }
 
     /********************************************************
@@ -259,6 +283,7 @@ contract BondingReClammPool is
     {
         hookFlags.shouldCallBeforeInitialize = true;
         hookFlags.shouldCallAfterInitialize = true;
+        hookFlags.shouldCallBeforeSwap = true;
         hookFlags.shouldCallBeforeAddLiquidity = true;
         hookFlags.shouldCallBeforeRemoveLiquidity = true;
     }
@@ -298,7 +323,7 @@ contract BondingReClammPool is
             uint256 virtualLaunch,
             uint256 virtualQuote,
             uint256 graduationLaunchBalance
-        ) = BondingReClammMath.computeBondingCurve(
+        ) = RukusLaunchMath.computeBondingCurve(
                 launchBalance,
                 _INITIAL_PRICE,
                 _GRADUATION_PRICE
@@ -332,6 +357,20 @@ contract BondingReClammPool is
             address(this),
             CREATOR_FEE_PERCENTAGE
         );
+        return true;
+    }
+
+    /**
+     * @inheritdoc IHooks
+     * @dev Graduates a completed curve (reverting in the block it completed). Here rather than in `onSwap`, which runs
+     * under the Vault's reentrancy lock: graduating changes the creator fee and pays it out, which needs the Vault. The
+     * Vault reloads the balances after this hook; collecting fees doesn't change them.
+     */
+    function onBeforeSwap(PoolSwapParams calldata params, address pool) public override onlyVault returns (bool) {
+        require(pool == address(this), InvalidPoolArgument(pool));
+        if (_graduated == false && _bondingCompletedAt != 0) {
+            _graduate(params.balancesScaled18);
+        }
         return true;
     }
 
@@ -395,7 +434,7 @@ contract BondingReClammPool is
                         Graduation
     ********************************************************/
 
-    /// @inheritdoc IBondingReClammPool
+    /// @inheritdoc IRukusLaunchPool
     function graduate() external onlyWhenInitialized {
         if (_graduated || _bondingCompletedAt == 0) {
             revert NotReadyToGraduate();
@@ -404,31 +443,17 @@ contract BondingReClammPool is
         _graduate(_vault.getCurrentLiveBalances(address(this)));
     }
 
-    /// @inheritdoc IBondingReClammPool
+    /// @inheritdoc IRukusLaunchPool
     function withdrawCreatorFees() external {
         IProtocolFeeController controller = _vault.getProtocolFeeController();
         controller.collectAggregateFees(address(this));
-        controller.withdrawPoolCreatorFees(
-            address(this),
-            _CREATOR_FEE_RECIPIENT
-        );
-
-        // The pool holds no tokens of its own (the Vault holds its balances), so anything here is creator fees paid to
-        // the pool as pool creator.
-        IERC20[] memory tokens = _vault.getPoolTokens(address(this));
-        for (uint256 i = 0; i < tokens.length; ++i) {
-            uint256 balance = tokens[i].balanceOf(address(this));
-            if (balance > 0) {
-                tokens[i].safeTransfer(_CREATOR_FEE_RECIPIENT, balance);
-            }
-        }
+        _payCreatorFees(controller);
     }
-
     /********************************************************
                         Getters
     ********************************************************/
 
-    /// @inheritdoc IBondingReClammPool
+    /// @inheritdoc IRukusLaunchPool
     function getMaxBuyAmount() external view onlyWhenInitialized returns (uint256) {
         uint256 launchBalance = _vault.getCurrentLiveBalances(address(this))[_LAUNCH_TOKEN_INDEX];
 
@@ -442,12 +467,27 @@ contract BondingReClammPool is
         return launchBalance;
     }
 
-    /// @inheritdoc IBondingReClammPool
+    /// @inheritdoc IRukusLaunchPool
     function getCreatorFeeRecipient() external view returns (address) {
         return _CREATOR_FEE_RECIPIENT;
     }
 
-    /// @inheritdoc IBondingReClammPool
+    /// @inheritdoc IRukusLaunchPool
+    function getRukusFeeRecipient() external view returns (address) {
+        return _RUKUS_FEE_RECIPIENT;
+    }
+
+    /// @inheritdoc IRukusLaunchPool
+    function getRukusFeeShare() external view returns (uint256) {
+        return _RUKUS_FEE_SHARE;
+    }
+
+    /// @inheritdoc IRukusLaunchPool
+    function getGraduatedFees() external view returns (uint256 swapFeePercentage, uint256 creatorFeePercentage) {
+        return (_GRADUATED_SWAP_FEE_PERCENTAGE, _GRADUATED_CREATOR_FEE_PERCENTAGE);
+    }
+
+    /// @inheritdoc IRukusLaunchPool
     function getBondingPhase() public view returns (BondingPhase) {
         if (_graduated) {
             return BondingPhase.GRADUATED;
@@ -458,27 +498,27 @@ contract BondingReClammPool is
                 : BondingPhase.COMPLETED;
     }
 
-    /// @inheritdoc IBondingReClammPool
+    /// @inheritdoc IRukusLaunchPool
     function getLaunchToken() external view returns (IERC20, uint256) {
         return (_LAUNCH_TOKEN, _LAUNCH_TOKEN_INDEX);
     }
 
-    /// @inheritdoc IBondingReClammPool
+    /// @inheritdoc IRukusLaunchPool
     function getBondingCompletedAt() external view returns (uint256) {
         return _bondingCompletedAt;
     }
 
-    /// @inheritdoc IBondingReClammPool
+    /// @inheritdoc IRukusLaunchPool
     function getGraduationLaunchBalance() external view returns (uint256) {
         return _graduationLaunchBalance;
     }
 
-    /// @inheritdoc IBondingReClammPool
+    /// @inheritdoc IRukusLaunchPool
     function getVirtualBalances() external view returns (uint256, uint256) {
         return (_virtualBalanceA, _virtualBalanceB);
     }
 
-    /// @inheritdoc IBondingReClammPool
+    /// @inheritdoc IRukusLaunchPool
     function computeCurrentLaunchTokenPrice()
         external
         view
@@ -498,11 +538,11 @@ contract BondingReClammPool is
                 : totalA.divDown(totalB);
     }
 
-    /// @inheritdoc IBondingReClammPool
-    function getBondingReClammPoolDynamicData()
+    /// @inheritdoc IRukusLaunchPool
+    function getRukusLaunchPoolDynamicData()
         external
         view
-        returns (BondingReClammPoolDynamicData memory data)
+        returns (RukusLaunchPoolDynamicData memory data)
     {
         data.balancesLiveScaled18 = _vault.getCurrentLiveBalances(
             address(this)
@@ -522,11 +562,11 @@ contract BondingReClammPool is
         data.virtualBalances[b] = _virtualBalanceB;
     }
 
-    /// @inheritdoc IBondingReClammPool
-    function getBondingReClammPoolImmutableData()
+    /// @inheritdoc IRukusLaunchPool
+    function getRukusLaunchPoolImmutableData()
         external
         view
-        returns (BondingReClammPoolImmutableData memory data)
+        returns (RukusLaunchPoolImmutableData memory data)
     {
         data.tokens = _vault.getPoolTokens(address(this));
         (data.decimalScalingFactors, ) = _vault.getPoolTokenRates(
@@ -539,6 +579,10 @@ contract BondingReClammPool is
         data.graduatedPriceRatio = GRADUATED_PRICE_RATIO;
         data.creatorFeeRecipient = _CREATOR_FEE_RECIPIENT;
         data.creatorFeePercentage = CREATOR_FEE_PERCENTAGE;
+        data.rukusFeeRecipient = _RUKUS_FEE_RECIPIENT;
+        data.rukusFeeShare = _RUKUS_FEE_SHARE;
+        data.graduatedSwapFeePercentage = _GRADUATED_SWAP_FEE_PERCENTAGE;
+        data.graduatedCreatorFeePercentage = _GRADUATED_CREATOR_FEE_PERCENTAGE;
         data.minSwapFeePercentage = _MIN_SWAP_FEE_PERCENTAGE;
         data.maxSwapFeePercentage = _MAX_SWAP_FEE_PERCENTAGE;
     }
@@ -574,7 +618,7 @@ contract BondingReClammPool is
     function _graduate(uint256[] memory balancesScaled18) internal {
         require(block.timestamp > _bondingCompletedAt, GraduationPending());
 
-        (uint256 virtualBalanceA, uint256 virtualBalanceB) = BondingReClammMath
+        (uint256 virtualBalanceA, uint256 virtualBalanceB) = RukusLaunchMath
             .computeGraduationVirtualBalances(
                 balancesScaled18,
                 _virtualBalanceA,
@@ -585,11 +629,43 @@ contract BondingReClammPool is
         _graduated = true;
         _setVirtualBalances(virtualBalanceA, virtualBalanceB);
 
+        // Switch to the graduated swap fee. The Vault loads a swap's fee before `onBeforeSwap`, so a swap that graduates
+        // the pool still pays the bonding fee; every later one pays this. Reverts while the pool is paused.
+        _vault.setStaticSwapFeePercentage(address(this), _GRADUATED_SWAP_FEE_PERCENTAGE);
+
+        // Switch to the graduated creator fee (the controller collects the fees owed first, at the bonding rates), and
+        // pay out what was collected while bonding.
+        IProtocolFeeController controller = _vault.getProtocolFeeController();
+        controller.setPoolCreatorSwapFeePercentage(address(this), _GRADUATED_CREATOR_FEE_PERCENTAGE);
+        _payCreatorFees(controller);
+
         emit Graduated(virtualBalanceA, virtualBalanceB, GRADUATED_PRICE_RATIO);
         _vault.emitAuxiliaryEvent(
             "Graduated",
             abi.encode(virtualBalanceA, virtualBalanceB, GRADUATED_PRICE_RATIO)
         );
+    }
+
+    /**
+     * @dev Has the fee controller pay the creator fees it collected to the pool (its own pool creator), then splits
+     * everything the pool holds: the Vault holds its balances, so anything here is creator fees (including any paid
+     * earlier through the controller's permissionless `withdrawPoolCreatorFees(pool)`). Rukus gets its share rounded
+     * down; the creator gets the rest.
+     */
+    function _payCreatorFees(IProtocolFeeController controller) internal {
+        controller.withdrawPoolCreatorFees(address(this));
+
+        IERC20[] memory tokens = _vault.getPoolTokens(address(this));
+        for (uint256 i = 0; i < tokens.length; ++i) {
+            uint256 balance = tokens[i].balanceOf(address(this));
+            if (balance > 0) {
+                uint256 rukusAmount = balance.mulDown(_RUKUS_FEE_SHARE);
+                if (rukusAmount > 0) {
+                    tokens[i].safeTransfer(_RUKUS_FEE_RECIPIENT, rukusAmount);
+                }
+                tokens[i].safeTransfer(_CREATOR_FEE_RECIPIENT, balance - rukusAmount);
+            }
+        }
     }
 
     function _setVirtualBalances(

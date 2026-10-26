@@ -3,7 +3,7 @@ use crate::common::types::BasePoolState;
 use alloy_primitives::U256;
 use serde::{Deserialize, Serialize};
 
-/// IBondingReClammPool.BondingPhase.
+/// IRukusLaunchPool.BondingPhase.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum BondingPhase {
     Bonding,
@@ -24,10 +24,10 @@ impl TryFrom<U256> for BondingPhase {
     }
 }
 
-/// `getBondingReClammPoolDynamicData()` (minus what BasePoolState carries), the graduated width, and the timestamp
+/// `getRukusLaunchPoolDynamicData()` (minus what BasePoolState carries), the graduated width, and the timestamp
 /// the state is evaluated at (a completed pool graduates on the first operation in a later block).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct BondingReClammMutable {
+pub struct RukusLaunchMutable {
     pub phase: BondingPhase,
     /// The launch token's index in the pool's (sorted) tokens.
     pub launch_token_index: usize,
@@ -35,7 +35,7 @@ pub struct BondingReClammMutable {
     pub graduation_launch_balance: U256,
     /// Timestamp of the buy that completed the curve (0 while bonding).
     pub bonding_completed_at: U256,
-    /// The width the graduated virtual balances are solved for (BondingReClammPool.GRADUATED_PRICE_RATIO).
+    /// The width the graduated virtual balances are solved for (RukusLaunchPool.GRADUATED_PRICE_RATIO).
     pub graduated_price_ratio: U256,
     /// The bonding curve's until graduation, the graduated ones after (fixed in time).
     pub virtual_balance_a: U256,
@@ -44,27 +44,27 @@ pub struct BondingReClammMutable {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct BondingReClammState {
+pub struct RukusLaunchState {
     pub base: BasePoolState,
-    pub mutable: BondingReClammMutable,
+    pub mutable: RukusLaunchMutable,
 }
 
-impl From<BondingReClammState> for crate::common::types::PoolState {
-    fn from(state: BondingReClammState) -> Self {
-        crate::common::types::PoolState::BondingReClamm(state)
+impl From<RukusLaunchState> for crate::common::types::PoolState {
+    fn from(state: RukusLaunchState) -> Self {
+        crate::common::types::PoolState::RukusLaunch(state)
     }
 }
 
-impl BondingReClammState {
+impl RukusLaunchState {
     /// From the `pool` block of a test-data file (see `crate::common::json`).
     pub fn from_json(pool: &PoolJson, base: BasePoolState) -> Result<Self, String> {
         let virtual_balances = pool.arr("virtualBalances")?;
         if virtual_balances.len() != 2 {
             return Err("`virtualBalances` must have 2 entries".into());
         }
-        Ok(BondingReClammState {
+        Ok(RukusLaunchState {
             base,
-            mutable: BondingReClammMutable {
+            mutable: RukusLaunchMutable {
                 phase: pool.u("phase")?.try_into()?,
                 launch_token_index: pool.u("launchTokenIndex")?.to::<usize>(),
                 graduation_launch_balance: pool.u("graduationLaunchBalance")?,

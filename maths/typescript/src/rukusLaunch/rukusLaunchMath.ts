@@ -1,10 +1,10 @@
-// Port of contracts/bonding-reclamm/lib/BondingReClammMath.sol: the graduation solve (the bonding curve setup only
+// Port of contracts/rukus-launch/lib/RukusLaunchMath.sol: the graduation solve (the bonding curve setup only
 // runs at initialization, so the maths never needs it). Call for call, with the same fixed-point primitives.
 
 import { MathSol, ReClammMath, sqrt, WAD } from '../poolKit';
 
 /**
- * BondingReClammMath.computeGraduationVirtualBalances: new virtual balances for the ReClamm range at the current
+ * RukusLaunchMath.computeGraduationVirtualBalances: new virtual balances for the ReClamm range at the current
  * price, for the given sqrt(price ratio). See the contract for the derivation.
  */
 export function computeGraduationVirtualBalances(

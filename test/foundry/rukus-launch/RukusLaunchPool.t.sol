@@ -11,18 +11,18 @@ import { ArrayHelpers } from "@bush.fi/v3-solidity-utils/contracts/test/ArrayHel
 import { FixedPoint } from "@bush.fi/v3-solidity-utils/contracts/math/FixedPoint.sol";
 
 import { ReClammMath } from "../../../contracts/reclamm/lib/ReClammMath.sol";
-import { BondingReClammPool } from "../../../contracts/bonding-reclamm/BondingReClammPool.sol";
+import { RukusLaunchPool } from "../../../contracts/rukus-launch/RukusLaunchPool.sol";
 import {
-    IBondingReClammPool,
-    BondingReClammPoolParams,
+    IRukusLaunchPool,
+    RukusLaunchPoolParams,
     BondingPhase,
-    BondingReClammPoolDynamicData,
-    BondingReClammPoolImmutableData
-} from "../../../contracts/bonding-reclamm/interfaces/IBondingReClammPool.sol";
+    RukusLaunchPoolDynamicData,
+    RukusLaunchPoolImmutableData
+} from "../../../contracts/rukus-launch/interfaces/IRukusLaunchPool.sol";
 
-import { BaseBondingReClammTest } from "../utils/BaseBondingReClammTest.sol";
+import { BaseRukusLaunchTest } from "../utils/BaseRukusLaunchTest.sol";
 
-contract BondingReClammPoolTest is BaseBondingReClammTest {
+contract RukusLaunchPoolTest is BaseRukusLaunchTest {
     using ArrayHelpers for *;
     using FixedPoint for uint256;
 
@@ -115,11 +115,11 @@ contract BondingReClammPoolTest is BaseBondingReClammTest {
         _buyExactIn(alice, 1_000e18);
 
         vm.prank(lp);
-        vm.expectRevert(IBondingReClammPool.LiquidityLockedUntilGraduation.selector);
+        vm.expectRevert(IRukusLaunchPool.LiquidityLockedUntilGraduation.selector);
         router.removeLiquidityProportional(pool, 1e18, new uint256[](2), false, "");
 
         vm.prank(bob);
-        vm.expectRevert(IBondingReClammPool.LiquidityLockedUntilGraduation.selector);
+        vm.expectRevert(IRukusLaunchPool.LiquidityLockedUntilGraduation.selector);
         router.addLiquidityProportional(pool, _maxAmounts(), 1e18, false, "");
     }
 
@@ -144,23 +144,23 @@ contract BondingReClammPoolTest is BaseBondingReClammTest {
         uint256 graduationBalance = _brc().getGraduationLaunchBalance();
 
         vm.expectEmit(pool);
-        emit IBondingReClammPool.BondingCurveCompleted(graduationBalance);
+        emit IRukusLaunchPool.BondingCurveCompleted(graduationBalance);
         _completeCurve(alice);
 
         assertEq(uint256(_brc().getBondingPhase()), uint256(BondingPhase.COMPLETED), "Phase");
         assertEq(_brc().getBondingCompletedAt(), block.timestamp, "Completed at");
 
-        vm.expectRevert(IBondingReClammPool.GraduationPending.selector);
+        vm.expectRevert(IRukusLaunchPool.GraduationPending.selector);
         _buyExactIn(bob, 1e18);
 
-        vm.expectRevert(IBondingReClammPool.GraduationPending.selector);
+        vm.expectRevert(IRukusLaunchPool.GraduationPending.selector);
         _sellExactIn(alice, 1e18);
 
-        vm.expectRevert(IBondingReClammPool.GraduationPending.selector);
+        vm.expectRevert(IRukusLaunchPool.GraduationPending.selector);
         _brc().graduate();
 
         vm.prank(lp);
-        vm.expectRevert(IBondingReClammPool.GraduationPending.selector);
+        vm.expectRevert(IRukusLaunchPool.GraduationPending.selector);
         router.removeLiquidityProportional(pool, 1e18, new uint256[](2), false, "");
     }
 
@@ -188,7 +188,7 @@ contract BondingReClammPoolTest is BaseBondingReClammTest {
         assertGt(maxPrice, priceBefore * 1_000, "Top of range too low");
         assertLt(minPrice, priceBefore / 1_000, "Bottom of range too high");
 
-        BondingReClammPoolDynamicData memory data = _brc().getBondingReClammPoolDynamicData();
+        RukusLaunchPoolDynamicData memory data = _brc().getRukusLaunchPoolDynamicData();
         assertEq(data.virtualBalances[_launchTokenIndex], virtualLaunch, "Dynamic data virtual launch");
         assertEq(data.virtualBalances[_quoteTokenIndex], virtualQuote, "Dynamic data virtual quote");
     }
@@ -219,14 +219,14 @@ contract BondingReClammPoolTest is BaseBondingReClammTest {
     }
 
     function testGraduateOnlyOnce() public {
-        vm.expectRevert(IBondingReClammPool.NotReadyToGraduate.selector);
+        vm.expectRevert(IRukusLaunchPool.NotReadyToGraduate.selector);
         _brc().graduate();
 
         _completeCurve(alice);
         vm.warp(block.timestamp + 1);
         _brc().graduate();
 
-        vm.expectRevert(IBondingReClammPool.NotReadyToGraduate.selector);
+        vm.expectRevert(IRukusLaunchPool.NotReadyToGraduate.selector);
         _brc().graduate();
     }
 
@@ -261,11 +261,11 @@ contract BondingReClammPoolTest is BaseBondingReClammTest {
     function testCompletingBuyPastTheLimitReverts() public {
         uint256 maxOut = _maxLaunchOut();
 
-        vm.expectRevert(abi.encodeWithSelector(IBondingReClammPool.GraduationBuyTooLarge.selector, maxOut));
+        vm.expectRevert(abi.encodeWithSelector(IRukusLaunchPool.GraduationBuyTooLarge.selector, maxOut));
         _buyExactOut(alice, maxOut + 1);
 
         // Exact in: a buy far past completion (it would take ~3x what completing needs) reverts the same way.
-        vm.expectRevert(abi.encodeWithSelector(IBondingReClammPool.GraduationBuyTooLarge.selector, maxOut));
+        vm.expectRevert(abi.encodeWithSelector(IRukusLaunchPool.GraduationBuyTooLarge.selector, maxOut));
         _buyExactIn(alice, 100_000e18);
 
         // Nothing happened: still bonding, with the whole supply.
@@ -289,7 +289,7 @@ contract BondingReClammPoolTest is BaseBondingReClammTest {
 
         if (launchBalance - launchOut < minBalance) {
             vm.expectRevert(
-                abi.encodeWithSelector(IBondingReClammPool.GraduationBuyTooLarge.selector, launchBalance - minBalance)
+                abi.encodeWithSelector(IRukusLaunchPool.GraduationBuyTooLarge.selector, launchBalance - minBalance)
             );
             _buyExactOut(alice, launchOut);
         } else {
@@ -384,50 +384,131 @@ contract BondingReClammPoolTest is BaseBondingReClammTest {
                               Initialization and hooks
     ***************************************************************************/
 
-    /// @dev The factory always initializes with launch tokens only; the pool enforces it too (deployed directly here,
-    /// since a factory pool is already initialized).
-    function testInitializeWithQuoteReverts() public {
-        BondingReClammPool direct = new BondingReClammPool(
-            BondingReClammPoolParams({
+    function testConstructorRejectsRukusShareAboveOne() public {
+        vm.expectRevert(IRukusLaunchPool.InvalidRukusFeeShare.selector);
+        new RukusLaunchPool(
+            RukusLaunchPoolParams({
                 name: "Direct",
                 symbol: "DIRECT",
                 version: _POOL_VERSION,
                 launchToken: launchToken,
                 launchTokenIndex: _launchTokenIndex,
                 creatorFeeRecipient: _CREATOR_FEE_RECIPIENT,
+                rukusFeeRecipient: _RUKUS_FEE_RECIPIENT,
+                rukusFeeShare: 100e16 + 1,
+                graduatedSwapFeePercentage: _GRADUATED_SWAP_FEE,
+                graduatedCreatorFeePercentage: _GRADUATED_CREATOR_FEE_PERCENTAGE,
                 curve: _defaultCurve()
             }),
             vault
         );
-        LiquidityManagement memory liquidityManagement;
-        liquidityManagement.disableUnbalancedLiquidity = true;
-        // Built by hand (vault.buildTokenConfig is a local-mock helper), so this also runs on the live Vault.
-        TokenConfig[] memory tokenConfig = new TokenConfig[](2);
-        tokenConfig[0].token = sortedTokens[0];
-        tokenConfig[1].token = sortedTokens[1];
-        vault.registerPool(
-            address(direct),
-            tokenConfig,
-            _SWAP_FEE,
-            0,
-            false,
-            _roleAccounts(),
-            address(direct),
-            liquidityManagement
-        );
+    }
+
+    /// @dev The factory always initializes with launch tokens only; the pool enforces it too (deployed directly here,
+    /// since a factory pool is already initialized).
+    function testInitializeWithQuoteReverts() public {
+        RukusLaunchPool direct = _deployDirectPool();
+        _registerDirectPool(address(direct), address(direct));
 
         uint256[] memory amounts = _initAmounts(1_000_000e18);
         amounts[_quoteTokenIndex] = 1e18;
         _giveLaunchTokens(lp, 1_000_000e18);
 
         vm.prank(lp);
-        vm.expectRevert(IBondingReClammPool.QuoteBalanceNotZero.selector);
+        vm.expectRevert(IRukusLaunchPool.QuoteBalanceNotZero.selector);
         router.initialize(address(direct), sortedTokens, amounts, 0, false, "");
+    }
+
+    /// @dev The pool checks its own params, whoever deploys it (the factory checks some of them first).
+    function testConstructorRejectsInvalidParams() public {
+        RukusLaunchPoolParams memory params = _directPoolParams();
+        params.launchTokenIndex = 2;
+        vm.expectRevert(IRukusLaunchPool.InvalidLaunchToken.selector);
+        new RukusLaunchPool(params, vault);
+
+        params = _directPoolParams();
+        params.launchToken = IERC20(address(0));
+        vm.expectRevert(IRukusLaunchPool.InvalidLaunchToken.selector);
+        new RukusLaunchPool(params, vault);
+
+        params = _directPoolParams();
+        params.creatorFeeRecipient = address(0);
+        vm.expectRevert(IRukusLaunchPool.InvalidCreatorFeeRecipient.selector);
+        new RukusLaunchPool(params, vault);
+
+        params = _directPoolParams();
+        params.rukusFeeRecipient = address(0);
+        vm.expectRevert(IRukusLaunchPool.InvalidRukusFeeRecipient.selector);
+        new RukusLaunchPool(params, vault);
+
+        params = _directPoolParams();
+        params.graduatedSwapFeePercentage = 5e16 + 1;
+        vm.expectRevert(IRukusLaunchPool.InvalidGraduatedSwapFee.selector);
+        new RukusLaunchPool(params, vault);
+
+        params = _directPoolParams();
+        params.graduatedCreatorFeePercentage = 99.999e16 + 1;
+        vm.expectRevert(IRukusLaunchPool.InvalidGraduatedCreatorFee.selector);
+        new RukusLaunchPool(params, vault);
+
+        params = _directPoolParams();
+        params.curve.graduationPrice = params.curve.initialPrice;
+        vm.expectRevert(IRukusLaunchPool.InvalidBondingPrices.selector);
+        new RukusLaunchPool(params, vault);
+
+        // The valid params deploy.
+        new RukusLaunchPool(_directPoolParams(), vault);
+    }
+
+    /// @dev Before initialization there are no balances: the price, the max buy and graduation all refuse.
+    function testViewsAndGraduationNeedAnInitializedPool() public {
+        RukusLaunchPool direct = _deployDirectPool();
+        _registerDirectPool(address(direct), address(direct));
+
+        vm.expectRevert(IRukusLaunchPool.PoolNotInitialized.selector);
+        direct.computeCurrentLaunchTokenPrice();
+        vm.expectRevert(IRukusLaunchPool.PoolNotInitialized.selector);
+        direct.getMaxBuyAmount();
+        vm.expectRevert(IRukusLaunchPool.PoolNotInitialized.selector);
+        direct.graduate();
+    }
+
+    /// @dev The swap and liquidity hooks take a pool address: only their own is accepted (even from the Vault).
+    function testHooksRejectAnotherPool() public {
+        uint256[] memory balances = vault.getCurrentLiveBalances(pool);
+        PoolSwapParams memory request;
+        request.balancesScaled18 = balances;
+
+        vm.startPrank(address(vault));
+        vm.expectRevert(abi.encodeWithSelector(IRukusLaunchPool.InvalidPoolArgument.selector, alice));
+        _brc().onBeforeSwap(request, alice);
+
+        vm.expectRevert(abi.encodeWithSelector(IRukusLaunchPool.InvalidPoolArgument.selector, alice));
+        _brc().onBeforeAddLiquidity(address(0), alice, AddLiquidityKind.PROPORTIONAL, balances, 1, balances, "");
+
+        vm.expectRevert(abi.encodeWithSelector(IRukusLaunchPool.InvalidPoolArgument.selector, alice));
+        _brc().onBeforeRemoveLiquidity(address(0), alice, RemoveLiquidityKind.PROPORTIONAL, 1, balances, balances, "");
+        vm.stopPrank();
+    }
+
+    /**
+     * @dev A remove that would scale a virtual balance to 0 (the whole BPT supply) is refused: the pool could no longer
+     * quote one side. It can't happen through the Vault (the burn address holds the initial BPT and the Vault keeps
+     * a minimum supply), so the hook is called as the Vault would, with the whole supply.
+     */
+    function testRemovingTheWholeSupplyCannotZeroTheVirtualBalances() public {
+        _graduate();
+        uint256[] memory balances = vault.getCurrentLiveBalances(pool);
+        uint256 totalSupply = vault.totalSupply(pool);
+
+        vm.prank(address(vault));
+        vm.expectRevert(IRukusLaunchPool.ZeroVirtualBalance.selector);
+        _brc().onBeforeRemoveLiquidity(address(0), pool, RemoveLiquidityKind.PROPORTIONAL, totalSupply, balances, balances, "");
     }
 
     function testCannotInitializeTwice() public {
         vm.prank(address(vault));
-        vm.expectRevert(IBondingReClammPool.PoolAlreadyInitialized.selector);
+        vm.expectRevert(IRukusLaunchPool.PoolAlreadyInitialized.selector);
         _brc().onBeforeInitialize(_initAmounts(1e18), "");
     }
 
@@ -473,25 +554,52 @@ contract BondingReClammPoolTest is BaseBondingReClammTest {
         assertFalse(_brc().onRegister(address(0), pool, config, lm), "Unbalanced liquidity enabled");
     }
 
+    /**
+     * @dev Through the Vault: another pool can't register this pool as its hook. The initialize hooks get no pool
+     * address to check (the Vault calls them only for the pool they're registered to), so this is what keeps another
+     * pool's initialization, swaps and liquidity from ever reaching this pool's hooks.
+     */
+    function testAnotherPoolCannotUseThisPoolAsItsHook() public {
+        RukusLaunchPool other = _deployDirectPool();
+        vm.expectRevert(
+            abi.encodeWithSelector(IVaultErrors.HookRegistrationFailed.selector, pool, address(other), address(this))
+        );
+        _registerDirectPool(address(other), pool);
+
+        // Registering with its own hook works, and initializing it leaves this pool untouched.
+        _registerDirectPool(address(other), address(other));
+        uint256 creatorFeeBefore = feeController.getPoolCreatorSwapFeePercentage(pool);
+        (uint256 virtualABefore, uint256 virtualBBefore) = _brc().getVirtualBalances();
+        _giveLaunchTokens(lp, 1_000_000e18);
+        vm.prank(lp);
+        router.initialize(address(other), sortedTokens, _initAmounts(1_000_000e18), 0, false, "");
+
+        assertTrue(vault.isPoolInitialized(address(other)), "Other pool not initialized");
+        assertEq(feeController.getPoolCreatorSwapFeePercentage(pool), creatorFeeBefore, "Creator fee changed");
+        (uint256 virtualA, uint256 virtualB) = _brc().getVirtualBalances();
+        assertEq(virtualA, virtualABefore, "Virtual A changed");
+        assertEq(virtualB, virtualBBefore, "Virtual B changed");
+    }
+
     /***************************************************************************
                                      Getters
     ***************************************************************************/
 
     function testBaseFunctions() public {
         assertEq(_brc().getMinimumSwapFeePercentage(), 0.001e16, "Min fee");
-        assertEq(_brc().getMaximumSwapFeePercentage(), 10e16, "Max fee");
+        assertEq(_brc().getMaximumSwapFeePercentage(), 5e16, "Max fee");
         assertEq(_brc().getMinimumInvariantRatio(), 0, "Min invariant ratio");
         assertEq(_brc().getMaximumInvariantRatio(), 0, "Max invariant ratio");
 
-        vm.expectRevert(IBondingReClammPool.BondingReClammPoolBptRateUnsupported.selector);
+        vm.expectRevert(IRukusLaunchPool.RukusLaunchPoolBptRateUnsupported.selector);
         _brc().getRate();
 
-        vm.expectRevert(IBondingReClammPool.NotImplemented.selector);
+        vm.expectRevert(IRukusLaunchPool.NotImplemented.selector);
         _brc().computeBalance(new uint256[](2), 0, 1e18);
     }
 
     function testImmutableData() public view {
-        BondingReClammPoolImmutableData memory data = _brc().getBondingReClammPoolImmutableData();
+        RukusLaunchPoolImmutableData memory data = _brc().getRukusLaunchPoolImmutableData();
         assertEq(address(data.tokens[0]), address(sortedTokens[0]), "Token 0");
         assertEq(address(data.tokens[1]), address(sortedTokens[1]), "Token 1");
         assertEq(address(data.launchToken), address(launchToken), "Launch token");
@@ -508,7 +616,7 @@ contract BondingReClammPoolTest is BaseBondingReClammTest {
 
     function testDynamicData() public {
         _buyExactIn(alice, 1_000e18);
-        BondingReClammPoolDynamicData memory data = _brc().getBondingReClammPoolDynamicData();
+        RukusLaunchPoolDynamicData memory data = _brc().getRukusLaunchPoolDynamicData();
         (uint256 virtualA, uint256 virtualB) = _brc().getVirtualBalances();
 
         assertTrue(data.isPoolInitialized, "Initialized");
@@ -548,6 +656,44 @@ contract BondingReClammPoolTest is BaseBondingReClammTest {
         maxPrice = invariant.divDown(virtualLaunch.mulDown(virtualLaunch));
     }
 
+    /// @dev A RukusLaunchPool deployed directly (not through the factory), so not yet registered.
+    function _deployDirectPool() internal returns (RukusLaunchPool) {
+        return new RukusLaunchPool(_directPoolParams(), vault);
+    }
+
+    /// @dev Valid params for a pool deployed directly.
+    function _directPoolParams() internal view returns (RukusLaunchPoolParams memory) {
+        return
+            RukusLaunchPoolParams({
+                name: "Direct",
+                symbol: "DIRECT",
+                version: _POOL_VERSION,
+                launchToken: launchToken,
+                launchTokenIndex: _launchTokenIndex,
+                creatorFeeRecipient: _CREATOR_FEE_RECIPIENT,
+                rukusFeeRecipient: _RUKUS_FEE_RECIPIENT,
+                rukusFeeShare: 50e16,
+                graduatedSwapFeePercentage: _GRADUATED_SWAP_FEE,
+                graduatedCreatorFeePercentage: _GRADUATED_CREATOR_FEE_PERCENTAGE,
+                curve: _defaultCurve()
+            });
+    }
+
+    /// @dev Registers `newPool` against launch token and WETH with `hooks` as its hooks contract, with the roles the
+    /// factory gives (the pool is its own pool creator and swap fee manager, so its `onAfterInitialize` can run).
+    function _registerDirectPool(address newPool, address hooks) internal {
+        PoolRoleAccounts memory roleAccounts;
+        roleAccounts.poolCreator = newPool;
+        roleAccounts.swapFeeManager = newPool;
+        LiquidityManagement memory liquidityManagement;
+        liquidityManagement.disableUnbalancedLiquidity = true;
+        // Built by hand (vault.buildTokenConfig is a local-mock helper), so this also runs on the live Vault.
+        TokenConfig[] memory tokenConfig = new TokenConfig[](2);
+        tokenConfig[0].token = sortedTokens[0];
+        tokenConfig[1].token = sortedTokens[1];
+        vault.registerPool(newPool, tokenConfig, _SWAP_FEE, 0, false, roleAccounts, hooks, liquidityManagement);
+    }
+
     function _maxAmounts() internal pure returns (uint256[] memory amounts) {
         amounts = new uint256[](2);
         amounts[0] = MAX_UINT128;
@@ -556,7 +702,7 @@ contract BondingReClammPoolTest is BaseBondingReClammTest {
 }
 
 /// @dev The same tests with the launch token second in sorted order (so the curve's "A" and "B" are swapped).
-contract BondingReClammPoolLaunchTokenBTest is BondingReClammPoolTest {
+contract RukusLaunchPoolLaunchTokenBTest is RukusLaunchPoolTest {
     constructor() {
         _launchTokenIndex = 1;
     }

@@ -8,7 +8,7 @@ import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 import { FixedPoint } from "@bush.fi/v3-solidity-utils/contracts/math/FixedPoint.sol";
 
 
-import { BaseBondingReClammTest } from "../utils/BaseBondingReClammTest.sol";
+import { BaseRukusLaunchTest } from "../utils/BaseRukusLaunchTest.sol";
 
 /**
  * @notice How the graduated (full-range, fixed) pool copes with meme-coin volatility. Not a pass/fail test: it prints
@@ -20,10 +20,10 @@ import { BaseBondingReClammTest } from "../utils/BaseBondingReClammTest.sol";
  *   didn't reach the price yet).
  * - LP/HODL: what the pool's balances are worth at the end, against the balances it graduated with held untouched,
  *   both at the final market price. Below 100% is the LPs' loss (impermanent loss, plus what arbitrage took).
- * And separately, the push-and-hold attack from BondingReClammAttacks.t.sol (buy 80%, 95% or 99% of the launch tokens
+ * And separately, the push-and-hold attack from RukusLaunchAttacks.t.sol (buy 80%, 95% or 99% of the launch tokens
  * left, wait 7 days with nobody trading, sell back): the attacker's profit in quote.
  */
-contract BondingReClammVolatilitySim is BaseBondingReClammTest {
+contract RukusLaunchVolatilitySim is BaseRukusLaunchTest {
     using FixedPoint for uint256;
 
     uint256 private constant _HOURS = 45 * 24;
@@ -45,7 +45,7 @@ contract BondingReClammVolatilitySim is BaseBondingReClammTest {
     }
 
     // Runs 5 paths of 45 days hour by hour: raise Foundry's gas limit.
-    // FOUNDRY_GAS_LIMIT=9000000000 RUN_SIM=true forge test --match-contract BondingReClammVolatilitySim -vv
+    // FOUNDRY_GAS_LIMIT=9000000000 RUN_SIM=true forge test --match-contract RukusLaunchVolatilitySim -vv
 
     function testSimulateFullRange() public {
         if (!vm.envOr("RUN_SIM", false)) {

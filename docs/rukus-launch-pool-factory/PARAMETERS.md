@@ -1,24 +1,30 @@
 # Parameters
 
-Two levels of parameters. The **factory** fixes the supply and the bonding curve of every launch when it is deployed;
-a launcher never sets them. The **launch** (`create`) only chooses the token's name and symbol, the creator fee
-recipient, the metadata, the fee rate and an optional initial buy. Amounts below use the 5 ETH preset: 1B tokens, 800M
+Two levels of parameters. The **factory** fixes the supply and the bonding curve of every launch when it is deployed,
+along with the Rukus fee and the floor on the graduated creator fee; a launcher never sets them. The **launch**
+(`create`) chooses the token's name and symbol, the creator fee recipient, the metadata, the swap fee while bonding,
+the swap fee and creator fee from graduation on, and an optional initial buy. Amounts below use the 5 ETH preset: 1B tokens, 800M
 sold on the curve and 200M left for the pool, graduating at 5 ETH.
 
-Values and bounds are read from `contracts/bonding-reclamm/BondingReClammPoolFactory.sol`,
-`contracts/bonding-reclamm/lib/BondingReClammPoolFactoryLib.sol` and `contracts/bonding-reclamm/BondingReClammPool.sol`.
+Values and bounds are read from `contracts/rukus-launch/RukusLaunchPoolFactory.sol`,
+`contracts/rukus-launch/lib/RukusLaunchPoolFactoryLib.sol` and `contracts/rukus-launch/RukusLaunchPool.sol`.
 Prices are 18-decimal fixed point: the price of one whole launch token in ETH.
 
 ## Factory (constructor): fixed for every launch
 
-`new BondingReClammPoolFactory(vault, pauseWindowDuration, weth, launchSupply, curve, factoryVersion, poolVersion)`.
-Read back with `getLaunchConfig()` and `getWeth()`. A different supply or curve is a different factory deployment.
+`new RukusLaunchPoolFactory(vault, pauseWindowDuration, weth, rukusFeeRecipient, rukusFeePercentage,
+minGraduatedCreatorFeePercentage, launchSupply, curve, factoryVersion, poolVersion)`. Read back with
+`getLaunchConfig()`, `getWeth()`, `getRukusFeeRecipient()`, `getRukusFeePercentage()` and
+`getMinGraduatedCreatorFeePercentage()`. A different supply or curve is a different factory deployment.
 
 | Name | Type | 5 ETH preset | Min | Max | Description | Validation |
 | --- | --- | --- | --- | --- | --- | --- |
 | `vault` | `IVault` | — | — | — | The Vault. | — |
 | `pauseWindowDuration` | `uint32` | — | — | — | How long governance can pause this factory's pools. With the BPT burned, a pause can halt trading but not drain anything. | `BasePoolFactory`. |
 | `weth` | `IWETH` | WETH | — | — | The quote token of every launch. Buyers can pay in ETH through the Router. | Non-zero, or `InvalidWeth()`. |
+| `rukusFeeRecipient` | `address` | — | — | — | Where the Rukus share of every launch's creator fees goes. | Non-zero, or `InvalidRukusFeeRecipient()`. |
+| `rukusFeePercentage` | `uint256` | — | `0` | — | Rukus's cut of every bonding trade (of the amount in). The factory converts it into a fixed share of the creator fees at `create`; after graduation that share applies to the launch's graduated creator fee, so a lower graduated creator fee means a smaller Rukus cut. | The launch's swap fee must cover it, or `SwapFeeTooLowForRukusFee(swapFee)`. |
+| `minGraduatedCreatorFeePercentage` | `uint256` | — | `0` | `99.999e16` | The lowest graduated creator fee a launch may choose. | `InvalidMinGraduatedCreatorFee()` above 99.999%. |
 | `launchSupply` | `uint256` | `1_000_000_000e18` (1B) | > 0 | `1e12 * 1e18` | Every launch token's whole supply (18 decimals), all of it put in the pool. | `InvalidLaunchSupply()`. |
 | `curve.initialPrice` | `uint256` | `0.0000000015625e18` ETH | > 0 | — | Price when the pool holds no ETH. | `> 0`, or `InvalidBondingPrices()`. |
 | `curve.graduationPrice` | `uint256` | `0.000000025e18` ETH (16x) | `initialPrice * 1.01` | `initialPrice * 1e6` | Price at which the curve completes. The pool is then balanced: ETH raised = `graduationPrice` × launch tokens left. | `> initialPrice`, or `InvalidBondingPrices()`; `graduationPrice / initialPrice` in [`MIN_BONDING_PRICE_RATIO`, `MAX_BONDING_PRICE_RATIO`], or `BondingPriceRatioOutOfBounds(ratio)`. |
@@ -41,17 +47,19 @@ To design a different preset: the share left for the pool fixes the curve (`S / 
 ## Launch (`create`): chosen per launch
 
 `create(launch, swapFeePercentage, salt)` (payable) returns `(pool, launchToken)`. Roles are fixed: no pause manager,
-no swap fee manager, and the pool is its own pool creator.
+and the pool is its own pool creator and its own swap fee manager.
 
 | Name | Type | Default | Min | Max | Description | Validation |
 | --- | --- | --- | --- | --- | --- | --- |
-| `launch.name` | `string` | — | — | — | Launch token name. The BPT is named `<name> Bonding Pool`. | None. |
-| `launch.symbol` | `string` | — | — | — | Launch token symbol. The BPT symbol is `<symbol>-BRECLAMM`. | None. |
+| `launch.name` | `string` | — | — | — | Launch token name. The BPT is named `<name> Rukus Launch Pool`. | None. |
+| `launch.symbol` | `string` | — | — | — | Launch token symbol. The BPT symbol is `<symbol>-RUKUS`. | None. |
 | `launch.creatorFeeRecipient` | `address` | — | — | — | Where creator fees are paid (a user or a contract). Fixed for good. | Non-zero, or `InvalidCreatorFeeRecipient()`. |
-| `launch.metadataURI` | `string` | — | — | — | Off-chain metadata (image, description, links). Emitted in `BondingLaunchCreated`, not stored. | None. |
+| `launch.metadataURI` | `string` | — | — | — | Off-chain metadata (image, description, links). Emitted in `RukusLaunchCreated`, not stored. | None. |
 | `launch.minInitialBuyAmountOut` | `uint256` | `0` | — | — | With ETH sent: the fewest launch tokens the creator's initial buy accepts. | The Vault's swap limit. |
+| `launch.graduatedSwapFeePercentage` | `uint256` | — | `0.001e16` (0.001%) | `5e16` (5%) | Static swap fee from graduation on; the pool sets it on the Vault at graduation. Fixed for good. | `InvalidGraduatedSwapFee()`. |
+| `launch.graduatedCreatorFeePercentage` | `uint256` | — | factory's `minGraduatedCreatorFeePercentage` | `99.999e16` | Creator share of the swap fee (after the protocol's) from graduation on; the rest stays in the pool. Rukus's cut after graduation is a fixed share of this. Fixed for good. | `GraduatedCreatorFeeBelowMinimum(fee, min)` below the floor; `InvalidGraduatedCreatorFee()` above 99.999%. |
 | `msg.value` | ETH | `0` | — | — | The creator's initial buy, made in the same transaction; launch tokens go to the caller. Subject to the overshoot cap like any buy. | `GraduationBuyTooLarge` past the cap. |
-| `swapFeePercentage` | `uint256` | — | `0.001e16` (0.001%) | `10e16` (10%) | Static swap fee rate; only governance can change it afterwards (1% is typical). The protocol takes its share first (30% on Robinhood Chain today); 99.999% of the rest goes to the creator; 0.001% stays in the pool. | Enforced by the Vault against `getMinimum/MaximumSwapFeePercentage()`. |
+| `swapFeePercentage` | `uint256` | — | `0.001e16` (0.001%) | `5e16` (5%) | Static swap fee rate while bonding; nobody can change it, and the pool replaces it with `graduatedSwapFeePercentage` at graduation (1% is typical). The protocol takes its share first (30% on Robinhood Chain today); 99.999% of the rest goes to the creator; 0.001% stays in the pool. | Enforced by the Vault against `getMinimum/MaximumSwapFeePercentage()`. |
 | `salt` | `bytes32` | — | — | — | CREATE2 salt for the token and the pool, combined with the caller and chain id. `getLaunchTokenAddress(launch, creator, salt)` predicts the token address. | `BasePoolFactory`. |
 
 ## Initialization
@@ -71,10 +79,10 @@ set to 99.999% in the pool's after-initialize hook.
 | Tokens | The launch token and WETH, STANDARD, no rate providers | Factory, `onRegister` |
 | Liquidity management | `disableUnbalancedLiquidity = true`, `enableDonation = false` | Factory; `onRegister` refuses anything else. |
 | Hooks | The pool itself (before and after initialize, before add, before remove) | Factory registers `pool` as its hook. |
-| Creator fee share | 99.999% (`CREATOR_FEE_PERCENTAGE`), set once at initialization; nothing can change it | `onAfterInitialize` |
+| Creator fee share | 99.999% (`CREATOR_FEE_PERCENTAGE`) while bonding, set at initialization; switched once, at graduation, to the launch's `graduatedCreatorFeePercentage` | `onAfterInitialize`, `_graduate` |
 | Liquidity while bonding | Locked: adds and removes revert `LiquidityLockedUntilGraduation()` | `onBeforeAdd/RemoveLiquidity` |
 | Completion | A buy leaving `launchBalance <= graduationLaunchBalance` | `onSwap` |
 | Overshoot cap | The completing buy may leave no less than `graduationLaunchBalance` less `MAX_GRADUATION_OVERSHOOT` (0.1%) of it, or `GraduationBuyTooLarge(maxLaunchAmountOut)`; `getMaxBuyAmount()` gives the limit | `onSwap` |
 | Freeze after completion | Everything reverts `GraduationPending()` until `block.timestamp > bondingCompletedAt` | `_graduate` |
-| Graduated range | Solved once, at graduation, for `GRADUATED_PRICE_RATIO` = 1e12 (constant); never moves with time. No setters. | `BondingReClammPool._graduate` |
+| Graduated range | Solved once, at graduation, for `GRADUATED_PRICE_RATIO` = 1e12 (constant); never moves with time. No setters. | `RukusLaunchPool._graduate` |
 | BPT rate | Unsupported (`getRate` reverts), as in ReClamm | `getRate` |

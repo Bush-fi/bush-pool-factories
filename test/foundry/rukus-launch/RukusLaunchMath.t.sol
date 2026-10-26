@@ -7,11 +7,12 @@ import { Test } from "forge-std/Test.sol";
 import { FixedPoint } from "@bush.fi/v3-solidity-utils/contracts/math/FixedPoint.sol";
 
 import { ReClammMath } from "../../../contracts/reclamm/lib/ReClammMath.sol";
-import { BondingReClammMath } from "../../../contracts/bonding-reclamm/lib/BondingReClammMath.sol";
-import { BondingReClammPoolFactoryLib } from "../../../contracts/bonding-reclamm/lib/BondingReClammPoolFactoryLib.sol";
+import { IRukusLaunchPool } from "../../../contracts/rukus-launch/interfaces/IRukusLaunchPool.sol";
+import { RukusLaunchMath } from "../../../contracts/rukus-launch/lib/RukusLaunchMath.sol";
+import { RukusLaunchPoolFactoryLib } from "../../../contracts/rukus-launch/lib/RukusLaunchPoolFactoryLib.sol";
 
 /// @notice The bonding curve setup and the graduation solve, over the whole parameter range the factory accepts.
-contract BondingReClammMathTest is Test {
+contract RukusLaunchMathTest is Test {
     using FixedPoint for uint256;
 
     uint256 internal constant _MAX_PRICE_RATIO = 20e18; // ReClammPoolFactoryLib.MAX_PRICE_RATIO
@@ -23,12 +24,12 @@ contract BondingReClammMathTest is Test {
         initialPrice = bound(initialPrice, 1e9, 1e24);
         bondingPriceRatio = bound(
             bondingPriceRatio,
-            BondingReClammPoolFactoryLib.MIN_BONDING_PRICE_RATIO,
-            BondingReClammPoolFactoryLib.MAX_BONDING_PRICE_RATIO
+            RukusLaunchPoolFactoryLib.MIN_BONDING_PRICE_RATIO,
+            RukusLaunchPoolFactoryLib.MAX_BONDING_PRICE_RATIO
         );
         uint256 graduationPrice = initialPrice.mulDown(bondingPriceRatio);
 
-        (uint256 virtualLaunch, uint256 virtualQuote, uint256 graduationBalance) = BondingReClammMath
+        (uint256 virtualLaunch, uint256 virtualQuote, uint256 graduationBalance) = RukusLaunchMath
             .computeBondingCurve(launchBalance, initialPrice, graduationPrice);
 
         _assertClose(virtualQuote.divDown(launchBalance + virtualLaunch), initialPrice, "Initial price");
@@ -70,7 +71,7 @@ contract BondingReClammMathTest is Test {
         balances[1] = bound(balanceSeeds[1], virtualB / 1e4, 1e30);
         priceRatio = bound(priceRatio, _MIN_PRICE_RATIO, _MAX_PRICE_RATIO);
 
-        (uint256 newVirtualA, uint256 newVirtualB) = BondingReClammMath.computeGraduationVirtualBalances(
+        (uint256 newVirtualA, uint256 newVirtualB) = RukusLaunchMath.computeGraduationVirtualBalances(
             balances,
             virtualA,
             virtualB,
@@ -100,7 +101,7 @@ contract BondingReClammMathTest is Test {
         uint256 virtualA = launchBalance / 3;
         uint256 virtualB = launchBalance / 6;
 
-        (uint256 newVirtualA, uint256 newVirtualB) = BondingReClammMath.computeGraduationVirtualBalances(
+        (uint256 newVirtualA, uint256 newVirtualB) = RukusLaunchMath.computeGraduationVirtualBalances(
             balances,
             virtualA,
             virtualB,
@@ -131,11 +132,11 @@ contract BondingReClammMathTest is Test {
         initialPrice = bound(initialPrice, 1e9, 1e24);
         bondingPriceRatio = bound(
             bondingPriceRatio,
-            BondingReClammPoolFactoryLib.MIN_BONDING_PRICE_RATIO,
-            BondingReClammPoolFactoryLib.MAX_BONDING_PRICE_RATIO
+            RukusLaunchPoolFactoryLib.MIN_BONDING_PRICE_RATIO,
+            RukusLaunchPoolFactoryLib.MAX_BONDING_PRICE_RATIO
         );
         uint256 graduationPrice = initialPrice.mulDown(bondingPriceRatio);
-        (uint256 virtualLaunch, uint256 virtualQuote, uint256 graduationBalance) = BondingReClammMath
+        (uint256 virtualLaunch, uint256 virtualQuote, uint256 graduationBalance) = RukusLaunchMath
             .computeBondingCurve(launchBalance, initialPrice, graduationPrice);
 
         // Bought down to anywhere from the graduation balance to 1 wei, along the curve; then extra quote (fees).
@@ -147,11 +148,11 @@ contract BondingReClammMathTest is Test {
         balances[0] = launchLeft;
         balances[1] = quote;
 
-        (uint256 newVirtualA, uint256 newVirtualB) = BondingReClammMath.computeGraduationVirtualBalances(
+        (uint256 newVirtualA, uint256 newVirtualB) = RukusLaunchMath.computeGraduationVirtualBalances(
             balances,
             virtualLaunch,
             virtualQuote,
-            1e6 * 1e18 // sqrt(BondingReClammPool.GRADUATED_PRICE_RATIO)
+            1e6 * 1e18 // sqrt(RukusLaunchPool.GRADUATED_PRICE_RATIO)
         );
 
         assertGt(newVirtualA, 0, "Zero virtual A");
@@ -164,5 +165,34 @@ contract BondingReClammMathTest is Test {
             1e10,
             "Graduation moved the price"
         );
+    }
+
+    /// @dev A supply too small for its curve rounds the virtual launch balance to 0: refused, not a curve with no depth.
+    /// forge-config: default.allow_internal_expect_revert = true
+    function testBondingCurveRejectsZeroVirtualBalance() public {
+        // Va = Rt0 * P0 / (P1 - P0) = 1 wei * 1 / 15, rounded down to 0.
+        vm.expectRevert(IRukusLaunchPool.ZeroVirtualBalance.selector);
+        RukusLaunchMath.computeBondingCurve(1, 1e18, 16e18);
+    }
+
+    /// @dev A pool with no real balances has no price to keep: the solve refuses it (graduation can't get there; a
+    /// completed curve always holds quote and launch tokens).
+    /// forge-config: default.allow_internal_expect_revert = true
+    function testGraduationRejectsEmptyPool() public {
+        uint256[] memory balances = new uint256[](2);
+        vm.expectRevert(IRukusLaunchPool.ZeroVirtualBalance.selector);
+        RukusLaunchMath.computeGraduationVirtualBalances(balances, 1e18, 1e18, 1e6 * 1e18);
+    }
+
+    /// @dev Totals so small that a graduated virtual balance rounds to 0 wei: refused, so the pool can never quote a
+    /// price of 0 or infinity.
+    /// forge-config: default.allow_internal_expect_revert = true
+    function testGraduationRejectsVirtualBalanceRoundingToZero() public {
+        // Token A: 1 wei real + 1 wei virtual. Its graduated virtual balance is ~2 * 0.0005 wei, rounded down to 0.
+        uint256[] memory balances = new uint256[](2);
+        balances[0] = 1;
+        balances[1] = 1e30;
+        vm.expectRevert(IRukusLaunchPool.ZeroVirtualBalance.selector);
+        RukusLaunchMath.computeGraduationVirtualBalances(balances, 1, 1e30, 1e6 * 1e18);
     }
 }

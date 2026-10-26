@@ -7,10 +7,10 @@ import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 import { FixedPoint } from "@bush.fi/v3-solidity-utils/contracts/math/FixedPoint.sol";
 
 import { ReClammMath, a, b } from "../../reclamm/lib/ReClammMath.sol";
-import { IBondingReClammPool } from "../interfaces/IBondingReClammPool.sol";
+import { IRukusLaunchPool } from "../interfaces/IRukusLaunchPool.sol";
 
 /**
- * @notice The two pieces of maths a BondingReClamm pool adds to ReClammMath: setting up the bonding curve, and
+ * @notice The two pieces of maths a RukusLaunch pool adds to ReClammMath: setting up the bonding curve, and
  * re-solving the virtual balances at graduation. Everything else (swaps, the invariant, range movement after
  * graduation) is ReClammMath as is.
  *
@@ -18,7 +18,7 @@ import { IBondingReClammPool } from "../interfaces/IBondingReClammPool.sol";
  * the pool exactly a pump.fun-style virtual-reserve curve: `(Rt + Vt)(Rq + Vq) = k`, with the quote balance `Rq`
  * starting at zero (t = launch token, q = quote token).
  */
-library BondingReClammMath {
+library RukusLaunchMath {
     using FixedPoint for uint256;
 
     /**
@@ -52,7 +52,7 @@ library BondingReClammMath {
         virtualQuote = (launchBalance + virtualLaunch).mulDown(initialPrice);
 
         if (virtualLaunch == 0 || virtualQuote == 0) {
-            revert IBondingReClammPool.ZeroVirtualBalance();
+            revert IRukusLaunchPool.ZeroVirtualBalance();
         }
 
         uint256 sqrtBondingPriceRatio = ReClammMath.sqrtScaled18(graduationPrice.divDown(initialPrice));
@@ -112,14 +112,14 @@ library BondingReClammMath {
         uint256 u = (linearTerm + Math.sqrt(discriminant)).divDown(2 * (sqrtPriceRatio - FixedPoint.ONE));
 
         if (u <= alpha || u <= beta) {
-            revert IBondingReClammPool.ZeroVirtualBalance();
+            revert IRukusLaunchPool.ZeroVirtualBalance();
         }
 
         newVirtualBalanceA = totalA.mulDown(u - alpha);
         newVirtualBalanceB = totalB.mulDown(u - beta);
 
         if (newVirtualBalanceA == 0 || newVirtualBalanceB == 0) {
-            revert IBondingReClammPool.ZeroVirtualBalance();
+            revert IRukusLaunchPool.ZeroVirtualBalance();
         }
     }
 }

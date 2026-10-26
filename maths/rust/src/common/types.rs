@@ -114,8 +114,8 @@ pub enum PoolState {
     FixedPriceLBP(crate::pools::fixed_price_lbp::fixed_price_lbp_data::FixedPriceLBPState),
     /// ReClamm pool state
     ReClamm(crate::pools::reclamm::reclamm_data::ReClammState),
-    /// BondingReClamm pool state
-    BondingReClamm(crate::pools::bonding_reclamm::BondingReClammState),
+    /// RukusLaunch pool state
+    RukusLaunch(crate::pools::rukus_launch::RukusLaunchState),
 }
 
 /// Result of a swap operation
@@ -184,7 +184,7 @@ impl PoolState {
             }
             PoolState::FixedPriceLBP(fixed_price_lbp) => &fixed_price_lbp.base,
             PoolState::ReClamm(reclamm) => &reclamm.base,
-            PoolState::BondingReClamm(bonding_reclamm) => &bonding_reclamm.base,
+            PoolState::RukusLaunch(rukus_launch) => &rukus_launch.base,
         }
     }
 

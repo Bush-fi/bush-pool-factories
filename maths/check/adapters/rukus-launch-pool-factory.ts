@@ -1,4 +1,4 @@
-// Math-check adapter: creates a BondingReClammPool through its factory and reports the fields the maths need.
+// Math-check adapter: creates a RukusLaunchPool through its factory and reports the fields the maths need.
 // See maths/check/README.md.
 //
 // The pool's maths depends on its phase, so there is one variant per phase, each set up after initialization
@@ -54,10 +54,13 @@ const adapter: FactoryAdapter = {
     const launchIndex = ctx.variant.launchIndex as number;
 
     // The factory fixes every launch's supply and curve.
-    const factory = await ctx.deploy('BondingReClammPoolFactory', [
+    const factory = await ctx.deploy('RukusLaunchPoolFactory', [
       ctx.vault,
       ctx.MONTH * 12,
       quote.address,
+      ctx.admin, // Rukus fee recipient
+      ctx.fp(0.0025), // Rukus's cut of every trade (the 1% swap fee covers it)
+      ctx.fp(0.1), // the lowest creator share of the swap fee after graduation a launch may choose
       BigInt(LAUNCH_SUPPLY) * 10n ** 18n,
       { initialPrice: ctx.fp(0.00003), graduationPrice: ctx.fp(0.00048) },
       'factory v1',
@@ -69,6 +72,8 @@ const adapter: FactoryAdapter = {
       creatorFeeRecipient: ctx.admin,
       metadataURI: 'ipfs://launch',
       minInitialBuyAmountOut: 0n,
+      graduatedSwapFeePercentage: ctx.fp(0.01),
+      graduatedCreatorFeePercentage: ctx.fp(0.99999), // fees keep leaving the pool after graduation
     };
 
     // Search the salt until the new token sorts on the side of the quote token the variant asks for.
@@ -87,13 +92,13 @@ const adapter: FactoryAdapter = {
       ctx.fp(0.01), // 1% swap fee
       ethers.toBeHex(salt, 32)
     );
-    const pool = await ctx.attach('BondingReClammPool', ctx.poolCreated(await tx.wait()));
+    const pool = await ctx.attach('RukusLaunchPool', ctx.poolCreated(await tx.wait()));
 
     let queryTimestamp: number | undefined;
 
     return {
       pool,
-      poolType: 'BONDING_RECLAMM',
+      poolType: 'RUKUS_LAUNCH',
       initializedByFactory: true,
       afterInitialize: async () => {
         const [admin] = await ethers.getSigners();
@@ -117,7 +122,7 @@ const adapter: FactoryAdapter = {
           // past it as allowed (MAX_GRADUATION_OVERSHOOT, 0.1% of it; the launch token has 18 decimals).
           const toGraduation = await launchToGraduationRaw(pool, launchIndex, launch.decimals);
           if (scenario === 'overshot') {
-            const { graduationLaunchBalance } = await pool.getBondingReClammPoolDynamicData();
+            const { graduationLaunchBalance } = await pool.getRukusLaunchPoolDynamicData();
             await buyExactOut(toGraduation + (graduationLaunchBalance * 10n ** 15n) / 10n ** 18n - 1n);
           } else {
             await buyExactOut(toGraduation);
@@ -137,8 +142,8 @@ const adapter: FactoryAdapter = {
         return queryTimestamp;
       },
       poolData: async () => {
-        const dynamic = await pool.getBondingReClammPoolDynamicData();
-        const immutable = await pool.getBondingReClammPoolImmutableData();
+        const dynamic = await pool.getRukusLaunchPoolDynamicData();
+        const immutable = await pool.getRukusLaunchPoolImmutableData();
         return {
           launchTokenIndex: immutable.launchTokenIndex.toString(),
           graduatedPriceRatio: immutable.graduatedPriceRatio.toString(),
@@ -154,14 +159,14 @@ const adapter: FactoryAdapter = {
 
 /** The launch token's live balance, in raw units (live balances are scaled18; the test tokens have no rate). */
 async function launchBalanceRawOf(pool: Contract, launchIndex: number, decimals: number): Promise<bigint> {
-  const { balancesLiveScaled18 } = await pool.getBondingReClammPoolDynamicData();
+  const { balancesLiveScaled18 } = await pool.getRukusLaunchPoolDynamicData();
   return balancesLiveScaled18[launchIndex] / 10n ** BigInt(18 - decimals);
 }
 
 /** Raw launch tokens to buy so the balance left is at most the graduation balance. */
 async function launchToGraduationRaw(pool: Contract, launchIndex: number, decimals: number): Promise<bigint> {
   const scale = 10n ** BigInt(18 - decimals);
-  const { balancesLiveScaled18, graduationLaunchBalance } = await pool.getBondingReClammPoolDynamicData();
+  const { balancesLiveScaled18, graduationLaunchBalance } = await pool.getRukusLaunchPoolDynamicData();
   return (balancesLiveScaled18[launchIndex] - graduationLaunchBalance + scale - 1n) / scale;
 }
 

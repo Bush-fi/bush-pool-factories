@@ -13,13 +13,13 @@ import { IRouter } from "@bush.fi/v3-interfaces/contracts/vault/IRouter.sol";
 import { IVault } from "@bush.fi/v3-interfaces/contracts/vault/IVault.sol";
 import { PoolRoleAccounts } from "@bush.fi/v3-interfaces/contracts/vault/VaultTypes.sol";
 
-import { BondingReClammPool } from "../../../contracts/bonding-reclamm/BondingReClammPool.sol";
-import { BondingReClammPoolFactory } from "../../../contracts/bonding-reclamm/BondingReClammPoolFactory.sol";
+import { RukusLaunchPool } from "../../../contracts/rukus-launch/RukusLaunchPool.sol";
+import { RukusLaunchPoolFactory } from "../../../contracts/rukus-launch/RukusLaunchPoolFactory.sol";
 import {
     BondingPhase,
-    BondingReClammCurveParams
-} from "../../../contracts/bonding-reclamm/interfaces/IBondingReClammPool.sol";
-import { BondingLaunchParams } from "../../../contracts/bonding-reclamm/interfaces/IBondingReClammPoolFactory.sol";
+    RukusLaunchCurveParams
+} from "../../../contracts/rukus-launch/interfaces/IRukusLaunchPool.sol";
+import { RukusLaunchParams } from "../../../contracts/rukus-launch/interfaces/IRukusLaunchPoolFactory.sol";
 
 interface IRouterPermit2 {
     function getPermit2() external view returns (IPermit2);
@@ -28,24 +28,35 @@ interface IRouterPermit2 {
 /**
  * @notice A full launch against the live chain's own Vault, Router, WETH and protocol fee controller, on a fork: our
  * factory is deployed onto the fork and creates the 5 ETH preset. Skipped unless FORK_URL is set:
- * `FORK_URL=https://rpc.mainnet.chain.robinhood.com forge test --match-contract BondingReClammForkTest -vv`.
+ * `FORK_URL=https://rpc.mainnet.chain.robinhood.com forge test --match-contract RukusLaunchForkTest -vv`.
  * Addresses: Bush-fi/bush-deployments addresses/robinhoodchain.json.
  */
-contract BondingReClammForkTest is Test {
+contract RukusLaunchForkTest is Test {
     IVault internal constant VAULT = IVault(0xB055000fbE3cc9bDE7742C583a86cc6283E3fF85);
     IRouter internal constant ROUTER = IRouter(0xa93179c0cd90B9D1569Cf20FD403a9A67540Ea4d);
     IWETH internal constant WETH = IWETH(0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73);
     address internal constant FEE_CONTROLLER = 0xCC699Ad77Cdf45605C3eB776bF79599c1b80BF91;
 
     uint256 internal constant SUPPLY = 1e9 * 1e18;
+    // The production fees: Rukus gets 1% of every trade; with the chain's 30% protocol fee, a 2.85718% swap fee
+    // leaves the creator ~1% too (Rukus share ~50%).
+    uint256 internal constant RUKUS_FEE_PERCENTAGE = 1e16;
+    uint256 internal constant SWAP_FEE = 2.85718e16;
+    // From graduation on: 1% swap fee, half of it (after the protocol's share) to creator and Rukus, half kept by the
+    // pool.
+    uint256 internal constant GRADUATED_SWAP_FEE = 1e16;
+    uint256 internal constant GRADUATED_CREATOR_FEE_PERCENTAGE = 50e16;
+    // The factory's floor on the graduated creator fee.
+    uint256 internal constant MIN_GRADUATED_CREATOR_FEE_PERCENTAGE = 25e16;
 
-    BondingReClammPoolFactory internal factory;
-    BondingReClammPool internal pool;
+    RukusLaunchPoolFactory internal factory;
+    RukusLaunchPool internal pool;
     IERC20 internal launchToken;
     IERC20 internal weth = IERC20(address(WETH));
     address internal creator = makeAddr("creator");
     address internal trader = makeAddr("trader");
     address internal feeRecipient = makeAddr("feeRecipient");
+    address internal rukusFeeRecipient = makeAddr("rukusFeeRecipient");
 
     function setUp() public {
         string memory rpc = vm.envOr("FORK_URL", string(""));
@@ -55,14 +66,17 @@ contract BondingReClammForkTest is Test {
         vm.createSelectFork(rpc);
 
         // The 5 ETH preset factory: 1B tokens, 800M on the curve, 200M left for the pool.
-        factory = new BondingReClammPoolFactory(
+        factory = new RukusLaunchPoolFactory(
             VAULT,
             365 days,
             WETH,
+            rukusFeeRecipient,
+            RUKUS_FEE_PERCENTAGE,
+            MIN_GRADUATED_CREATOR_FEE_PERCENTAGE,
             SUPPLY,
-            BondingReClammCurveParams({ initialPrice: 0.0000000015625e18, graduationPrice: 0.000000025e18 }),
-            "BondingReClamm Factory fork",
-            "BondingReClamm Pool fork"
+            RukusLaunchCurveParams({ initialPrice: 0.0000000015625e18, graduationPrice: 0.000000025e18 }),
+            "RukusLaunch Factory fork",
+            "RukusLaunch Pool fork"
         );
         vm.deal(creator, 10 ether);
         vm.deal(trader, 100 ether);
@@ -74,17 +88,19 @@ contract BondingReClammForkTest is Test {
         // Launch with a 0.1 ETH initial buy.
         vm.prank(creator);
         (address poolAddress, IERC20 token) = factory.create{ value: 0.1 ether }(
-            BondingLaunchParams({
+            RukusLaunchParams({
                 name: "Fork Launch",
                 symbol: "FORK",
                 creatorFeeRecipient: feeRecipient,
                 metadataURI: "ipfs://fork",
-                minInitialBuyAmountOut: 1
+                minInitialBuyAmountOut: 1,
+                graduatedSwapFeePercentage: GRADUATED_SWAP_FEE,
+                graduatedCreatorFeePercentage: GRADUATED_CREATOR_FEE_PERCENTAGE
             }),
-            1e16,
+            SWAP_FEE,
             bytes32(0)
         );
-        pool = BondingReClammPool(poolAddress);
+        pool = RukusLaunchPool(poolAddress);
         launchToken = token;
         assertGt(launchToken.balanceOf(creator), 0, "Initial buy");
 
@@ -128,6 +144,12 @@ contract BondingReClammForkTest is Test {
         vm.roll(block.number + 1);
         pool.graduate();
         assertEq(uint256(pool.getBondingPhase()), uint256(BondingPhase.GRADUATED), "Graduated");
+        assertEq(
+            IProtocolFeeController(FEE_CONTROLLER).getPoolCreatorSwapFeePercentage(poolAddress),
+            GRADUATED_CREATOR_FEE_PERCENTAGE,
+            "Creator fee not switched at graduation"
+        );
+        assertGt(weth.balanceOf(rukusFeeRecipient), 0, "Bonding fees not paid at graduation");
         assertApproxEqRel(pool.computeCurrentLaunchTokenPrice(), priceAtCompletion, 1e6, "Graduation moved the price");
         assertApproxEqRel(priceAtCompletion, 0.000000025e18, 0.002e18, "Not at the graduation price");
         vm.prank(trader);
@@ -136,6 +158,9 @@ contract BondingReClammForkTest is Test {
         pool.withdrawCreatorFees();
         assertGt(weth.balanceOf(feeRecipient), 0, "No WETH fees");
         assertGt(launchToken.balanceOf(feeRecipient), 0, "No launch token fees");
+        assertApproxEqRel(pool.getRukusFeeShare(), 50e16, 1e13, "Rukus share not ~50%");
+        assertApproxEqRel(weth.balanceOf(rukusFeeRecipient), weth.balanceOf(feeRecipient), 1e13, "WETH not split ~50/50");
+        assertApproxEqRel(launchToken.balanceOf(rukusFeeRecipient), launchToken.balanceOf(feeRecipient), 1e13, "Launch not split ~50/50");
 
         console2.log("live fork: chain id", block.chainid);
         console2.log("  protocol swap fee % (1e18), creator %, aggregate %:", protocolFee, creatorFee, aggregate);

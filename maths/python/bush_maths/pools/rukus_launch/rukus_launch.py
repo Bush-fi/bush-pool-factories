@@ -1,6 +1,6 @@
-"""Port of contracts/bonding-reclamm/BondingReClammPool.sol, implementing the bush-maths `PoolBase` interface.
+"""Port of contracts/rukus-launch/RukusLaunchPool.sol, implementing the bush-maths `PoolBase` interface.
 
-A BondingReClamm pool sells its launch token along a bonding curve (pump.fun's virtual-reserve curve) and then
+A RukusLaunch pool sells its launch token along a bonding curve (pump.fun's virtual-reserve curve) and then
 graduates, in place, into a (practically) full-range pool. The swap maths is ReClamm's (constant product on real +
 virtual balances) in both phases; what changes is the virtual balances it runs with:
   - BONDING:   the bonding curve's, which never move (and the buy completing the curve may go at most 0.1% past the
@@ -15,25 +15,25 @@ from enum import IntEnum
 from typing import List, Tuple
 
 from bush_maths.pool_kit import PoolBase, Rounding, SwapKind, SwapParams, mul_down_fixed, reclamm_math
-from bush_maths.pools.bonding_reclamm.bonding_reclamm_math import compute_graduation_virtual_balances
+from bush_maths.pools.rukus_launch.rukus_launch_math import compute_graduation_virtual_balances
 
-# BondingReClammPool._MIN_SWAP_FEE_PERCENTAGE / _MAX_SWAP_FEE_PERCENTAGE (the same as ReClammPool's).
+# RukusLaunchPool._MIN_SWAP_FEE_PERCENTAGE / _MAX_SWAP_FEE_PERCENTAGE (the same as ReClammPool's).
 MIN_SWAP_FEE_PERCENTAGE = 1_000_000_000_000  # 0.001%
 MAX_SWAP_FEE_PERCENTAGE = 100_000_000_000_000_000  # 10%
 
-# BondingReClammPool.MAX_GRADUATION_OVERSHOOT: 0.1% of the graduation balance.
+# RukusLaunchPool.MAX_GRADUATION_OVERSHOOT: 0.1% of the graduation balance.
 MAX_GRADUATION_OVERSHOOT = 1_000_000_000_000_000
 
 
 class BondingPhase(IntEnum):
-    """IBondingReClammPool.BondingPhase."""
+    """IRukusLaunchPool.BondingPhase."""
 
     BONDING = 0
     COMPLETED = 1
     GRADUATED = 2
 
 
-class BondingReClamm(PoolBase):
+class RukusLaunch(PoolBase):
     def __init__(self, pool_state):
         """`pool_state` carries the adapter's poolData() fields as snake_case attributes, plus `current_timestamp`."""
         self.phase = BondingPhase(int(pool_state.phase))
@@ -52,7 +52,7 @@ class BondingReClamm(PoolBase):
         return 0
 
     def on_swap(self, swap_params: SwapParams) -> int:
-        """BondingReClammPool.onSwap."""
+        """RukusLaunchPool.onSwap."""
         balances = swap_params.balances_live_scaled18
         virtual_a, virtual_b = self.swap_virtual_balances(balances)
         given_in = swap_params.swap_kind.value == SwapKind.GIVENIN.value
@@ -74,24 +74,24 @@ class BondingReClamm(PoolBase):
         return amount_calculated
 
     def min_launch_balance(self) -> int:
-        """BondingReClammPool._minLaunchBalance: the graduation balance less the overshoot allowed."""
+        """RukusLaunchPool._minLaunchBalance: the graduation balance less the overshoot allowed."""
         return self.graduation_launch_balance - mul_down_fixed(self.graduation_launch_balance, MAX_GRADUATION_OVERSHOOT)
 
     def compute_invariant(self, balances_live_scaled18: List[int], rounding: Rounding) -> int:
-        """BondingReClammPool.computeInvariant: a view, so a completed pool still uses the bonding virtual balances."""
+        """RukusLaunchPool.computeInvariant: a view, so a completed pool still uses the bonding virtual balances."""
         return reclamm_math.compute_invariant(
             balances_live_scaled18, self.virtual_balance_a, self.virtual_balance_b, rounding
         )
 
     def compute_balance(self, balances_live_scaled18: List[int], token_in_index: int, invariant_ratio: int) -> int:
-        """BondingReClammPool.computeBalance: reverts NotImplemented, the pool does not allow unbalanced liquidity."""
+        """RukusLaunchPool.computeBalance: reverts NotImplemented, the pool does not allow unbalanced liquidity."""
         raise NotImplementedError("NotImplemented")
 
     def swap_virtual_balances(self, balances_live_scaled18: List[int]) -> Tuple[int, int]:
         """The virtual balances `on_swap` runs with: the stored ones (they never change with time), except that a
         COMPLETED pool queried in a later block graduates first, as the contract does."""
         if self.phase == BondingPhase.COMPLETED:
-            # BondingReClammPool._graduate.
+            # RukusLaunchPool._graduate.
             if self.current_timestamp <= self.bonding_completed_at:
                 raise ValueError("GraduationPending")
             return compute_graduation_virtual_balances(

@@ -1,10 +1,10 @@
 //! The overshoot clamp: while bonding, the buy that completes the curve may go at most 0.1% past the graduation
-//! balance (BondingReClammPool.MAX_GRADUATION_OVERSHOOT). The generated test data only records swaps the chain
+//! balance (RukusLaunchPool.MAX_GRADUATION_OVERSHOOT). The generated test data only records swaps the chain
 //! accepted, so the rejection is checked here.
 
 use bush_maths::common::types::{SwapKind, SwapParams};
 use bush_maths::pool_kit::U256;
-use bush_maths::pools::bonding_reclamm::{BondingPhase, BondingReClammMutable, BondingReClammPool};
+use bush_maths::pools::rukus_launch::{BondingPhase, RukusLaunchMutable, RukusLaunchPool};
 use bush_maths::PoolBase;
 
 fn e18(n: u128) -> U256 {
@@ -24,8 +24,8 @@ fn max_out() -> U256 {
     balances()[0] - (g - g / U256::from(1000u64))
 }
 
-fn pool(phase: BondingPhase) -> BondingReClammPool {
-    BondingReClammPool::new(BondingReClammMutable {
+fn pool(phase: BondingPhase) -> RukusLaunchPool {
+    RukusLaunchPool::new(RukusLaunchMutable {
         phase,
         launch_token_index: 0,
         graduation_launch_balance: graduation_balance(),

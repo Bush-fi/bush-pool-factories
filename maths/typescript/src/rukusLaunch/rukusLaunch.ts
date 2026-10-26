@@ -1,6 +1,6 @@
-// Port of contracts/bonding-reclamm/BondingReClammPool.sol, implementing the bush-maths `PoolBase` interface.
+// Port of contracts/rukus-launch/RukusLaunchPool.sol, implementing the bush-maths `PoolBase` interface.
 //
-// A BondingReClamm pool sells its launch token along a bonding curve (pump.fun's virtual-reserve curve) and then
+// A RukusLaunch pool sells its launch token along a bonding curve (pump.fun's virtual-reserve curve) and then
 // graduates, in place, into a (practically) full-range pool. The swap maths is ReClamm's (constant product on real +
 // virtual balances) in both phases; what changes is the virtual balances it runs with:
 //   - BONDING:   the bonding curve's, which never move (and the buy completing the curve may go at most 0.1% past
@@ -24,20 +24,20 @@ import {
     SwapKind,
     type SwapParams,
 } from '../poolKit';
-import type { BondingReClammState } from './data';
-import { computeGraduationVirtualBalances } from './bondingReClammMath';
+import type { RukusLaunchState } from './data';
+import { computeGraduationVirtualBalances } from './rukusLaunchMath';
 
-/** IBondingReClammPool.BondingPhase. */
+/** IRukusLaunchPool.BondingPhase. */
 export enum BondingPhase {
     BONDING = 0,
     COMPLETED = 1,
     GRADUATED = 2,
 }
 
-/** BondingReClammPool.MAX_GRADUATION_OVERSHOOT: 0.1% of the graduation balance. */
+/** RukusLaunchPool.MAX_GRADUATION_OVERSHOOT: 0.1% of the graduation balance. */
 export const MAX_GRADUATION_OVERSHOOT = 1_000_000_000_000_000n;
 
-export class BondingReClamm implements PoolBase {
+export class RukusLaunch implements PoolBase {
     public phase: BondingPhase;
     public launchTokenIndex: number;
     public graduationLaunchBalance: bigint;
@@ -47,7 +47,7 @@ export class BondingReClamm implements PoolBase {
     public virtualBalanceB: bigint;
     public currentTimestamp: bigint;
 
-    constructor(poolState: BondingReClammState) {
+    constructor(poolState: RukusLaunchState) {
         this.phase = Number(poolState.phase) as BondingPhase;
         this.launchTokenIndex = Number(poolState.launchTokenIndex);
         this.graduationLaunchBalance = poolState.graduationLaunchBalance;
@@ -90,7 +90,7 @@ export class BondingReClamm implements PoolBase {
         return toRawUndoRateRoundDown(maxOut18, scalingFactors[indexOut], tokenRates[indexOut]);
     }
 
-    /** BondingReClammPool._minLaunchBalance: the graduation balance less the overshoot allowed. */
+    /** RukusLaunchPool._minLaunchBalance: the graduation balance less the overshoot allowed. */
     minLaunchBalance(): bigint {
         return this.graduationLaunchBalance - MathSol.mulDownFixed(this.graduationLaunchBalance, MAX_GRADUATION_OVERSHOOT);
     }
@@ -103,7 +103,7 @@ export class BondingReClamm implements PoolBase {
         return p.tokenOutBalance;
     }
 
-    /** BondingReClammPool.onSwap. */
+    /** RukusLaunchPool.onSwap. */
     onSwap(swapParams: SwapParams): bigint {
         const { swapKind, balancesLiveScaled18, indexIn, indexOut, amountGivenScaled18 } = swapParams;
         const { virtualBalanceA, virtualBalanceB } = this.swapVirtualBalances(balancesLiveScaled18);
@@ -124,12 +124,12 @@ export class BondingReClamm implements PoolBase {
         return amountCalculated;
     }
 
-    /** BondingReClammPool.computeInvariant: a view, so a completed pool still uses the bonding virtual balances. */
+    /** RukusLaunchPool.computeInvariant: a view, so a completed pool still uses the bonding virtual balances. */
     computeInvariant(balancesLiveScaled18: bigint[], rounding: Rounding): bigint {
         return ReClammMath.computeInvariant(balancesLiveScaled18, this.virtualBalanceA, this.virtualBalanceB, rounding);
     }
 
-    /** BondingReClammPool.computeBalance: reverts NotImplemented, the pool does not allow unbalanced adds and removes. */
+    /** RukusLaunchPool.computeBalance: reverts NotImplemented, the pool does not allow unbalanced adds and removes. */
     computeBalance(): bigint {
         throw new Error('NotImplemented');
     }
@@ -140,7 +140,7 @@ export class BondingReClamm implements PoolBase {
      */
     swapVirtualBalances(balancesLiveScaled18: bigint[]): { virtualBalanceA: bigint; virtualBalanceB: bigint } {
         if (this.phase === BondingPhase.COMPLETED) {
-            // BondingReClammPool._graduate.
+            // RukusLaunchPool._graduate.
             if (this.currentTimestamp <= this.bondingCompletedAt) throw new Error('GraduationPending');
             return computeGraduationVirtualBalances(
                 balancesLiveScaled18,

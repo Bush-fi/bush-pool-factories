@@ -247,7 +247,7 @@ contract ReClammPool is IReClammPool, BushPoolToken, PoolInfo, BasePoolAuthentic
     ********************************************************/
 
     /// @inheritdoc IHooks
-    function getHookFlags() public pure override returns (HookFlags memory hookFlags) {
+    function getHookFlags() public pure virtual override returns (HookFlags memory hookFlags) {
         hookFlags.shouldCallBeforeInitialize = true;
         hookFlags.shouldCallBeforeAddLiquidity = true;
         hookFlags.shouldCallBeforeRemoveLiquidity = true;

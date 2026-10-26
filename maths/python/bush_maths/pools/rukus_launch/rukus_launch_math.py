@@ -1,4 +1,4 @@
-"""Port of contracts/bonding-reclamm/lib/BondingReClammMath.sol: the graduation solve (the bonding curve setup only
+"""Port of contracts/rukus-launch/lib/RukusLaunchMath.sol: the graduation solve (the bonding curve setup only
 runs at initialization, so the maths never needs it). Call for call, with the same fixed-point primitives."""
 
 from typing import List, Tuple
@@ -9,7 +9,7 @@ from bush_maths.pool_kit import WAD, div_down_fixed, mul_down_fixed, reclamm_mat
 def compute_graduation_virtual_balances(
     balances_scaled18: List[int], virtual_balance_a: int, virtual_balance_b: int, sqrt_price_ratio: int
 ) -> Tuple[int, int]:
-    """BondingReClammMath.computeGraduationVirtualBalances: new virtual balances for the ReClamm range at the current
+    """RukusLaunchMath.computeGraduationVirtualBalances: new virtual balances for the ReClamm range at the current
     price, for the given sqrt(price ratio). See the contract for the derivation."""
     total_a = balances_scaled18[reclamm_math.A] + virtual_balance_a
     total_b = balances_scaled18[reclamm_math.B] + virtual_balance_b

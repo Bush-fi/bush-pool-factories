@@ -12,21 +12,21 @@ import { IVault } from "@bush.fi/v3-interfaces/contracts/vault/IVault.sol";
 
 import { FixedPoint } from "@bush.fi/v3-solidity-utils/contracts/math/FixedPoint.sol";
 
-import { BondingReClammPool } from "../../../contracts/bonding-reclamm/BondingReClammPool.sol";
-import { BondingPhase } from "../../../contracts/bonding-reclamm/interfaces/IBondingReClammPool.sol";
+import { RukusLaunchPool } from "../../../contracts/rukus-launch/RukusLaunchPool.sol";
+import { BondingPhase } from "../../../contracts/rukus-launch/interfaces/IRukusLaunchPool.sol";
 
-import { BaseBondingReClammTest } from "../utils/BaseBondingReClammTest.sol";
+import { BaseRukusLaunchTest } from "../utils/BaseRukusLaunchTest.sol";
 
 /**
  * @notice Drives a launch through random sequences of buys, sells, waits, graduation, proportional adds and removes, and
  * creator fee withdrawals, recording what the invariants need.
  */
-contract BondingReClammHandler is Test {
+contract RukusLaunchHandler is Test {
     using FixedPoint for uint256;
 
     IVault internal immutable _vault;
     IRouter internal immutable _router;
-    BondingReClammPool internal immutable _pool;
+    RukusLaunchPool internal immutable _pool;
     IERC20 internal immutable _launchToken;
     IERC20 internal immutable _quoteToken;
     uint256 internal immutable _launchIndex;
@@ -45,7 +45,7 @@ contract BondingReClammHandler is Test {
         IVault vault,
         IRouter router,
         IPermit2 permit2,
-        BondingReClammPool pool,
+        RukusLaunchPool pool,
         IERC20 launchToken,
         IERC20 quoteToken,
         uint256 launchIndex
@@ -158,16 +158,16 @@ contract BondingReClammHandler is Test {
 /**
  * @notice Stateful invariants of a launch, across random sequences of operations (foundry.toml: [invariant]).
  */
-contract BondingReClammInvariantsTest is BaseBondingReClammTest {
+contract RukusLaunchInvariantsTest is BaseRukusLaunchTest {
     using FixedPoint for uint256;
 
-    BondingReClammHandler internal handler;
+    RukusLaunchHandler internal handler;
     uint256 internal initialInvariant;
 
     function setUp() public override {
         super.setUp();
 
-        handler = new BondingReClammHandler(
+        handler = new RukusLaunchHandler(
             vault,
             router,
             permit2,
@@ -196,12 +196,13 @@ contract BondingReClammInvariantsTest is BaseBondingReClammTest {
     }
 
     /// @dev Every launch token is somewhere accountable: the Vault (pool balance and fees not yet collected), the fee
-    /// controller, the creator fee recipient, or the traders. None is minted or lost.
+    /// controller, the creator and Rukus fee recipients, or the traders. None is minted or lost.
     function invariant_launchTokenAccounting() public view {
         address controller = address(vault.getProtocolFeeController());
         uint256 total = launchToken.balanceOf(address(vault)) +
             launchToken.balanceOf(controller) +
             launchToken.balanceOf(_CREATOR_FEE_RECIPIENT) +
+            launchToken.balanceOf(_RUKUS_FEE_RECIPIENT) +
             launchToken.balanceOf(address(handler)) +
             launchToken.balanceOf(pool);
         assertEq(launchToken.totalSupply(), _LAUNCH_SUPPLY, "Supply changed");

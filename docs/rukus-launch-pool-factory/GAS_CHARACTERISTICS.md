@@ -1,6 +1,6 @@
 # Gas Characteristics
 
-Total transaction gas, measured end to end by the Hardhat test (`test/hardhat/bonding-reclamm/bondingReClammPool.test.ts`)
+Total transaction gas, measured end to end by the Hardhat test (`test/hardhat/rukus-launch/rukusLaunchPool.test.ts`)
 through the real `Router`, paying in ETH (`wethIsEth`), on the 5 ETH preset (1B tokens, 800M on the curve, 1% fee,
 99.999% creator fee share).
 
@@ -24,5 +24,5 @@ through the real `Router`, paying in ETH (`wethIsEth`), on the 5 ETH preset (1B 
   two events and a Vault auxiliary event. It runs once in the pool's life, paid by whoever trades first after
   completion (or calls `graduate()`).
 - **Proportional adds and removes** also rescale and store the virtual balances (keeping the price).
-- **Sizes.** `BondingReClammPool` is 19.5 KB of runtime code and the factory 13.2 KB at the repo's default optimizer
+- **Sizes.** `RukusLaunchPool` is 19.5 KB of runtime code and the factory 13.2 KB at the repo's default optimizer
   settings (9,999 runs, via-IR), under the 24 KB limit.

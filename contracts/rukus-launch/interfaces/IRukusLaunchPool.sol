@@ -7,7 +7,7 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IBasePool } from "@bush.fi/v3-interfaces/contracts/vault/IBasePool.sol";
 
 /**
- * @notice Where a BondingReClamm pool is in its life.
+ * @notice Where a RukusLaunch pool is in its life.
  * @dev BONDING: swaps run on the bonding curve (fixed virtual balances); liquidity is locked.
  * COMPLETED: a buy took the launch token balance down to the graduation balance. The pool is frozen for the rest of
  * that block, and graduates on the first interaction (or `graduate()` call) in a later block.
@@ -21,30 +21,34 @@ enum BondingPhase {
 }
 
 /**
- * @notice The curve a BondingReClamm pool is created with.
+ * @notice The curve a RukusLaunch pool is created with.
  * @dev Prices are of one whole launch token in whole quote tokens, as 18-decimal FP.
  * @param initialPrice Price at the start of the bonding curve, when the pool holds no quote token
  * @param graduationPrice Price at which the bonding curve completes and the pool graduates. The curve is set so that
  * at this price the quote raised is worth exactly the launch tokens left, so the graduated pool starts balanced.
  */
-struct BondingReClammCurveParams {
+struct RukusLaunchCurveParams {
     uint256 initialPrice;
     uint256 graduationPrice;
 }
 
-/// @notice BondingReClammPool constructor arguments (the factory fills in the launch token's index).
-struct BondingReClammPoolParams {
+/// @notice RukusLaunchPool constructor arguments (the factory fills in the launch token's index).
+struct RukusLaunchPoolParams {
     string name;
     string symbol;
     string version;
     IERC20 launchToken;
     uint256 launchTokenIndex;
     address creatorFeeRecipient;
-    BondingReClammCurveParams curve;
+    address rukusFeeRecipient;
+    uint256 rukusFeeShare;
+    uint256 graduatedSwapFeePercentage;
+    uint256 graduatedCreatorFeePercentage;
+    RukusLaunchCurveParams curve;
 }
 
 /// @notice Everything that changes, in one call: what an integrator (and the off-chain maths) needs to price the pool.
-struct BondingReClammPoolDynamicData {
+struct RukusLaunchPoolDynamicData {
     uint256[] balancesLiveScaled18;
     uint256 staticSwapFeePercentage;
     uint256 totalSupply;
@@ -56,7 +60,7 @@ struct BondingReClammPoolDynamicData {
 }
 
 /// @notice Everything fixed at creation.
-struct BondingReClammPoolImmutableData {
+struct RukusLaunchPoolImmutableData {
     IERC20[] tokens;
     uint256[] decimalScalingFactors;
     IERC20 launchToken;
@@ -66,11 +70,15 @@ struct BondingReClammPoolImmutableData {
     uint256 graduatedPriceRatio;
     address creatorFeeRecipient;
     uint256 creatorFeePercentage;
+    address rukusFeeRecipient;
+    uint256 rukusFeeShare;
+    uint256 graduatedSwapFeePercentage;
+    uint256 graduatedCreatorFeePercentage;
     uint256 minSwapFeePercentage;
     uint256 maxSwapFeePercentage;
 }
 
-interface IBondingReClammPool is IBasePool {
+interface IRukusLaunchPool is IBasePool {
     /********************************************************
                             Events
     ********************************************************/
@@ -119,8 +127,8 @@ interface IBondingReClammPool is IBasePool {
     /// @notice A hook was called for a pool other than this one.
     error InvalidPoolArgument(address pool);
 
-    /// @notice The BPT of a BondingReClamm pool has no rate (as in ReClamm: the invariant is not linear in balances).
-    error BondingReClammPoolBptRateUnsupported();
+    /// @notice The BPT of a RukusLaunch pool has no rate (as in ReClamm: the invariant is not linear in balances).
+    error RukusLaunchPoolBptRateUnsupported();
 
     /// @notice The launch token is not one of the pool's two tokens, or its index is wrong.
     error InvalidLaunchToken();
@@ -146,6 +154,18 @@ interface IBondingReClammPool is IBasePool {
     /// @notice The creator fee recipient is the zero address.
     error InvalidCreatorFeeRecipient();
 
+    /// @notice The Rukus fee recipient is the zero address.
+    error InvalidRukusFeeRecipient();
+
+    /// @notice The Rukus share of the creator fees is above 100%.
+    error InvalidRukusFeeShare();
+
+    /// @notice The graduated swap fee is outside the pool's swap fee bounds.
+    error InvalidGraduatedSwapFee();
+
+    /// @notice The graduated creator fee is above the fee controller's 99.999% maximum.
+    error InvalidGraduatedCreatorFee();
+
     /// @notice Liquidity can only be added or removed after the pool graduates.
     error LiquidityLockedUntilGraduation();
 
@@ -162,15 +182,18 @@ interface IBondingReClammPool is IBasePool {
     /**
      * @notice Graduates a completed pool. Anyone can call it, from the block after the curve completed.
      * @dev Swaps and liquidity operations graduate the pool themselves when needed, so this is only a convenience
-     * (e.g., for a launchpad that wants the event emitted promptly).
+     * (e.g., for a launchpad that wants the event emitted promptly, or to pay graduation's gas rather than leave it to
+     * the next trader). Graduating switches to the graduated swap and creator fees and pays out the creator fees
+     * collected while bonding.
      */
     function graduate() external;
 
     /**
-     * @notice Pays the creator fees collected so far to the creator fee recipient. Anyone can call it.
+     * @notice Pays the creator fees collected so far, split between the creator fee recipient and the Rukus fee
+     * recipient (`getRukusFeeShare()` to Rukus, the rest to the creator). Anyone can call it.
      * @dev The pool is its own pool creator, so the fee controller owes the fees to the pool; this has the controller
-     * pay them straight to the recipient (and forwards anything that was paid to the pool itself, e.g. through the
-     * controller's permissionless `withdrawPoolCreatorFees(pool)`).
+     * pay them to the pool, then splits everything the pool holds (including anything paid to it earlier, e.g. through
+     * the controller's permissionless `withdrawPoolCreatorFees(pool)`).
      */
     function withdrawCreatorFees() external;
 
@@ -184,6 +207,22 @@ interface IBondingReClammPool is IBasePool {
 
     /// @notice Where creator fees are paid. Fixed at creation.
     function getCreatorFeeRecipient() external view returns (address);
+
+    /// @notice Where the Rukus share of the creator fees is paid. Fixed at creation (by the factory).
+    function getRukusFeeRecipient() external view returns (address);
+
+    /**
+     * @notice The Rukus share of the creator fees (18-decimal FP). Fixed at creation by the factory, from its Rukus fee
+     * percentage, the swap fee and the protocol swap fee at the time, so that Rukus gets that percentage of every trade
+     * while bonding. The share stays the same after graduation, so Rukus's cut then moves with the graduated fees.
+     */
+    function getRukusFeeShare() external view returns (uint256);
+
+    /**
+     * @notice The swap fee and the creator share of it from graduation on (18-decimal FP). Fixed at creation: the swap
+     * fee by the launcher, the creator share by the factory.
+     */
+    function getGraduatedFees() external view returns (uint256 swapFeePercentage, uint256 creatorFeePercentage);
 
     /// @notice The current phase.
     function getBondingPhase() external view returns (BondingPhase);
@@ -206,9 +245,9 @@ interface IBondingReClammPool is IBasePool {
     /// @notice Current spot price of one whole launch token in whole quote tokens (18-decimal FP, before fees).
     function computeCurrentLaunchTokenPrice() external view returns (uint256);
 
-    /// @notice See `BondingReClammPoolDynamicData`.
-    function getBondingReClammPoolDynamicData() external view returns (BondingReClammPoolDynamicData memory);
+    /// @notice See `RukusLaunchPoolDynamicData`.
+    function getRukusLaunchPoolDynamicData() external view returns (RukusLaunchPoolDynamicData memory);
 
-    /// @notice See `BondingReClammPoolImmutableData`.
-    function getBondingReClammPoolImmutableData() external view returns (BondingReClammPoolImmutableData memory);
+    /// @notice See `RukusLaunchPoolImmutableData`.
+    function getRukusLaunchPoolImmutableData() external view returns (RukusLaunchPoolImmutableData memory);
 }

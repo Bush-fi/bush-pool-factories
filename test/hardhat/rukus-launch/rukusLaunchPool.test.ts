@@ -16,7 +16,7 @@ import { deployPermit2 } from '@helpers/Permit2Deployer';
 // the buy that completes the curve (sized with getMaxBuyAmount), graduation on the next trade, trading after, and
 // creator fees. Uses the 5 ETH preset: 1B tokens, 800M sold on the curve, 200M left for the pool, graduating at 5 ETH.
 // Logs the gas of each step (total transaction gas).
-describe('BondingReClammPool (Router, ETH)', function () {
+describe('RukusLaunchPool (Router, ETH)', function () {
   const ROUTER_VERSION = 'Router v11';
   const SUPPLY = 10n ** 27n; // 1B, 18 decimals
   const INITIAL_PRICE = 1_562_500_000n; // 0.0000000015625 ETH
@@ -33,6 +33,7 @@ describe('BondingReClammPool (Router, ETH)', function () {
   let creator: SignerWithAddress;
   let bob: SignerWithAddress;
   let feeRecipient: SignerWithAddress;
+  let rukusFeeRecipient: SignerWithAddress;
   const gas: Record<string, bigint> = {};
 
   const record = async (label: string, tx: Promise<ContractTransactionResponse>) => {
@@ -47,10 +48,12 @@ describe('BondingReClammPool (Router, ETH)', function () {
     creatorFeeRecipient: feeRecipient.address,
     metadataURI: 'ipfs://launch',
     minInitialBuyAmountOut,
+    graduatedSwapFeePercentage: fp(0.005),
+    graduatedCreatorFeePercentage: fp(0.5), // creator share of the swap fee after graduation (the rest stays in the pool)
   });
 
   before('setup signers', async () => {
-    [, creator, bob, feeRecipient] = await ethers.getSigners();
+    [, creator, bob, feeRecipient, rukusFeeRecipient] = await ethers.getSigners();
   });
 
   sharedBeforeEach('deploy vault, router, WETH and factory, and launch', async () => {
@@ -58,9 +61,20 @@ describe('BondingReClammPool (Router, ETH)', function () {
     weth = (await deploy('v3-solidity-utils/WETHTestToken')) as unknown as Contract;
     const permit2 = await deployPermit2();
     router = (await deploy('v3-vault/Router', { args: [vault, weth, permit2, ROUTER_VERSION] })) as unknown as Contract;
-    factory = (await deploy('BondingReClammPoolFactory', {
+    factory = (await deploy('RukusLaunchPoolFactory', {
       // The factory fixes every launch's supply and curve (the 5 ETH preset).
-      args: [vault, MONTH * 12, weth, SUPPLY, { initialPrice: INITIAL_PRICE, graduationPrice: GRADUATION_PRICE }, 'factory v1', 'pool v1'],
+      args: [
+        vault,
+        MONTH * 12,
+        weth,
+        rukusFeeRecipient.address,
+        fp(0.0025), // Rukus's cut of every trade (the 1% swap fee covers it)
+        fp(0.1), // the lowest creator share of the swap fee after graduation a launch may choose
+        SUPPLY,
+        { initialPrice: INITIAL_PRICE, graduationPrice: GRADUATION_PRICE },
+        'factory v1',
+        'pool v1',
+      ],
     })) as unknown as Contract;
 
     // The creator launches with a 0.1 ETH initial buy, in the same transaction.
@@ -68,9 +82,9 @@ describe('BondingReClammPool (Router, ETH)', function () {
       'create, with a 0.1 ETH initial buy',
       factory.connect(creator).create(launchParams(1n), SWAP_FEE, ZERO_BYTES32, { value: fp(0.1) })
     );
-    const event = expectEvent.inReceipt(receipt, 'BondingLaunchCreated');
-    pool = (await deployedAt('BondingReClammPool', event.args.pool)) as unknown as Contract;
-    launch = (await deployedAt('BondingLaunchToken', event.args.launchToken)) as unknown as Contract;
+    const event = expectEvent.inReceipt(receipt, 'RukusLaunchCreated');
+    pool = (await deployedAt('RukusLaunchPool', event.args.pool)) as unknown as Contract;
+    launch = (await deployedAt('RukusLaunchToken', event.args.launchToken)) as unknown as Contract;
     expect(event.args.metadataURI).to.equal('ipfs://launch');
     expect(event.args.initialBuyAmountIn).to.equal(fp(0.1));
     expect(await launch.balanceOf(creator.address)).to.equal(event.args.initialBuyAmountOut);
@@ -86,6 +100,7 @@ describe('BondingReClammPool (Router, ETH)', function () {
   it('runs a launch from creation to graduation, paying in ETH', async () => {
     expect(await pool.getBondingPhase()).to.equal(PHASE.BONDING);
     expect(await pool.getCreatorFeeRecipient()).to.equal(feeRecipient.address);
+    expect(await pool.getRukusFeeRecipient()).to.equal(rukusFeeRecipient.address);
 
     // Buy and sell for ETH while bonding.
     await record('bonding buy, 1 ETH in', buyWithEth(bob, fp(1)));
@@ -108,7 +123,7 @@ describe('BondingReClammPool (Router, ETH)', function () {
     expect(await pool.getMaxBuyAmount()).to.equal(0n);
 
     // 5 ETH of real reserves, 200M (less the 0.1% overshoot) launch tokens left, at the graduation price.
-    const { balancesLiveScaled18 } = await pool.getBondingReClammPoolDynamicData();
+    const { balancesLiveScaled18 } = await pool.getRukusLaunchPoolDynamicData();
     const [launchIndex, wethIndex] = (await launch.getAddress()).toLowerCase() < (await weth.getAddress()).toLowerCase() ? [0, 1] : [1, 0];
     expect(balancesLiveScaled18[launchIndex]).to.equal((SUPPLY / 5n) - SUPPLY / 5n / 1000n);
     const reserves = balancesLiveScaled18[wethIndex];
@@ -128,6 +143,8 @@ describe('BondingReClammPool (Router, ETH)', function () {
     await record('withdrawCreatorFees', pool.connect(bob).withdrawCreatorFees());
     expect(await weth.balanceOf(feeRecipient.address)).to.be.gt(0n);
     expect(await launch.balanceOf(feeRecipient.address)).to.be.gt(0n);
+    expect(await weth.balanceOf(rukusFeeRecipient.address)).to.be.gt(0n);
+    expect(await launch.balanceOf(rukusFeeRecipient.address)).to.be.gt(0n);
     expect(await weth.balanceOf(await pool.getAddress())).to.equal(0n);
   });
 

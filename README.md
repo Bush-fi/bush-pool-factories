@@ -30,7 +30,6 @@ live in the Bush deployment repo.
 | StablePoolFactory | STABLE | — | [contracts/stable](./contracts/stable) | [stable-pool-factory](./docs/stable-pool-factory) |
 | StableSurgePoolFactory | STABLE | StableSurge | [contracts/stable-surge](./contracts/stable-surge) | [stable-surge-pool-factory](./docs/stable-surge-pool-factory) |
 | CowPoolFactory | COW | — | [contracts/cow](./contracts/cow) | [cow-pool-factory](./docs/cow-pool-factory) |
-| FlywheelReClammPoolFactory | RECLAMM | — (pool is its own hook, as ReClamm) | [contracts/flywheel-reclamm](./contracts/flywheel-reclamm) | [flywheel-reclamm-pool-factory](./docs/flywheel-reclamm-pool-factory) |
 
 ## Layout
 

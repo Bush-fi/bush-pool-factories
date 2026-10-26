@@ -13,6 +13,7 @@ import { PoolRoleAccounts, TokenInfo, TokenType } from "@bush.fi/v3-interfaces/c
 
 import { RukusLaunchPool } from "../../../contracts/rukus-launch/RukusLaunchPool.sol";
 import { RukusLaunchPoolFactory } from "../../../contracts/rukus-launch/RukusLaunchPoolFactory.sol";
+import { RukusLaunchToken, IERC7572 } from "../../../contracts/rukus-launch/RukusLaunchToken.sol";
 import {
     IRukusLaunchPool,
     BondingPhase,
@@ -112,6 +113,24 @@ contract RukusLaunchPoolFactoryTest is BaseRukusLaunchTest {
         assertEq(IERC20Metadata(newPool).symbol(), string.concat(string(long), "-RUKUS"), "Pool symbol");
         console2.log("create gas, short names:", shortGas);
         console2.log("create gas, 1,000-character names:", longGas);
+    }
+
+    /// @dev The launch token holds its metadata URI (ERC-7572 `contractURI`), set at create and announced once with
+    /// `ContractURIUpdated`. The URI is part of the token's address, which `getLaunchTokenAddress` still predicts.
+    function testLaunchTokenStoresTheMetadataURI() public {
+        assertEq(RukusLaunchToken(address(launchToken)).contractURI(), "ipfs://launch", "Base launch URI");
+
+        RukusLaunchParams memory params = _launchParams();
+        params.metadataURI = "ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi";
+        address predicted = factory.getLaunchTokenAddress(params, address(this), "uri");
+        assertTrue(predicted != factory.getLaunchTokenAddress(_launchParams(), address(this), "uri"), "URI not in address");
+
+        vm.expectEmit(true, true, true, true, predicted);
+        emit IERC7572.ContractURIUpdated();
+        (, IERC20 token) = factory.create(params, _SWAP_FEE, "uri");
+
+        assertEq(address(token), predicted, "Predicted address");
+        assertEq(RukusLaunchToken(address(token)).contractURI(), params.metadataURI, "Token URI");
     }
 
     /// @dev Different creators get different addresses for the same salt (no squatting someone else's launch).

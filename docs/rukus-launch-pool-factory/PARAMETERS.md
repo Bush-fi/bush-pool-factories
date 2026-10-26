@@ -54,7 +54,7 @@ and the pool is its own pool creator and its own swap fee manager.
 | `launch.name` | `string` | — | — | — | Launch token name. The BPT is named `<name> Rukus Launch Pool`. | None. |
 | `launch.symbol` | `string` | — | — | — | Launch token symbol. The BPT symbol is `<symbol>-RUKUS`. | None. |
 | `launch.creatorFeeRecipient` | `address` | — | — | — | Where creator fees are paid (a user or a contract). Fixed for good. | Non-zero, or `InvalidCreatorFeeRecipient()`. |
-| `launch.metadataURI` | `string` | — | — | — | Off-chain metadata (image, description, links). Emitted in `RukusLaunchCreated`, not stored. | None. |
+| `launch.metadataURI` | `string` | — | — | — | Off-chain metadata: a JSON with the image, description and links, ideally on IPFS or Arweave. Stored in the launch token as its ERC-7572 `contractURI()` and fixed for good (no setter, no owner); also emitted in `RukusLaunchCreated`. Part of the token's CREATE2 address. | None. |
 | `launch.minInitialBuyAmountOut` | `uint256` | `0` | — | — | With ETH sent: the fewest launch tokens the creator's initial buy accepts. | The Vault's swap limit. |
 | `launch.graduatedSwapFeePercentage` | `uint256` | — | `0.001e16` (0.001%) | `5e16` (5%) | Static swap fee from graduation on; the pool sets it on the Vault at graduation. Fixed for good. | `InvalidGraduatedSwapFee()`. |
 | `launch.graduatedCreatorFeePercentage` | `uint256` | — | factory's `minGraduatedCreatorFeePercentage` | `99.999e16` | Creator share of the swap fee (after the protocol's) from graduation on; the rest stays in the pool. Rukus's cut after graduation is a fixed share of this. Fixed for good. | `GraduatedCreatorFeeBelowMinimum(fee, min)` below the floor; `InvalidGraduatedCreatorFee()` above 99.999%. |

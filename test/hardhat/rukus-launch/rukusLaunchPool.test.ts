@@ -86,6 +86,7 @@ describe('RukusLaunchPool (Router, ETH)', function () {
     pool = (await deployedAt('RukusLaunchPool', event.args.pool)) as unknown as Contract;
     launch = (await deployedAt('RukusLaunchToken', event.args.launchToken)) as unknown as Contract;
     expect(event.args.metadataURI).to.equal('ipfs://launch');
+    expect(await launch.contractURI()).to.equal('ipfs://launch');
     expect(event.args.initialBuyAmountIn).to.equal(fp(0.1));
     expect(await launch.balanceOf(creator.address)).to.equal(event.args.initialBuyAmountOut);
 

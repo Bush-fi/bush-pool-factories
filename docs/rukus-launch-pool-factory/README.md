@@ -24,8 +24,12 @@ RUKUS_LAUNCH
 5. If ETH is sent with `create`, it makes the **creator's initial buy** in the same transaction (tokens to the caller,
    at least `minInitialBuyAmountOut`), so no one can buy ahead of the creator.
 
-`RukusLaunchCreated` carries the pool, the token, the creator, the supply, the `metadataURI` (image, description,
-links; emitted, not stored) and the initial buy.
+`RukusLaunchCreated` carries the pool, the token, the creator, the supply, the `metadataURI` and the initial buy.
+
+The `metadataURI` (a JSON with the image, description and links, ideally on IPFS or Arweave) is also stored in the
+launch token as its ERC-7572 `contractURI()`, set once at `create` and fixed for good, as on pump.fun: the token has
+no owner and no setter, so the image and description can't be swapped after people buy. The pool returns the token
+(`getLaunchToken()`), so a frontend reads the metadata from there.
 
 So every launch token in circulation was bought from the curve, nobody holds BPT that could withdraw the raise, and
 nobody else can initialize the pool first. `getLaunchTokenAddress(launch, creator, salt)` predicts the token's address

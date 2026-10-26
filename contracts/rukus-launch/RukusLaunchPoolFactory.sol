@@ -228,7 +228,8 @@ contract RukusLaunchPoolFactory is IRukusLaunchPoolFactory, IPoolVersion, BasePo
             launch.name,
             launch.symbol,
             _LAUNCH_SUPPLY,
-            address(this)
+            address(this),
+            launch.metadataURI
         );
 
         LaunchState memory state;
@@ -274,7 +275,7 @@ contract RukusLaunchPoolFactory is IRukusLaunchPoolFactory, IPoolVersion, BasePo
         bytes32 initCodeHash = keccak256(
             abi.encodePacked(
                 type(RukusLaunchToken).creationCode,
-                abi.encode(launch.name, launch.symbol, _LAUNCH_SUPPLY, address(this))
+                abi.encode(launch.name, launch.symbol, _LAUNCH_SUPPLY, address(this), launch.metadataURI)
             )
         );
         return address(uint160(uint256(keccak256(abi.encodePacked(bytes1(0xff), address(this), finalSalt, initCodeHash)))));

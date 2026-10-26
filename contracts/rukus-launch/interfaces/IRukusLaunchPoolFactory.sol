@@ -10,7 +10,8 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
  * @param name The launch token's name (the pool's BPT is named after it)
  * @param symbol The launch token's symbol
  * @param creatorFeeRecipient Where the creator share of the swap fee goes (a user or a contract); fixed for good
- * @param metadataURI Off-chain metadata (image, description, links), emitted in `RukusLaunchCreated`, not stored
+ * @param metadataURI Off-chain metadata (a JSON with the image, description and links, e.g. on IPFS): stored in the
+ * launch token as its ERC-7572 `contractURI()`, fixed for good, and emitted in `RukusLaunchCreated`
  * @param minInitialBuyAmountOut With ETH sent to `create`: the fewest launch tokens the creator's initial buy accepts
  * @param graduatedSwapFeePercentage The swap fee from graduation on, within the pool's bounds (0.001% to 5%); fixed
  * for good

@@ -4,83 +4,83 @@
             "swapKind": 0,
             "amountRaw": "96096081760714475250",
             "tokenIn": "0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8",
-            "tokenOut": "0xd48df811A48946b3740D6509Dc36E8d56383579D",
+            "tokenOut": "0xce43c86c93f4d1E0cE011e01Fa8de3546b4B8bAB",
             "outputRaw": "197705392372808619176887"
         },
         {
             "swapKind": 1,
             "amountRaw": "199800000000000000000000",
             "tokenIn": "0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8",
-            "tokenOut": "0xd48df811A48946b3740D6509Dc36E8d56383579D",
+            "tokenOut": "0xce43c86c93f4d1E0cE011e01Fa8de3546b4B8bAB",
             "outputRaw": "97115198185281928806"
         },
         {
             "swapKind": 0,
             "amountRaw": "960960817607144752503",
             "tokenIn": "0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8",
-            "tokenOut": "0xd48df811A48946b3740D6509Dc36E8d56383579D",
+            "tokenOut": "0xce43c86c93f4d1E0cE011e01Fa8de3546b4B8bAB",
             "outputRaw": "1959624545197353874575892"
         },
         {
             "swapKind": 1,
             "amountRaw": "1998000000000000000000000",
             "tokenIn": "0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8",
-            "tokenOut": "0xd48df811A48946b3740D6509Dc36E8d56383579D",
+            "tokenOut": "0xce43c86c93f4d1E0cE011e01Fa8de3546b4B8bAB",
             "outputRaw": "979969216308088418491"
         },
         {
             "swapKind": 0,
             "amountRaw": "9609608176071448101613",
             "tokenIn": "0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8",
-            "tokenOut": "0xd48df811A48946b3740D6509Dc36E8d56383579D",
+            "tokenOut": "0xce43c86c93f4d1E0cE011e01Fa8de3546b4B8bAB",
             "outputRaw": "18008634214937719501732782"
         },
         {
             "swapKind": 1,
             "amountRaw": "19980000000000001198800000",
             "tokenIn": "0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8",
-            "tokenOut": "0xd48df811A48946b3740D6509Dc36E8d56383579D",
+            "tokenOut": "0xce43c86c93f4d1E0cE011e01Fa8de3546b4B8bAB",
             "outputRaw": "10778267203107293475087"
         },
         {
             "swapKind": 0,
             "amountRaw": "199800000000000000000000",
-            "tokenIn": "0xd48df811A48946b3740D6509Dc36E8d56383579D",
+            "tokenIn": "0xce43c86c93f4d1E0cE011e01Fa8de3546b4B8bAB",
             "tokenOut": "0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8",
             "outputRaw": "94993621771089663601"
         },
         {
             "swapKind": 1,
             "amountRaw": "96096081760714475250",
-            "tokenIn": "0xd48df811A48946b3740D6509Dc36E8d56383579D",
+            "tokenIn": "0xce43c86c93f4d1E0cE011e01Fa8de3546b4B8bAB",
             "tokenOut": "0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8",
             "outputRaw": "202121122423396449417552"
         },
         {
             "swapKind": 0,
             "amountRaw": "1998000000000000000000000",
-            "tokenIn": "0xd48df811A48946b3740D6509Dc36E8d56383579D",
+            "tokenIn": "0xce43c86c93f4d1E0cE011e01Fa8de3546b4B8bAB",
             "tokenOut": "0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8",
             "outputRaw": "941565884999893351147"
         },
         {
             "swapKind": 1,
             "amountRaw": "960960817607144752503",
-            "tokenIn": "0xd48df811A48946b3740D6509Dc36E8d56383579D",
+            "tokenIn": "0xce43c86c93f4d1E0cE011e01Fa8de3546b4B8bAB",
             "tokenOut": "0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8",
             "outputRaw": "2039571378308271866220634"
         },
         {
             "swapKind": 0,
             "amountRaw": "19980000000000001198800000",
-            "tokenIn": "0xd48df811A48946b3740D6509Dc36E8d56383579D",
+            "tokenIn": "0xce43c86c93f4d1E0cE011e01Fa8de3546b4B8bAB",
             "tokenOut": "0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8",
             "outputRaw": "8653186113127713724642"
         },
         {
             "swapKind": 1,
             "amountRaw": "9609608176071448101613",
-            "tokenIn": "0xd48df811A48946b3740D6509Dc36E8d56383579D",
+            "tokenIn": "0xce43c86c93f4d1E0cE011e01Fa8de3546b4B8bAB",
             "tokenOut": "0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8",
             "outputRaw": "22433515667112297221467180"
         }
@@ -116,10 +116,10 @@
         "chainId": "31337",
         "blockNumber": "45",
         "poolType": "RUKUS_LAUNCH",
-        "poolAddress": "0x4145EC1DaCb9BA5ebCa7D8001D9e3aE1776E6111",
+        "poolAddress": "0xA0F52249Ea64B0A333183E461d0B3282D0CD5551",
         "tokens": [
             "0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8",
-            "0xd48df811A48946b3740D6509Dc36E8d56383579D"
+            "0xce43c86c93f4d1E0cE011e01Fa8de3546b4B8bAB"
         ],
         "scalingFactors": [
             "1",
@@ -140,12 +140,12 @@
         "launchTokenIndex": "1",
         "graduatedPriceRatio": "1000000000000000000000000000000",
         "phase": "1",
-        "bondingCompletedAt": "1793030120",
+        "bondingCompletedAt": "1793033844",
         "graduationLaunchBalance": "200000000000000000000000000",
         "virtualBalances": [
             "31999999999999999999999",
             "66666666666666666666666666"
         ],
-        "currentTimestamp": "1793033720"
+        "currentTimestamp": "1793037444"
     }
 }
